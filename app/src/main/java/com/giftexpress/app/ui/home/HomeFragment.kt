@@ -14,10 +14,10 @@ import com.bumptech.glide.Glide
 import com.giftexpress.app.R
 import com.giftexpress.app.data.model.MenuItem
 import com.giftexpress.app.data.model.SliderResponse
-import com.giftexpress.app.databinding.FragmentHomeBinding
-import com.giftexpress.app.utils.UiState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 
 /**
  * Home Screen Fragment
@@ -25,107 +25,28 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class HomeFragment : Fragment() {
 
-    private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
-    
     private val viewModel: HomeViewModel by viewModels()
-    private lateinit var homeMainAdapter: HomeMainAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        
-        setupMainAdapter()
-        observeSliders()
-    }
-
-    private fun setupMainAdapter() {
-        homeMainAdapter = HomeMainAdapter(emptyList()) {
-            val drawerLayout = requireActivity().findViewById<androidx.drawerlayout.widget.DrawerLayout>(
-                R.id.drawer_layout)
-            drawerLayout?.openDrawer(androidx.core.view.GravityCompat.START)
-        }
-        binding.rvHomeMain.adapter = homeMainAdapter
-    }
-
-    private fun observeSliders() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe both sliders and menu items
-                launch {
-                    viewModel.slidersState.collect { state ->
-                        if (state is UiState.Success) {
-                            updateUi(state.data, (viewModel.menuState.value as? UiState.Success)?.data ?: emptyList())
+        return ComposeView(requireContext()).apply {
+            // Dispose the Composition when the view's LifecycleOwner is destroyed
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                MaterialTheme {
+                    HomeScreen(
+                        viewModel = viewModel,
+                        onMenuClick = {
+                            val drawerLayout = requireActivity().findViewById<androidx.drawerlayout.widget.DrawerLayout>(
+                                R.id.drawer_layout)
+                            drawerLayout?.openDrawer(androidx.core.view.GravityCompat.START)
                         }
-                    }
-                }
-                launch {
-                    viewModel.menuState.collect { state: UiState<List<MenuItem>> ->
-                        if (state is UiState.Success) {
-                            updateUi((viewModel.slidersState.value as? UiState.Success)?.data ?: emptyList(), state.data)
-                        }
-                    }
+                    )
                 }
             }
         }
-    }
-
-    private fun updateUi(sliders: List<SliderResponse>, menuItems: List<MenuItem>) {
-        val sections = mutableListOf<HomeSection>()
-        
-        // 1. Header (Logo, Search)
-        sections.add(HomeSection.Header)
-
-        // 2. Dynamic Categories from Menu API
-        if (menuItems.isNotEmpty()) {
-            sections.add(HomeSection.Categories(menuItems))
-        }
-
-        // 3. Process Sliders from API
-        sliders.forEach { slider ->
-            when {
-                slider.banners != null -> {
-                    // Hero Banner
-                    sections.add(HomeSection.HeroBanner(slider.banners))
-                    
-                    // Promo Banner (using first banner as before)
-                    slider.banners.firstOrNull()?.let { banner ->
-                        sections.add(HomeSection.PromoBanner(banner.mobImage))
-                    }
-                }
-                slider.products != null -> {
-                    // Dynamic Product Section
-                    sections.add(HomeSection.ProductSection(slider.title ?: "Products", slider.products))
-                }
-            }
-        }
-
-        // 4. Static Brands (Keep for now, but structured for easy replacement)
-        sections.add(HomeSection.Brands(getMockBrands()))
-
-        homeMainAdapter.updateData(sections)
-    }
-
-    private fun getMockBrands(): List<Brand> {
-        return listOf(
-            Brand("Armaf"),
-            Brand("Azzaro"),
-            Brand("Calvin Klein"),
-            Brand("Burberry"),
-            Brand("Versace")
-        )
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

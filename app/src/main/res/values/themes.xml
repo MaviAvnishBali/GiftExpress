@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme -->
+    <style name="Theme.GiftExpress" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="colorSecondary">@color/accent_gold</item>
+        <item name="colorOnSecondary">@color/primary</item>
+
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorSurface">@color/surface</item>
+
+        <item name="colorError">@color/discount_red</item>
+
+        <item name="android:statusBarColor">@color/primary</item>
+    </style>
+
+
+    <!-- Main application theme -->
+    <style name="Theme.ModernApp" parent="Theme.GiftExpress">
+        <!-- Splash Screen -->
+        <item name="android:windowSplashScreenBackground">@color/primary</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/white</item>
+        <item name="postSplashScreenTheme">@style/Theme.ModernApp.PostSplash</item>
+    </style>
+
+    <!-- Post splash theme with No ActionBar -->
+    <style name="Theme.ModernApp.PostSplash" parent="Theme.GiftExpress">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+</resources>

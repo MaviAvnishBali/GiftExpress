@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/dimen_8dp">
+
+    <!-- Image Area with light gray background -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/product_image_bg"
+        app:cardCornerRadius="@dimen/dimen_12dp"
+        app:cardElevation="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/dimen_12dp">
+
+            <!-- Favorite Icon -->
+            <ImageView
+                android:id="@+id/ivFavorite"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_marginTop="@dimen/dimen_8dp"
+                android:layout_marginEnd="@dimen/dimen_8dp"
+                android:src="@drawable/ic_heart"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/favorite_red" />
+
+            <!-- Product Image -->
+            <ImageView
+                android:id="@+id/ivProductImage"
+                android:layout_width="@dimen/dimen_92dp"
+                android:layout_height="@dimen/dimen_92dp"
+                android:layout_marginHorizontal="@dimen/dimen_12dp"
+                android:layout_marginTop="@dimen/dimen_2dp"
+                android:scaleType="centerInside"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ivFavorite"
+                tools:src="@drawable/logo" />
+
+            <!-- Rating Badge - Positioned to overlap bottom of cardImage -->
+            <LinearLayout
+                android:id="@+id/layoutRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_button_shadow"
+                android:elevation="2dp"
+                android:layout_marginHorizontal="@dimen/dimen_11dp"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/dimen_10dp"
+                android:paddingVertical="@dimen/dimen_4dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ivProductImage">
+
+                <ImageView
+                    android:layout_width="@dimen/dimen_11dp"
+                    android:layout_height="@dimen/dimen_11dp"
+                    android:src="@drawable/ic_star"
+                    app:tint="@color/accent_gold" />
+
+                <TextView
+                    android:id="@+id/tvRating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dimen_4dp"
+                    android:fontFamily="@font/gilroy_bold"
+                    android:textColor="@color/primary"
+                    android:textSize="11sp"
+                    tools:text="4.9" />
+
+                <TextView
+                    android:id="@+id/tvReviewCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dimen_4dp"
+                    android:fontFamily="@font/gilroy_regular"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="9sp"
+                    tools:text="(712 reviews)" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <!-- Product Name -->
+    <TextView
+        android:id="@+id/tvProductName"
+        android:layout_width="@dimen/dimen_132dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dimen_16dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/gilroy_medium"
+        android:maxLines="2"
+        android:textColor="@color/primary"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cardImage"
+        tools:text="Tease Candy Noir by Victoria's Secret..." />
+
+    <!-- Product Category -->
+    <TextView
+        android:id="@+id/tvProductCategory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dimen_4dp"
+        android:fontFamily="@font/gilroy_regular"
+        android:textColor="@color/text_hint"
+        android:textSize="11sp"
+        app:layout_constraintTop_toBottomOf="@id/tvProductName"
+        tools:text="Eau De Parfum" />
+
+    <!-- Price Area -->
+    <LinearLayout
+        android:id="@+id/layoutPrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dimen_8dp"
+        android:gravity="bottom"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/tvProductCategory">
+
+        <TextView
+            android:id="@+id/tvPriceLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/dimen_2dp"
+            android:fontFamily="@font/gilroy_regular"
+            android:text="As Low As "
+            android:textColor="@color/primary"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gilroy_bold"
+            android:textColor="@color/primary"
+            android:textSize="16sp"
+            tools:text="$25.95" />
+    </LinearLayout>
+
+    <!-- Add to Cart Button -->
+    <LinearLayout
+        android:id="@+id/btnAddToCart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dimen_16dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:background="@drawable/bg_button_shadow"
+        app:layout_constraintTop_toBottomOf="@id/layoutPrice">
+
+        <TextView
+            android:id="@+id/tvAddToCart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add to cart"
+            android:textSize="12sp"
+            android:textColor="@color/primary"
+            android:fontFamily="@font/gilroy_bold"
+            android:textAllCaps="false" />
+
+        <ImageView
+            android:id="@+id/ivCartIcon"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_marginStart="6dp"
+            android:src="@drawable/ic_shopping_bag"
+            app:tint="@color/primary" />
+
+    </LinearLayout>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

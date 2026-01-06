@@ -1,0 +1,42 @@
+<resources>
+
+    <!-- Login Colors -->
+    <color name="login_button">#333333</color>
+    <color name="login_link">#4A90E2</color>
+    <color name="login_text_secondary">#757575</color>
+    <color name="login_input_stroke">#E0E0E0</color>
+    <color name="white">#FFFFFF</color>
+    
+    <!-- Error color -->
+    <color name="error">#B00020</color>
+    <color name="primary">#000000</color>
+    <color name="primary_dark">#000000</color>
+    <color name="accent_gold">#D4AF37</color>
+    <color name="accent_gold_dark">#B8962E</color>
+
+    <!-- Background -->
+    <color name="background">#FFFFFF</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="section_bg">#EAF4FF</color>
+
+    <!-- Text -->
+    <color name="text_primary">#1C1C1C</color>
+    <color name="text_secondary">#6F6F6F</color>
+    <color name="text_hint">#9E9E9E</color>
+
+    <!-- UI Elements -->
+    <color name="divider">#E0E0E0</color>
+    <color name="rating_star">#FFC107</color>
+    <color name="discount_red">#D32F2F</color>
+
+    <!-- Bottom Navigation -->
+    <color name="bottom_nav_active">#E53935</color>
+    <color name="bottom_nav_inactive">#9E9E9E</color>
+    
+    <!-- Status Colors -->
+    <color name="status_delivered">#4CAF50</color>
+
+    <!-- Product Item Colors -->
+    <color name="product_image_bg">#F5F5F5</color>
+    <color name="favorite_red">#FF6B6B</color>
+</resources>

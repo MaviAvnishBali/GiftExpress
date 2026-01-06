@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_women"
+            android:icon="@drawable/ic_person_outline"
+            android:title="Women's Fragrances" />
+        <item
+            android:id="@+id/nav_men"
+            android:icon="@drawable/ic_person_outline"
+            android:title="Men's Fragrances" />
+        <item
+            android:id="@+id/nav_gift_sets"
+            android:icon="@drawable/ic_gift"
+            android:title="Gift Sets" />
+        <item
+            android:id="@+id/nav_christmas"
+            android:icon="@drawable/ic_candy"
+            android:title="Christmas Holiday Sale" />
+        <item
+            android:id="@+id/nav_unisex"
+            android:icon="@drawable/ic_unisex"
+            android:title="Unisex" />
+        <item
+            android:id="@+id/nav_best_sellers"
+            android:icon="@drawable/ic_thumbs_up"
+            android:title="Best Sellers" />
+        
+        <item
+            android:id="@+id/nav_request_perfume"
+            android:icon="@drawable/ic_perfume"
+            android:title="Didn't find your perfume?" />
+    </group>
+</menu>

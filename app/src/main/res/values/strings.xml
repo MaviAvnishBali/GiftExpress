@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App Name -->
+    <string name="app_name">GIFT\nEXPRESS</string>
+    
+    <!-- Common -->
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="name">Name</string>
+    
+    <!-- Authentication -->
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="logout">Logout</string>
+    <string name="login_subtitle">If you have an account, sign in with your email address.</string>
+    <string name="signup_subtitle">Create a new account to get started.</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="already_have_account">Already have an account?</string>
+    
+    <!-- Home -->
+    <string name="home">Home</string>
+    <string name="error_loading_posts">Failed to load posts. Pull to refresh.</string>
+    
+    <!-- Profile -->
+    <string name="profile">Profile</string>
+    <string name="account_information">Account Information</string>
+    <string name="account_info_text">This is your account information. You can manage your profile settings here.</string>
+    <string name="profile_icon">Profile Icon</string>
+    
+    <!-- Splash -->
+    <string name="app_logo">App Logo</string>
+    
+    <!-- Menu -->
+    <string name="menu_profile">Profile</string>
+    
+    <!-- Messages -->
+    <string name="login_successful">Login successful!</string>
+    <string name="signup_successful">Signup successful!</string>
+    <string name="logout_successful">Logged out successfully</string>
+    <string name="if_you_have_an_account_sign_in_with_your_email_address">If you have an account, sign in with your email address.</string>
+    <string name="account">Account</string>
+    <string name="orders">Orders</string>
+    <string name="offers">Offers</string>
+    <string name="categories">Categories</string>
+    
+    <!-- Product Item -->
+    <string name="product_rating_placeholder">4.9</string>
+    <string name="product_reviews_placeholder">(0 reviews)</string>
+    <string name="product_name_placeholder">Product Name</string>
+    <string name="product_category_placeholder">Category</string>
+    <string name="product_price_label">As Low As </string>
+    <string name="product_price_placeholder">$0.00</string>
+    <string name="add_to_cart">Add to cart</string>
+</resources>

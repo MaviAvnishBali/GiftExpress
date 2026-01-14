@@ -20,3 +20,12 @@
 -keep class dagger.hilt.** { *; }
 -keep class javax.inject.** { *; }
 -keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper { *; }
+
+# Firebase & Google Play services
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
+
+# Retain OkHttp/Retrofit helpers (already referenced but reinforce)
+-keep class okhttp3.** { *; }
+-keep class okio.** { *; }

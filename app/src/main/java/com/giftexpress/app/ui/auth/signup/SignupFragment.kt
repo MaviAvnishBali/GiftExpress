@@ -13,7 +13,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.giftexpress.app.R
 import com.giftexpress.app.databinding.FragmentSignupBinding
-import com.giftexpress.app.data.model.User
 import com.giftexpress.app.utils.hide
 import com.giftexpress.app.utils.show
 import com.giftexpress.app.utils.showToast

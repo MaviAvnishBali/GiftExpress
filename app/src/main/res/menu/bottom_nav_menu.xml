@@ -10,8 +10,8 @@
         android:title="@string/categories" />
     <item
         android:id="@+id/offersFragment"
-        android:icon="@drawable/nav_offer_selector"
-        android:title="@string/offers" />
+        android:icon="@drawable/nav_brand_selector"
+        android:title="@string/brands" />
     <item
         android:id="@+id/ordersFragment"
         android:icon="@drawable/nav_order_selector"

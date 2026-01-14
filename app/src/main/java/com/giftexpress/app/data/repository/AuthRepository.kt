@@ -15,9 +15,11 @@ import com.giftexpress.app.data.model.ForgotPasswordRequest
 import com.giftexpress.app.data.model.User
 import com.giftexpress.app.utils.Constants
 import com.giftexpress.app.utils.NetworkResult
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 /**
@@ -28,6 +30,9 @@ class AuthRepository @Inject constructor(
     private val apiService: ApiService,
     private val dataStore: DataStore<Preferences>
 ) {
+    
+    // Google Sign-In client for logout
+    var googleSignInClient: GoogleSignInClient? = null
 
     // DataStore keys
     private val keyIsLoggedIn = booleanPreferencesKey(Constants.KEY_IS_LOGGED_IN)
@@ -115,22 +120,52 @@ class AuthRepository @Inject constructor(
 
     /**
      * Login with Google
+     * Step 1: Get token from social-login endpoint
+     * Step 2: Use token to fetch customer details from "me" endpoint
      */
-    suspend fun googleLogin(idToken: String, email: String, firstName: String, lastName: String): NetworkResult<User> {
+    suspend fun googleLogin(
+        email: String,
+        firstName: String,
+        lastName: String,
+        socialId: String,
+        type: String = "google"
+    ): NetworkResult<User> {
         return try {
-            val response = apiService.googleLogin(GoogleLoginRequest(idToken, email, firstName, lastName))
-            if (response.isSuccessful && response.body()?.data != null) {
-                val userData = response.body()!!.data!!
-                val user = User(
-                    id = userData.userId,
-                    name = "${userData.firstName} ${userData.lastName}",
-                    email = userData.email,
-                    token = userData.token
+            // Step 1: Get token from social-login endpoint
+            val tokenResponse = apiService.googleLogin(
+                GoogleLoginRequest(
+                    email,
+                    firstName,
+                    lastName,
+                    socialId,
+                    type
                 )
-                saveUserSession(user)
-                NetworkResult.Success(user)
+            )
+            
+            if (tokenResponse.isSuccessful && tokenResponse.body() != null) {
+                val token = tokenResponse.body()!!
+                val bearerToken = "Bearer $token"
+                
+                // Step 2: Get Customer Details using the token
+                val detailsResponse = apiService.getCustomerDetails(bearerToken)
+                
+                if (detailsResponse.isSuccessful && detailsResponse.body() != null) {
+                    val userData = detailsResponse.body()!!
+                    
+                    val user = User(
+                        id = userData.id.toString(),
+                        name = "${userData.firstName} ${userData.lastName}",
+                        email = userData.email,
+                        token = token // Store the raw token
+                    )
+                    
+                    saveUserSession(user)
+                    NetworkResult.Success(user)
+                } else {
+                    NetworkResult.Error("Failed to fetch customer details: ${detailsResponse.message()}")
+                }
             } else {
-                NetworkResult.Error(response.body()?.message ?: "Google Login failed")
+                NetworkResult.Error("Google Login failed: ${tokenResponse.message()}")
             }
         } catch (e: Exception) {
             NetworkResult.Error("Google Login error: ${e.localizedMessage ?: "Unknown error"}")
@@ -258,9 +293,17 @@ class AuthRepository @Inject constructor(
     }
 
     /**
-     * Logout user - clear DataStore
+     * Logout user - clear DataStore and sign out from Google
      */
     suspend fun logout() {
+        // Sign out from Google if client is available
+        try {
+            googleSignInClient?.signOut()?.await()
+        } catch (e: Exception) {
+            // Continue with logout even if Google sign-out fails
+        }
+        
+        // Clear local session data
         dataStore.edit { preferences ->
             preferences.clear()
         }

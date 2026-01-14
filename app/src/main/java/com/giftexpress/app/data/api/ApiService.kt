@@ -45,10 +45,11 @@ interface ApiService {
     suspend fun login(@Body loginRequest: LoginRequest): Response<BaseResponse<UserData>>
 
     /**
-     * Google Login endpoint
+     * Social login endpoint (Google, Facebook, etc.)
+     * Returns a JWT token directly as a string
      */
-    @POST("google-login")
-    suspend fun googleLogin(@Body googleLoginRequest: GoogleLoginRequest): Response<BaseResponse<UserData>>
+    @POST("giftexpress/social-login")
+    suspend fun googleLogin(@Body googleLoginRequest: GoogleLoginRequest): Response<String>
 
     /**
      * Signup endpoint

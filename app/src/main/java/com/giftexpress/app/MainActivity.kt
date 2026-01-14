@@ -2,6 +2,7 @@ package com.giftexpress.app
 
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -12,10 +13,15 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.giftexpress.app.data.model.MenuItem
+import com.giftexpress.app.data.repository.AuthRepository
 import com.giftexpress.app.databinding.ActivityMainBinding
 import com.giftexpress.app.utils.UiState
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * Main Activity - Single Activity Architecture
@@ -29,6 +35,11 @@ class MainActivity : AppCompatActivity() {
     private var doubleBackToExitPressedOnce = false
     
     private val viewModel: MainViewModel by viewModels()
+    
+    @Inject
+    lateinit var authRepository: AuthRepository
+    
+    private lateinit var googleSignInClient: GoogleSignInClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install Android 12+ Splash Screen
@@ -38,6 +49,16 @@ class MainActivity : AppCompatActivity() {
         
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Initialize Google Sign-In Client
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+        
+        // Inject Google Sign-In client into AuthRepository for logout
+        authRepository.googleSignInClient = googleSignInClient
 
         setupNavigation()
         setupDrawer() // Call the new setupDrawer function
@@ -45,18 +66,13 @@ class MainActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (navController.previousBackStackEntry != null) {
-                    navController.popBackStack()
-                    return
-                }
-
                 if (doubleBackToExitPressedOnce) {
                     finish()
                     return
                 }
 
                 doubleBackToExitPressedOnce = true
-                android.widget.Toast.makeText(this@MainActivity, "Please click BACK again to exit", android.widget.Toast.LENGTH_SHORT).show()
+                android.widget.Toast.makeText(this@MainActivity, "Press back again to exit", android.widget.Toast.LENGTH_SHORT).show()
 
                 android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
                     doubleBackToExitPressedOnce = false
@@ -80,18 +96,29 @@ class MainActivity : AppCompatActivity() {
     private fun updateDrawerMenu(menuItems: List<MenuItem>) {
         val menu = binding.navView.menu
         menu.clear()
+
+        // Disable icon tint to show original image colors
+        binding.navView.itemIconTintList = null
         
         menuItems.forEach { item ->
             val menuItem = menu.add(0, item.id, 0, item.title)
-            // Set icon based on type or title if needed
-            when {
-                item.title.contains("Women", ignoreCase = true) -> menuItem.setIcon(R.drawable.ic_person_outline)
-                item.title.contains("Men", ignoreCase = true) -> menuItem.setIcon(R.drawable.ic_person_outline)
-                item.title.contains("Gift", ignoreCase = true) -> menuItem.setIcon(R.drawable.ic_gift)
-                item.title.contains("Unisex", ignoreCase = true) -> menuItem.setIcon(R.drawable.ic_unisex)
-                item.title.contains("Best", ignoreCase = true) -> menuItem.setIcon(R.drawable.ic_thumbs_up)
-                else -> menuItem.setIcon(R.drawable.ic_offer)
-            }
+            
+            // Load image using Glide
+            com.bumptech.glide.Glide.with(this)
+                .asDrawable()
+                .load(item.image)
+                .into(object : com.bumptech.glide.request.target.CustomTarget<android.graphics.drawable.Drawable>() {
+                    override fun onResourceReady(
+                        resource: android.graphics.drawable.Drawable,
+                        transition: com.bumptech.glide.request.transition.Transition<in android.graphics.drawable.Drawable>?
+                    ) {
+                        menuItem.icon = resource
+                    }
+
+                    override fun onLoadCleared(placeholder: android.graphics.drawable.Drawable?) {
+                        // Handle cleanup if needed
+                    }
+                })
         }
         
         binding.navView.setNavigationItemSelectedListener { menuItem ->
@@ -101,8 +128,8 @@ class MainActivity : AppCompatActivity() {
                     putString("url", it.url)
                     putString("title", it.title)
                 }
-                navController.navigate(R.id.webViewFragment, bundle)
-                binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
+//                navController.navigate(R.id.webViewFragment, bundle)
+//                binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
                 true
             } ?: false
         }
@@ -148,6 +175,20 @@ class MainActivity : AppCompatActivity() {
         
         // Handle Header Clicks
         val headerView = navView.getHeaderView(0)
+        val tvUserName = headerView.findViewById<TextView>(R.id.tvUserName)
+        
+        // Observe current user and update name
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                authRepository.getCurrentUser().collect { user ->
+                    if (user != null) {
+                        tvUserName?.text = user.name
+                    } else {
+                        tvUserName?.text = "Guest User"
+                    }
+                }
+            }
+        }
         
         headerView.findViewById<View>(R.id.ivCloseDrawer)?.setOnClickListener {
             drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
@@ -156,7 +197,7 @@ class MainActivity : AppCompatActivity() {
         headerView.findViewById<View>(R.id.btnMyOrders)?.setOnClickListener {
             drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
             // Navigate to Orders
-            // navController.navigate(R.id.nav_orders) 
+            navController.navigate(R.id.ordersFragment)
         }
         
         headerView.findViewById<View>(R.id.btnTrackOrders)?.setOnClickListener {
@@ -169,7 +210,11 @@ class MainActivity : AppCompatActivity() {
         btnLogout?.setOnClickListener {
             drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
             // Perform Logout
-            // viewModel.logout()
+            lifecycleScope.launch {
+                authRepository.logout()
+                // Navigate to login screen
+                navController.navigate(R.id.loginFragment)
+            }
         }
     }
     /**

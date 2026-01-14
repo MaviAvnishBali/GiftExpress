@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "1010551092893",
+    "project_id": "social-login-310706",
+    "storage_bucket": "social-login-310706.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010551092893:android:8b91baad2d562a80fcc674",
+        "android_client_info": {
+          "package_name": "com.giftexpress.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1010551092893-5lr0jet9utfsjvnpl9igf6nu9u5e6qqk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGJgnAk2s8hfUW9rU9ypa_IKqyPacCCo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1010551092893-5lr0jet9utfsjvnpl9igf6nu9u5e6qqk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1010551092893:android:0473723c65fd4d5ffcc674",
+        "android_client_info": {
+          "package_name": "com.giftexpress.app.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1010551092893-5lr0jet9utfsjvnpl9igf6nu9u5e6qqk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGJgnAk2s8hfUW9rU9ypa_IKqyPacCCo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1010551092893-5lr0jet9utfsjvnpl9igf6nu9u5e6qqk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -68,11 +68,11 @@ class LoginViewModel @Inject constructor(
     /**
      * Perform Google Login
      */
-    fun googleLogin(idToken: String, email: String, firstName: String, lastName: String) {
+    fun googleLogin(email: String, firstName: String, lastName: String, socialId: String) {
         _state.update { it.copy(isLoading = true) }
         
         viewModelScope.launch {
-            when (val result = authRepository.googleLogin(idToken, email, firstName, lastName)) {
+            when (val result = authRepository.googleLogin( email, firstName, lastName, socialId)) {
                 is NetworkResult.Success -> {
                     _state.update { it.copy(isLoading = false) }
                     // For Google login, we don't usually save password, but we can save the email if needed

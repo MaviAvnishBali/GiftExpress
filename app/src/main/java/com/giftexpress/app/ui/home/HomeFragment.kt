@@ -36,7 +36,7 @@ class HomeFragment : Fragment() {
             // Dispose the Composition when the view's LifecycleOwner is destroyed
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
-                MaterialTheme {
+                MaterialTheme(typography = com.giftexpress.app.ui.theme.GiftExpressTypography) {
                     HomeScreen(
                         viewModel = viewModel,
                         onMenuClick = {

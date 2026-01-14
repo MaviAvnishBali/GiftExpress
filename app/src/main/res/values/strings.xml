@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- App Name -->
-    <string name="app_name">GIFT\nEXPRESS</string>
+    <string name="app_name">Gift Express</string>
     
     <!-- Common -->
     <string name="email">Email</string>
@@ -13,6 +13,7 @@
     <string name="login">Login</string>
     <string name="signup">Sign Up</string>
     <string name="logout">Logout</string>
+    <string name="default_web_client_id">1010551092893-65kvuest290f8jpbkqu6ghb92k7ojndm.apps.googleusercontent.com</string>
     <string name="login_subtitle">If you have an account, sign in with your email address.</string>
     <string name="signup_subtitle">Create a new account to get started.</string>
     <string name="dont_have_account">Don\'t have an account?</string>
@@ -41,7 +42,7 @@
     <string name="if_you_have_an_account_sign_in_with_your_email_address">If you have an account, sign in with your email address.</string>
     <string name="account">Account</string>
     <string name="orders">Orders</string>
-    <string name="offers">Offers</string>
+    <string name="brands">Brands</string>
     <string name="categories">Categories</string>
     
     <!-- Product Item -->

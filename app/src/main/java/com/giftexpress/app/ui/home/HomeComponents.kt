@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,7 +39,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -46,11 +50,11 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.giftexpress.app.R
-import com.giftexpress.app.data.model.MenuItem
 import com.giftexpress.app.data.model.SliderBanner
 import com.giftexpress.app.data.model.SliderOffer
 import com.giftexpress.app.data.model.SliderProduct
@@ -132,9 +136,11 @@ fun HomeHeader(
             }
         }
 
-        Spacer(modifier = Modifier
-            .height(20.dp)
-            .fillMaxWidth())
+        Spacer(
+            modifier = Modifier
+                .height(20.dp)
+                .fillMaxWidth()
+        )
 
         if (!banners.isNullOrEmpty()) {
             HeroBanner(
@@ -169,9 +175,11 @@ fun HeroBanner(
         }
     }
 
-    Box(modifier = modifier
-        .fillMaxWidth()
-        .padding(contentPadding)) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(contentPadding)
+    ) {
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
@@ -215,58 +223,6 @@ fun HeroBanner(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun CategorySection(categories: List<MenuItem>) {
-    Column(modifier = Modifier.padding(vertical = 16.dp)) {
-        Text(
-            text = "SHOP BY CATEGORY",
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-            fontSize = 14.sp,
-            color = colorResource(id = R.color.primary)
-        )
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(categories) { category ->
-                CategoryItem(category)
-            }
-        }
-    }
-}
-
-@Composable
-fun CategoryItem(category: MenuItem) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.width(80.dp)
-    ) {
-        Card(
-            shape = RoundedCornerShape(4.dp),
-            modifier = Modifier.size(70.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_gift),
-                contentDescription = category.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Inside
-            )
-        }
-        Text(
-            text = category.title,
-            modifier = Modifier.padding(top = 8.dp),
-            textAlign = TextAlign.Center,
-            fontSize = 11.sp,
-            fontFamily = FontFamily(Font(R.font.gilroy_medium)),
-            color = colorResource(id = R.color.primary),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }
 
@@ -379,32 +335,17 @@ fun ProductCard(product: SliderProduct) {
 
     ) {
 
-        // IMAGE SECTION
-        Box(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
                 .clip(RoundedCornerShape(12.dp))
                 .background(colorResource(id = R.color.product_image_bg))
+                .padding(bottom = 8.dp)
         ) {
-
-            AsyncImage(
-                model = product.image,
-                contentDescription = product.name,
+            Row(
                 modifier = Modifier
-                    .size(92.dp)
-                    .padding(top = 10.dp)
-                    .padding(16.dp),
-                contentScale = ContentScale.Fit,
-                placeholder = painterResource(id = R.drawable.logo)
-            )
-
-            // Heart Icon
-            Box(
-                modifier = Modifier
-                    .padding(top = 9.dp, end = 8.dp)
-                    .align(Alignment.TopEnd),
-                contentAlignment = Alignment.Center
+                    .fillMaxWidth()
+                    .padding(top = 9.dp, end = 9.dp),
+                horizontalArrangement = Arrangement.End
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_heart),
@@ -414,44 +355,59 @@ fun ProductCard(product: SliderProduct) {
                 )
             }
 
-            // Rating Badge
-            Surface(
+            Row(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(8.dp),
-                shape = RoundedCornerShape(6.dp),
-                color = Color.White,
-                shadowElevation = 3.dp
+                    .fillMaxWidth()
+                    .padding(top = 6.dp),
+                horizontalArrangement = Arrangement.Center
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                AsyncImage(
+                    model = product.image,
+                    contentDescription = product.name,
+                    placeholder = painterResource(id = R.drawable.logo),
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.size(92.dp)
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = Color.White,
+                    shadowElevation = 2.dp
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_star),
-                        contentDescription = null,
-                        tint = colorResource(id = R.color.accent_gold),
-                        modifier = Modifier.size(10.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "4.9",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily(Font(R.font.gilroy_bold))
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "(712 reviews)",
-                        fontSize = 9.sp,
-                        color = Color.Gray,
-                        fontFamily = FontFamily(Font(R.font.gilroy_regular))
-                    )
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_star),
+                            contentDescription = null,
+                            tint = colorResource(id = R.color.accent_gold),
+                            modifier = Modifier.size(11.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "4.9",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily(Font(R.font.gilroy_bold))
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "712 reviews",
+                            fontSize = 9.sp,
+                            color = Color.Gray,
+                            fontFamily = FontFamily(Font(R.font.gilroy_regular))
+                        )
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // PRODUCT NAME
         Text(
@@ -460,6 +416,7 @@ fun ProductCard(product: SliderProduct) {
             fontFamily = FontFamily(Font(R.font.gilroy_medium)),
             color = colorResource(id = R.color.primary),
             maxLines = 2,
+            minLines = 2,
             overflow = TextOverflow.Ellipsis
         )
 
@@ -467,13 +424,13 @@ fun ProductCard(product: SliderProduct) {
 
         // SUBTITLE
         Text(
-            text = "Eau De Parfum",
+            text = "Eau De Perfume",
             fontSize = 11.sp,
             color = Color.Gray,
             fontFamily = FontFamily(Font(R.font.gilroy_regular)),
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // PRICE
         Row(verticalAlignment = Alignment.Bottom) {
@@ -491,33 +448,67 @@ fun ProductCard(product: SliderProduct) {
             )
         }
 
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(15.dp))
 
         // ADD TO CART BUTTON
-        OutlinedButton(
-            onClick = { /* TODO */ },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(6.dp),
-            border = BorderStroke(1.dp, Color.LightGray),
-            contentPadding = PaddingValues(vertical = 8.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 4.dp, bottom = 4.dp) // room for shadow
         ) {
-            Text(
-                text = "Add to cart",
-                fontSize = 12.sp,
-                fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-                color = colorResource(id = R.color.primary)
+
+            // SHADOW
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .graphicsLayer {
+                        shadowElevation = 6f
+                        shape = RoundedCornerShape(4.dp)
+                        clip = false
+                        translationX = 2f
+                        translationY = 2f
+                    }
             )
-            Spacer(modifier = Modifier.width(6.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_shopping_bag),
-                contentDescription = null,
-                tint = colorResource(id = R.color.primary),
-                modifier = Modifier.size(14.dp)
-            )
+
+            // BUTTON
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = Color.White,
+                        shape = RoundedCornerShape(6.dp)
+                    )
+                    .border(
+                        1.dp,
+                        Color(0xFFE0E0E0),
+                        RoundedCornerShape(6.dp)
+                    )
+                    .clickable {  }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = "Add to cart",
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily(Font(R.font.gilroy_semi_bold)),
+                        color = colorResource(id = R.color.primary)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_shopping_bag),
+                        contentDescription = null,
+                        tint = colorResource(id = R.color.primary),
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
         }
+
+
+
     }
 }
-
 
 
 @Composable
@@ -699,4 +690,17 @@ fun OffersSection(
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewProductCard() {
+    val sampleProduct = SliderProduct(
+        name = "Chanel No. 5",
+        price = 125.00,
+        image = "", // Placeholder will be used
+        sku = "12345",
+        id = "1"
+    )
+    ProductCard(product = sampleProduct)
 }

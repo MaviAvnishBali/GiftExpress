@@ -247,4 +247,11 @@
         android:label="My Rewards History"
         tools:layout="@layout/fragment_account" />
 
+    <!-- Cart Fragment -->
+    <fragment
+        android:id="@+id/cartFragment"
+        android:name="com.giftexpress.app.ui.cart.CartFragment"
+        android:label="Shopping Cart"
+        tools:layout="@layout/fragment_account" />
+
 </navigation>

@@ -43,6 +43,9 @@ class CategoryFragment : Fragment() {
                                 putString("sku", sku)
                             }
                             findNavController().navigate(R.id.productDetailsFragment, bundle)
+                        },
+                        onCartClick = {
+                            findNavController().navigate(R.id.cartFragment)
                         }
                     )
                 }

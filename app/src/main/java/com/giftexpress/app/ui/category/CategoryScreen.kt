@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,14 +32,15 @@ fun CategoryScreen(
     categoryName: String,
     viewModel: CategoryViewModel,
     onBackClick: () -> Unit,
-    onProductClick: (String) -> Unit
+    onProductClick: (String) -> Unit,
+    onCartClick: () -> Unit
 ) {
     val categoryDataState by viewModel.categoryDataState.collectAsState()
     val productsState by viewModel.productsState.collectAsState()
 
     Scaffold(
         topBar = {
-            CategoryTopBar(title = categoryName, onBackClick = onBackClick)
+            CategoryTopBar(title = categoryName, onBackClick = onBackClick, onCartClick = onCartClick)
         },
         bottomBar = {
             CategoryBottomActions()
@@ -131,7 +133,7 @@ fun CategoryScreen(
 }
 
 @Composable
-fun CategoryTopBar(title: String, onBackClick: () -> Unit) {
+fun CategoryTopBar(title: String, onBackClick: () -> Unit, onCartClick: () -> Unit) {
     Surface(
         color = colorResource(id = R.color.primary),
         contentColor = Color.White
@@ -154,6 +156,12 @@ fun CategoryTopBar(title: String, onBackClick: () -> Unit) {
             )
             IconButton(onClick = { /* TODO */ }) {
                 Icon(Icons.Default.Search, contentDescription = "Search")
+            }
+            IconButton(onClick = onCartClick) {
+                Icon(
+                    imageVector = Icons.Outlined.ShoppingCart,
+                    contentDescription = "Cart"
+                )
             }
             IconButton(onClick = { /* TODO */ }) {
                 Icon(Icons.Default.FavoriteBorder, contentDescription = "Wishlist")

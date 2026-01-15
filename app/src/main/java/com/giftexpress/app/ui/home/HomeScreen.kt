@@ -31,7 +31,8 @@ import com.giftexpress.app.utils.UiState
 fun HomeScreen(
     viewModel: HomeViewModel,
     onMenuClick: () -> Unit,
-    onProductClick: (String) -> Unit
+    onProductClick: (String) -> Unit,
+    onCartClick: () -> Unit
 ) {
     val slidersState by viewModel.slidersState.collectAsState()
 
@@ -45,7 +46,8 @@ fun HomeScreen(
             item {
                 HomeHeader(
                     banners = null, // Banners will be rendered according to sequence
-                    onMenuClick = onMenuClick
+                    onMenuClick = onMenuClick,
+                    onCartClick = onCartClick
                 )
             }
 

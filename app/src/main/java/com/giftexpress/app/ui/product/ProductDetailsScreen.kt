@@ -71,7 +71,8 @@ import kotlin.math.roundToInt
 fun ProductDetailsScreen(
     sku: String,
     viewModel: ProductDetailsViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onCartClick: () -> Unit
 ) {
     LaunchedEffect(sku) {
         viewModel.getProductDetails(sku)
@@ -81,7 +82,7 @@ fun ProductDetailsScreen(
 
     Scaffold(
         topBar = {
-            ProductTopBar(onBackClick = onBackClick)
+            ProductTopBar(onBackClick = onBackClick, onCartClick = onCartClick)
         },
         bottomBar = {
             if (uiState is UiState.Success) {
@@ -120,7 +121,7 @@ fun ProductDetailsScreen(
 }
 
 @Composable
-fun ProductTopBar(onBackClick: () -> Unit) {
+fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -142,6 +143,13 @@ fun ProductTopBar(onBackClick: () -> Unit) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search",
+                    tint = Color.Black
+                )
+            }
+            IconButton(onClick = onCartClick) {
+                Icon(
+                    imageVector = Icons.Outlined.ShoppingCart,
+                    contentDescription = "Cart",
                     tint = Color.Black
                 )
             }

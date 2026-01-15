@@ -61,7 +61,8 @@ import com.giftexpress.app.ui.components.shimmerEffect
 @Composable
 fun HomeHeader(
     banners: List<SliderBanner>? = null,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    onCartClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -93,7 +94,7 @@ fun HomeHeader(
             )
 
             Row {
-                IconButton(onClick = { /* TODO */ }) {
+                IconButton(onClick = onCartClick) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cart),
                         contentDescription = "Cart",

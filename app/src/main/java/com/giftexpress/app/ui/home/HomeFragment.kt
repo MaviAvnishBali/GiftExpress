@@ -55,6 +55,9 @@ class HomeFragment : Fragment() {
                                 putString("sku", sku)
                             }
                             androidx.navigation.Navigation.findNavController(requireView()).navigate(R.id.productDetailsFragment, bundle)
+                        },
+                        onCartClick = {
+                            findNavController().navigate(R.id.cartFragment)
                         }
                     )
                 }

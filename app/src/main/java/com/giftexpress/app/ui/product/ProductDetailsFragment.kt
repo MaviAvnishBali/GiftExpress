@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.giftexpress.app.R
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -30,6 +31,9 @@ class ProductDetailsFragment : Fragment() {
                         viewModel = viewModel,
                         onBackClick = {
                             findNavController().navigateUp()
+                        },
+                        onCartClick = {
+                            findNavController().navigate(R.id.cartFragment)
                         }
                     )
                 }

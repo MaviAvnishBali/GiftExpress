@@ -125,11 +125,11 @@ class MainActivity : AppCompatActivity() {
             val item = menuItems.find { it.id == menuItem.itemId }
             item?.let {
                 val bundle = Bundle().apply {
-                    putString("url", it.url)
-                    putString("title", it.title)
+                    putInt("categoryId", it.categoryId ?: it.id)
+                    putString("categoryName", it.title)
                 }
-//                navController.navigate(R.id.webViewFragment, bundle)
-//                binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
+                navController.navigate(R.id.categoryFragment, bundle)
+                binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
                 true
             } ?: false
         }
@@ -171,40 +171,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setupDrawer() {
         val drawerLayout = binding.drawerLayout
-        val navView = binding.navView
         
-        // Handle Header Clicks
-        val headerView = navView.getHeaderView(0)
-        val tvUserName = headerView.findViewById<TextView>(R.id.tvUserName)
-        
-        // Observe current user and update name
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                authRepository.getCurrentUser().collect { user ->
-                    if (user != null) {
-                        tvUserName?.text = user.name
-                    } else {
-                        tvUserName?.text = "Guest User"
-                    }
-                }
-            }
-        }
-        
-        headerView.findViewById<View>(R.id.ivCloseDrawer)?.setOnClickListener {
-            drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
-        }
-        
-        headerView.findViewById<View>(R.id.btnMyOrders)?.setOnClickListener {
-            drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
-            // Navigate to Orders
-            navController.navigate(R.id.ordersFragment)
-        }
-        
-        headerView.findViewById<View>(R.id.btnTrackOrders)?.setOnClickListener {
-            drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
-            // Navigate to Track Orders
-        }
-
         // Handle Logout
         val btnLogout = binding.root.findViewById<View>(R.id.btnLogout)
         btnLogout?.setOnClickListener {

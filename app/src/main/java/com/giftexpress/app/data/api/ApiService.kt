@@ -90,4 +90,27 @@ interface ApiService {
     @PUT("customers/password")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<Boolean>
 
+    /**
+     * Get Product Details by SKU
+     */
+    @GET("giftexpress/product-details/{sku}")
+    suspend fun getProductDetails(@retrofit2.http.Path("sku") sku: String): Response<com.giftexpress.app.data.model.ProductDetailsResponse>
+
+    /**
+     * Category Offer and Banner endpoint
+     */
+    @GET("giftexpress/categoryofferandBanner/{categoryId}")
+    suspend fun getCategoryOfferAndBanner(@retrofit2.http.Path("categoryId") categoryId: Int): Response<com.giftexpress.app.data.model.CategoryOfferAndBannerResponse>
+
+    /**
+     * Category Products endpoint with pagination
+     */
+    @GET("giftexpress/products/{categoryId}")
+    suspend fun getCategoryProducts(
+        @retrofit2.http.Path("categoryId") categoryId: Int,
+        @retrofit2.http.Query("pageSize") pageSize: Int,
+        @retrofit2.http.Query("currentPage") currentPage: Int,
+        @retrofit2.http.Query("manufacturer") manufacturer: Int? = null
+    ): Response<com.giftexpress.app.data.model.CategoryProductsResponse>
+
 }

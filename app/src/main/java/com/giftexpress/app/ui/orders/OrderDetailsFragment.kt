@@ -44,10 +44,6 @@ class OrderDetailsFragment : Fragment() {
             findNavController().popBackStack()
         }
         
-        binding.btnCancel.setOnClickListener {
-            // Handle cancel order
-        }
-        
         binding.tvChangeAddress.setOnClickListener {
             // Handle change address
         }

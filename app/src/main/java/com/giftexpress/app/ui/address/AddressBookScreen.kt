@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -99,9 +101,8 @@ fun AddressBookScreen(
             item {
                 Text(
                     text = "DEFAULT BILLING ADDRESS",
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.akrobat_semi_bold)),
+                    fontSize = 20.sp,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -115,9 +116,8 @@ fun AddressBookScreen(
             item {
                 Text(
                     text = "DEFAULT SHIPPING ADDRESS",
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.akrobat_semi_bold)),
+                    fontSize = 20.sp,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -148,9 +148,8 @@ fun AddressBookTopBar(onBackClick: () -> Unit) {
         }
         Text(
             text = "Address Book",
-            fontFamily = Gilroy,
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
+            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+            fontSize = 17.sp,
             color = Color.Black
         )
     }
@@ -177,38 +176,33 @@ fun AddressCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = address.fullName,
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+                    fontSize = 15.sp,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = address.streetAddress,
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.gilroy_regular)),
+                    fontSize = 13.sp,
                     color = Color.Black
                 )
                 Text(
                     text = "${address.city}, ${address.state}, ${address.zipCode}",
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Normal,
+                    fontFamily = FontFamily(Font(R.font.gilroy_regular)),
                     fontSize = 14.sp,
                     color = Color.Black
                 )
                 Text(
                     text = address.country,
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Normal,
+                    fontFamily = FontFamily(Font(R.font.gilroy_regular)),
                     fontSize = 14.sp,
                     color = Color.Black
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "T: ${address.phone}",
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Normal,
+                    fontFamily = FontFamily(Font(R.font.gilroy_regular)),
                     fontSize = 14.sp,
                     color = Color.Black
                 )

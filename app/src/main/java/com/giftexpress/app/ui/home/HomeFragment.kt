@@ -17,6 +17,7 @@ import com.giftexpress.app.data.model.SliderResponse
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -43,6 +44,17 @@ class HomeFragment : Fragment() {
                             val drawerLayout = requireActivity().findViewById<androidx.drawerlayout.widget.DrawerLayout>(
                                 R.id.drawer_layout)
                             drawerLayout?.openDrawer(androidx.core.view.GravityCompat.START)
+                        },
+                        onProductClick = { sku ->
+                            // Use safe args if generated, otherwise use bundle
+                            // val action = HomeFragmentDirections.actionHomeFragmentToProductDetailsFragment(sku)
+                            // androidx.navigation.fragment.findNavController().navigate(action)
+                            
+                            // Fallback using bundle since safe args might not be ready
+                            val bundle = Bundle().apply {
+                                putString("sku", sku)
+                            }
+                            androidx.navigation.Navigation.findNavController(requireView()).navigate(R.id.productDetailsFragment, bundle)
                         }
                     )
                 }

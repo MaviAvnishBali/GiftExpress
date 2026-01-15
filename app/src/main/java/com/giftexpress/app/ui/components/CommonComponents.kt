@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.giftexpress.app.ui.theme.Gilroy
 
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.VisualTransformation
+
 @Composable
 fun AppTextField(
     label: String,
@@ -28,7 +31,9 @@ fun AppTextField(
     onValueChange: (String) -> Unit,
     isRequired: Boolean = false,
     readOnly: Boolean = false,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default
 ) {
     Column {
         val labelText = buildAnnotatedString {
@@ -51,6 +56,8 @@ fun AppTextField(
             value = value,
             onValueChange = onValueChange,
             readOnly = readOnly,
+            visualTransformation = visualTransformation,
+            keyboardOptions = keyboardOptions,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp)

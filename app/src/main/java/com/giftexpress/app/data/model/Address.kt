@@ -1,5 +1,9 @@
 package com.giftexpress.app.data.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Address(
     val id: String,
     val firstName: String,
@@ -14,11 +18,12 @@ data class Address(
     val country: String,
     val phone: String,
     val type: AddressType
-) {
+) : Parcelable {
     val fullName: String
         get() = "$firstName $lastName"
 }
 
-enum class AddressType {
+@Parcelize
+enum class AddressType : Parcelable {
     BILLING, SHIPPING, OTHER
 }

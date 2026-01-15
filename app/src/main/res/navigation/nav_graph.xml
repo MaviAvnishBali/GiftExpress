@@ -127,7 +127,51 @@
         <action
             android:id="@+id/action_accountFragment_to_changePasswordFragment"
             app:destination="@id/changePasswordFragment" />
+
+        <action
+            android:id="@+id/action_accountFragment_to_aboutUsFragment"
+            app:destination="@id/aboutUsFragment" />
+
+        <action
+            android:id="@+id/action_accountFragment_to_shippingInfoFragment"
+            app:destination="@id/shippingInfoFragment" />
+
+        <action
+            android:id="@+id/action_accountFragment_to_privacyPolicyFragment"
+            app:destination="@id/privacyPolicyFragment" />
+
+        <action
+            android:id="@+id/action_accountFragment_to_termsConditionsFragment"
+            app:destination="@id/termsConditionsFragment" />
     </fragment>
+
+    <!-- About Us Fragment -->
+    <fragment
+        android:id="@+id/aboutUsFragment"
+        android:name="com.giftexpress.app.ui.account.AboutUsFragment"
+        android:label="About Us"
+        tools:layout="@layout/fragment_account" />
+
+    <!-- Shipping Info Fragment -->
+    <fragment
+        android:id="@+id/shippingInfoFragment"
+        android:name="com.giftexpress.app.ui.account.ShippingInfoFragment"
+        android:label="Shipping Information"
+        tools:layout="@layout/fragment_account" />
+
+    <!-- Privacy Policy Fragment -->
+    <fragment
+        android:id="@+id/privacyPolicyFragment"
+        android:name="com.giftexpress.app.ui.account.PrivacyPolicyFragment"
+        android:label="Privacy Policy"
+        tools:layout="@layout/fragment_account" />
+
+    <!-- Terms Conditions Fragment -->
+    <fragment
+        android:id="@+id/termsConditionsFragment"
+        android:name="com.giftexpress.app.ui.account.TermsConditionsFragment"
+        android:label="Terms and Conditions"
+        tools:layout="@layout/fragment_account" />
 
     <!-- Change Password Fragment -->
     <fragment
@@ -136,18 +180,71 @@
         android:label="Change Password"
         tools:layout="@layout/fragment_change_password" />
 
-    <!-- WebView Fragment -->
+
+    <!-- Product Details Fragment -->
     <fragment
-        android:id="@+id/webViewFragment"
-        android:name="com.giftexpress.app.ui.webview.WebViewFragment"
-        android:label="WebView"
-        tools:layout="@layout/fragment_web_view">
+        android:id="@+id/productDetailsFragment"
+        android:name="com.giftexpress.app.ui.product.ProductDetailsFragment"
+        android:label="Product Details"
+        tools:layout="@layout/fragment_order_details"> <!-- Reusing layout for tools preview, or create empty one -->
         <argument
-            android:name="url"
-            app:argType="string" />
-        <argument
-            android:name="title"
+            android:name="sku"
             app:argType="string" />
     </fragment>
+
+    <!-- Category Fragment -->
+    <fragment
+        android:id="@+id/categoryFragment"
+        android:name="com.giftexpress.app.ui.category.CategoryFragment"
+        android:label="Category"
+        tools:layout="@layout/fragment_home">
+        <argument
+            android:name="categoryId"
+            app:argType="integer" />
+        <argument
+            android:name="categoryName"
+            app:argType="string" />
+    </fragment>
+
+    <!-- Address Book Fragment -->
+    <fragment
+        android:id="@+id/addressBookFragment"
+        android:name="com.giftexpress.app.ui.address.AddressBookFragment"
+        android:label="Address Book"
+        tools:layout="@layout/fragment_account" />
+
+    <!-- Address Form Fragment -->
+    <fragment
+        android:id="@+id/addressFormFragment"
+        android:name="com.giftexpress.app.ui.address.AddressFormFragment"
+        android:label="Address Form"
+        tools:layout="@layout/fragment_account">
+        <argument
+            android:name="address"
+            app:argType="com.giftexpress.app.data.model.Address"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <!-- Account Information Fragment -->
+    <fragment
+        android:id="@+id/accountInfoFragment"
+        android:name="com.giftexpress.app.ui.account.AccountInfoFragment"
+        android:label="Account Information"
+        tools:layout="@layout/fragment_account" />
+
+    <!-- Rewards Fragment -->
+    <fragment
+        android:id="@+id/rewardsFragment"
+        android:name="com.giftexpress.app.ui.account.RewardsFragment"
+        android:label="My Rewards"
+        tools:layout="@layout/fragment_account" />
+
+    <!-- Rewards History Fragment -->
+    <fragment
+        android:id="@+id/rewardsHistoryFragment"
+        android:name="com.giftexpress.app.ui.account.RewardsHistoryFragment"
+        android:label="My Rewards History"
+        tools:layout="@layout/fragment_account" />
 
 </navigation>

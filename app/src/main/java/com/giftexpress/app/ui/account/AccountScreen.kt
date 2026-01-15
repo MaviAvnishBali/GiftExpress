@@ -30,7 +30,11 @@ fun AccountScreen(
     onNavigateToAddressBook: () -> Unit,
     onNavigateToAccountInfo: () -> Unit,
     onNavigateToRewardPoints: () -> Unit,
-    onNavigateToRewardHistory: () -> Unit
+    onNavigateToRewardHistory: () -> Unit,
+    onNavigateToAboutUs: () -> Unit,
+    onNavigateToShippingInfo: () -> Unit,
+    onNavigateToPrivacyPolicy: () -> Unit,
+    onNavigateToTermsConditions: () -> Unit
 ) {
     val logoutState by viewModel.logoutState.collectAsState()
 
@@ -77,13 +81,13 @@ fun AccountScreen(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     AccountOptionCard(
-                        iconRes = R.drawable.ic_box, // Replace with actual icon
+                        iconRes = R.drawable.ic_box,
                         text = "My Orders",
                         modifier = Modifier.weight(1f),
                         onClick = onNavigateToOrders
                     )
                     AccountOptionCard(
-                        iconRes = R.drawable.ic_heart, // Replace with actual icon
+                        iconRes = R.drawable.ic_heart,
                         text = "My Wish List",
                         modifier = Modifier.weight(1f),
                         onClick = onNavigateToWishlist
@@ -125,6 +129,32 @@ fun AccountScreen(
                     text = "Reward Points History",
                     onClick = onNavigateToRewardHistory
                 )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "CUSTOMER SERVICES",
+                    fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+                    fontSize = 18.sp,
+                    color = Color.Black,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
+            // Customer Services List
+            item {
+                CustomerServiceItem(text = "About Us", onClick = onNavigateToAboutUs)
+                CustomerServiceItem(text = "Shipping Information", onClick = onNavigateToShippingInfo)
+                CustomerServiceItem(text = "Privacy Policy", onClick = onNavigateToPrivacyPolicy)
+                CustomerServiceItem(text = "Terms & Condition", onClick = onNavigateToTermsConditions)
+                CustomerServiceItem(text = "Return Policy", onClick = { /* TODO */ })
+                CustomerServiceItem(text = "Damage Or Defective Product Policy", onClick = { /* TODO */ })
+                CustomerServiceItem(text = "Reward Points Policy", onClick = { /* TODO */ })
+            }
+            
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
@@ -184,8 +214,7 @@ fun AccountSettingItem(
             painter = painterResource(id = iconRes),
             contentDescription = null,
             modifier = Modifier.size(24.dp),
-            tint = Color.Blue
-
+            tint = Color(0xFF1976D2) // Blue color from image
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
@@ -202,5 +231,26 @@ fun AccountSettingItem(
             tint = Color.Black
         )
     }
-    Divider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 0.5.dp)
+    Divider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 0.5.dp)
+}
+
+@Composable
+fun CustomerServiceItem(
+    text: String,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Text(
+            text = text,
+            fontFamily = FontFamily(Font(R.font.gilroy_medium)),
+            fontSize = 15.sp,
+            color = Color.Black,
+            modifier = Modifier.padding(vertical = 16.dp)
+        )
+        Divider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 0.5.dp)
+    }
 }

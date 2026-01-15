@@ -1,6 +1,5 @@
 package com.giftexpress.app.ui.home
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -31,7 +30,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +37,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -228,15 +225,30 @@ fun HeroBanner(
 
 @Composable
 fun CategorySlider(title: String, categories: List<SliderProduct>) {
-    Column(modifier = Modifier.padding(vertical = 16.dp)) {
-        Text(
-            text = title.uppercase(),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-            fontSize = 14.sp,
-            color = colorResource(id = R.color.primary)
-        )
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 30.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title.uppercase(),
+                fontFamily = FontFamily(Font(R.font.akrobat_semi_bold)),
+                fontSize = 20.sp,
+                color = colorResource(id = R.color.primary)
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_right),
+                contentDescription = "More",
+                modifier = Modifier.size(16.dp),
+                tint = colorResource(id = R.color.primary)
+            )
+        }
+        Spacer(modifier = Modifier
+            .fillMaxWidth()
+            .height(20.dp))
         LazyRow(
             contentPadding = PaddingValues(horizontal = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -291,19 +303,19 @@ fun CategorySliderItem(category: SliderProduct) {
 }
 
 @Composable
-fun ProductSection(title: String, products: List<SliderProduct>) {
-    Column(modifier = Modifier.padding(vertical = 16.dp)) {
+fun ProductSection(title: String, products: List<SliderProduct>, onProductClick: (String) -> Unit) {
+    Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 30.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = title.uppercase(),
-                fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-                fontSize = 14.sp,
+                fontFamily = FontFamily(Font(R.font.akrobat_semi_bold)),
+                fontSize = 20.sp,
                 color = colorResource(id = R.color.primary)
             )
             Icon(
@@ -313,25 +325,32 @@ fun ProductSection(title: String, products: List<SliderProduct>) {
                 tint = colorResource(id = R.color.primary)
             )
         }
+        Spacer(modifier = Modifier
+            .fillMaxWidth()
+            .height(20.dp))
         LazyRow(
             contentPadding = PaddingValues(horizontal = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(products) { product ->
-                ProductCard(product)
+                ProductCard(product, onProductClick)
             }
         }
     }
 }
 
 @Composable
-fun ProductCard(product: SliderProduct) {
+fun ProductCard(
+    product: SliderProduct,
+    onProductClick: (String) -> Unit,
+    modifier: Modifier = Modifier.width(140.dp)
+) {
     Column(
-        modifier = Modifier
-            .width(140.dp)
+        modifier = modifier
             .padding(5.dp)
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
+            .clickable { product.sku?.let { onProductClick(it) } }
 
     ) {
 
@@ -339,22 +358,8 @@ fun ProductCard(product: SliderProduct) {
             modifier = Modifier
                 .clip(RoundedCornerShape(12.dp))
                 .background(colorResource(id = R.color.product_image_bg))
-                .padding(bottom = 8.dp)
+                .padding(16.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 9.dp, end = 9.dp),
-                horizontalArrangement = Arrangement.End
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_heart),
-                    contentDescription = "Favorite",
-                    tint = colorResource(id = R.color.favorite_red),
-                    modifier = Modifier.size(14.dp)
-                )
-            }
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -369,42 +374,7 @@ fun ProductCard(product: SliderProduct) {
                     modifier = Modifier.size(92.dp)
                 )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = Color.White,
-                    shadowElevation = 2.dp
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_star),
-                            contentDescription = null,
-                            tint = colorResource(id = R.color.accent_gold),
-                            modifier = Modifier.size(11.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "4.9",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gilroy_bold))
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "712 reviews",
-                            fontSize = 9.sp,
-                            color = Color.Gray,
-                            fontFamily = FontFamily(Font(R.font.gilroy_regular))
-                        )
-                    }
-                }
-            }
+
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -467,6 +437,8 @@ fun ProductCard(product: SliderProduct) {
                         clip = false
                         translationX = 2f
                         translationY = 2f
+                        ambientShadowColor = Color.Black
+                        spotShadowColor = Color.Black
                     }
             )
 
@@ -480,10 +452,10 @@ fun ProductCard(product: SliderProduct) {
                     )
                     .border(
                         1.dp,
-                        Color(0xFFE0E0E0),
+                        color = colorResource(id = R.color.primary),
                         RoundedCornerShape(6.dp)
                     )
-                    .clickable {  }
+                    .clickable { }
                     .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -566,21 +538,22 @@ fun BrandSection(title: String, brands: List<SliderProduct>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(top = 20.dp)
             .background(colorResource(id = R.color.section_bg))
-            .padding(vertical = 36.dp)
+            .padding(bottom = 30.dp)
     ) {
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(start = 16.dp, end = 16.dp, top = 30.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = title.uppercase(),
-                fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-                fontSize = 14.sp,
+                fontFamily = FontFamily(Font(R.font.akrobat_semi_bold)),
+                fontSize = 20.sp,
                 color = colorResource(id = R.color.primary)
             )
             Icon(
@@ -590,7 +563,7 @@ fun BrandSection(title: String, brands: List<SliderProduct>) {
                 tint = colorResource(id = R.color.primary)
             )
         }
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         LazyRow(
             contentPadding = PaddingValues(horizontal = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -613,13 +586,23 @@ fun BrandItem(brand: SliderProduct) {
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            AsyncImage(
-                model = brand.image,
-                contentDescription = brand.name,
-                modifier = Modifier.padding(12.dp),
-                contentScale = ContentScale.Fit,
-                placeholder = painterResource(id = R.drawable.ic_gift)
-            )
+            if (!brand.image.isNullOrEmpty()) {
+                AsyncImage(
+                    model = brand.image,
+                    contentDescription = brand.name,
+                    modifier = Modifier.padding(12.dp),
+                    contentScale = ContentScale.Fit,
+                    placeholder = painterResource(id = R.drawable.ic_gift)
+                )
+            } else {
+                Text(
+                    text = brand.name ?: "",
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(4.dp)
+                )
+            }
         }
     }
 }
@@ -641,23 +624,34 @@ fun PromoBanner(imageUrl: String) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OffersSection(
+    title: String,
     offers: List<SliderOffer>,
     modifier: Modifier = Modifier
 ) {
     if (offers.isEmpty()) return
 
-    Column(modifier = modifier.padding(vertical = 16.dp)) {
-        Text(
-            text = "OFFERS",
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-            fontWeight = FontWeight.Bold,
-            fontSize = 14.sp,
-            color = colorResource(id = R.color.primary)
-        )
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 30.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title.uppercase(),
+                fontFamily = FontFamily(Font(R.font.akrobat_semi_bold)),
+                fontSize = 20.sp,
+                color = colorResource(id = R.color.primary)
+            )
+        }
+
+        Spacer(modifier = Modifier
+            .fillMaxWidth()
+            .height(20.dp))
 
         val pagerState = rememberPagerState(pageCount = { offers.size })
-
+        
         // Auto-scroll logic
         androidx.compose.runtime.LaunchedEffect(pagerState.settledPage) {
             if (offers.size > 1) {
@@ -702,5 +696,5 @@ fun PreviewProductCard() {
         sku = "12345",
         id = "1"
     )
-    ProductCard(product = sampleProduct)
+    ProductCard(product = sampleProduct, onProductClick = {})
 }

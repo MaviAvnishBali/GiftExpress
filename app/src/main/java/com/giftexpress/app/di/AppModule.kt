@@ -67,10 +67,15 @@ object AppModule {
     @Provides
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        val gson = com.google.gson.GsonBuilder()
+            .registerTypeAdapter(com.giftexpress.app.data.model.ProductDetailsResponse::class.java, com.giftexpress.app.data.api.ProductDetailsDeserializer())
+            .registerTypeAdapter(com.giftexpress.app.data.model.CategoryOfferAndBannerResponse::class.java, com.giftexpress.app.data.api.CategoryOfferAndBannerDeserializer())
+            .create()
+
         return Retrofit.Builder()
             .baseUrl(com.giftexpress.app.BuildConfig.BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 
@@ -102,5 +107,14 @@ object AppModule {
     @Singleton
     fun provideHomeRepository(apiService: ApiService): HomeRepository {
         return HomeRepository(apiService)
+    }
+
+    /**
+     * Provides ProductRepository
+     */
+    @Provides
+    @Singleton
+    fun provideProductRepository(apiService: ApiService): com.giftexpress.app.data.repository.ProductRepository {
+        return com.giftexpress.app.data.repository.ProductRepository(apiService)
     }
 }

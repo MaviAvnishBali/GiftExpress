@@ -42,16 +42,28 @@ class AccountFragment : Fragment() {
                             // Navigate to wishlist
                         },
                         onNavigateToAddressBook = {
-                            // Navigate to address book
+                            findNavController().navigate(R.id.addressBookFragment)
                         },
                         onNavigateToAccountInfo = {
-                            // Navigate to account info
+                            findNavController().navigate(R.id.accountInfoFragment)
                         },
                         onNavigateToRewardPoints = {
-                            // Navigate to reward points
+                            findNavController().navigate(R.id.rewardsFragment)
                         },
                         onNavigateToRewardHistory = {
-                            // Navigate to reward history
+                            findNavController().navigate(R.id.rewardsHistoryFragment)
+                        },
+                        onNavigateToAboutUs = {
+                            findNavController().navigate(R.id.aboutUsFragment)
+                        },
+                        onNavigateToShippingInfo = {
+                            findNavController().navigate(R.id.shippingInfoFragment)
+                        },
+                        onNavigateToPrivacyPolicy = {
+                            findNavController().navigate(R.id.privacyPolicyFragment)
+                        },
+                        onNavigateToTermsConditions = {
+                            findNavController().navigate(R.id.termsConditionsFragment)
                         }
                     )
                 }

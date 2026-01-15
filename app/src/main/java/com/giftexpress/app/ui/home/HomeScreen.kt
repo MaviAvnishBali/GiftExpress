@@ -30,56 +30,62 @@ import com.giftexpress.app.utils.UiState
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    onProductClick: (String) -> Unit
 ) {
     val slidersState by viewModel.slidersState.collectAsState()
 
-    val sliders = (slidersState as? UiState.Success)?.data ?: emptyList()
+    val sliders = (slidersState as? UiState.Success)?.data?.sortedBy { it.sequence ?: Int.MAX_VALUE } ?: emptyList()
 
     if (slidersState is UiState.Loading && sliders.isEmpty()) {
         HomeShimmerLoading()
     } else {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
-            // 1. Header
-            val bannerSlider = sliders.find { it.type == "banner" }
+            // 1. Static Top Bar and Search Bar
             item {
                 HomeHeader(
-                    banners = bannerSlider?.banners,
+                    banners = null, // Banners will be rendered according to sequence
                     onMenuClick = onMenuClick
                 )
             }
 
-            // 2. Category Slider (First)
-            val categorySlider = sliders.find { it.type == "category" }
-            if (categorySlider != null) {
-                item {
-                    categorySlider.products?.let { products ->
-                        CategorySlider(
-                            title = categorySlider.title ?: "Shop By Category",
-                            categories = products
-                        )
-                    }
-                }
-            }
-
-            // 3. Offer Section (Third)
-            val offerSlider = sliders.find { it.type == "offer" }
-            if (offerSlider != null) {
-                item {
-                    offerSlider.offers?.let { offers ->
-                        OffersSection(offers = offers)
-                    }
-                }
-            }
-
-            // 4. Other Sliders
-            items(sliders.filter { it.type != "category" && it.type != "banner" }) { slider ->
+            // 2. Dynamic Sections based on Sequence
+            items(sliders) { slider ->
                 when (slider.type) {
+                    "banner" -> {
+                        slider.banners?.let { banners ->
+                            HeroBanner(
+                                banners = banners,
+                                cornerRadius = 0.dp,
+                                contentPadding = PaddingValues(0.dp)
+                            )
+                        }
+                    }
+
+                    "category" -> {
+                        slider.products?.let { products ->
+                            CategorySlider(
+                                title = slider.title ?: "Shop By Category",
+                                categories = products
+                            )
+                        }
+                    }
+
+                    "offer" -> {
+                        slider.offers?.let { offers ->
+                            OffersSection(
+                                title = slider.title ?: "Offers",
+                                offers = offers
+                            )
+                        }
+                    }
+
                     "slider" -> {
                         slider.products?.let { products ->
                             ProductSection(
                                 title = slider.title ?: "Products",
-                                products = products
+                                products = products,
+                                onProductClick = onProductClick
                             )
                         }
                     }
@@ -92,6 +98,7 @@ fun HomeScreen(
                             )
                         }
                     }
+
                     // Fallback for older structure or missing type
                     else -> {
                         if (slider.type == null) {
@@ -99,7 +106,7 @@ fun HomeScreen(
                                 slider.banners != null -> {
                                     HeroBanner(banners = slider.banners)
                                     slider.banners.firstOrNull()?.let { banner ->
-                                        PromoBanner(imageUrl = banner.mobImage)
+                                        PromoBanner(imageUrl = banner.mobImage ?: "")
                                     }
                                 }
 
@@ -123,7 +130,8 @@ fun HomeScreen(
                                         else -> {
                                             ProductSection(
                                                 title = slider.title ?: "Products",
-                                                products = slider.products
+                                                products = slider.products,
+                                                onProductClick = onProductClick
                                             )
                                         }
                                     }

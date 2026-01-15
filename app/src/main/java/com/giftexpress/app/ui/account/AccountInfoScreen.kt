@@ -28,6 +28,9 @@ import com.giftexpress.app.R
 import com.giftexpress.app.data.model.CustomerDetailsResponse
 import com.giftexpress.app.ui.components.AppTextField
 
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+
 @Composable
 fun AccountInfoScreen(
     userData: CustomerDetailsResponse? = null,
@@ -39,6 +42,15 @@ fun AccountInfoScreen(
     var lastName by remember { mutableStateOf(userData?.lastName ?: "Singh") }
     var dateOfBirth by remember { mutableStateOf(userData?.dob ?: "03/03/2022") }
     var email by remember { mutableStateOf(userData?.email ?: "ikseo2@gmail.com") }
+    
+    var isChangePasswordChecked by remember { mutableStateOf(false) }
+    var currentPassword by remember { mutableStateOf("") }
+    var newPassword by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    
+    var currentPasswordVisible by remember { mutableStateOf(false) }
+    var newPasswordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -66,11 +78,7 @@ fun AccountInfoScreen(
         bottomBar = {
             Button(
                 onClick = {
-                    // Create updated UserData and pass it back
-                    // Note: UserData is immutable, so we'd typically create a new instance or pass fields
-                    // For now, just triggering the callback with current values in a dummy object or just signal save
-                    // Since UserData has other fields like token/id which we might not have here if userData is null
-                    // We'll assume for this UI task we just handle the inputs.
+                    // Handle save
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -96,7 +104,7 @@ fun AccountInfoScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Picture
@@ -105,12 +113,12 @@ fun AccountInfoScreen(
                     modifier = Modifier.padding(vertical = 16.dp)
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_profile), // Placeholder
+                        painter = painterResource(id = R.drawable.ic_profile),
                         contentDescription = "Profile Picture",
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
-                            .background(Color.LightGray),
+                            .background(Color(0xFFE0E0E0)),
                         contentScale = ContentScale.Crop
                     )
                     
@@ -122,14 +130,14 @@ fun AccountInfoScreen(
                             .size(32.dp)
                             .clip(CircleShape)
                             .background(Color.White)
-                            .border(1.dp, Color.LightGray, CircleShape)
+                            .border(1.dp, Color.LightGray.copy(alpha = 0.5f), CircleShape)
                             .clickable { /* Handle image pick */ },
                         contentAlignment = Alignment.Center
                     ) {
                          Icon(
-                            imageVector = Icons.Default.Edit,
+                            painter = painterResource(id = R.drawable.ic_profile), // Should be camera
                             contentDescription = "Edit Profile Picture",
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(18.dp),
                             tint = Color.Black
                         )
                     }
@@ -177,7 +185,7 @@ fun AccountInfoScreen(
                     value = email,
                     onValueChange = { email = it },
                     isRequired = true,
-                    readOnly = true, // Usually email is not editable or requires special flow
+                    readOnly = true,
                     trailingIcon = {
                          Icon(
                             imageVector = Icons.Default.Edit,
@@ -193,19 +201,28 @@ fun AccountInfoScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(onClick = onChangePasswordClick)
+                        .clickable { isChangePasswordChecked = !isChangePasswordChecked }
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    RadioButton(
-                        selected = false, 
-                        onClick = onChangePasswordClick,
-                        colors = RadioButtonDefaults.colors(
-                            selectedColor = Color.Black,
-                            unselectedColor = Color.Gray
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                            .background(if (isChangePasswordChecked) Color(0xFFF57C00) else Color.White)
+                            .border(1.dp, if (isChangePasswordChecked) Color(0xFFF57C00) else Color.LightGray, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isChangePasswordChecked) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_check_circle),
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = "Change Password",
                         fontFamily = FontFamily(Font(R.font.gilroy_bold)),
@@ -213,6 +230,70 @@ fun AccountInfoScreen(
                         color = Color.Black
                     )
                 }
+            }
+
+            if (isChangePasswordChecked) {
+                item {
+                    AppTextField(
+                        label = "Current Password",
+                        value = currentPassword,
+                        onValueChange = { currentPassword = it },
+                        isRequired = true,
+                        visualTransformation = if (currentPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { currentPasswordVisible = !currentPasswordVisible }) {
+                                Icon(
+                                    painter = painterResource(id = if (currentPasswordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.Gray
+                                )
+                            }
+                        }
+                    )
+                }
+                item {
+                    AppTextField(
+                        label = "New Password",
+                        value = newPassword,
+                        onValueChange = { newPassword = it },
+                        isRequired = true,
+                        visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
+                                Icon(
+                                    painter = painterResource(id = if (newPasswordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.Gray
+                                )
+                            }
+                        }
+                    )
+                }
+                item {
+                    AppTextField(
+                        label = "Confirm New Password",
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        isRequired = true,
+                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                Icon(
+                                    painter = painterResource(id = if (confirmPasswordVisible) R.drawable.ic_visibility_off else R.drawable.ic_visibility),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color.Gray
+                                )
+                            }
+                        }
+                    )
+                }
+            }
+            
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }

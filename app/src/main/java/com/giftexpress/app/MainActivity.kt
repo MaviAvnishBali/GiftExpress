@@ -10,7 +10,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.navOptions
 import androidx.navigation.ui.setupWithNavController
 import com.giftexpress.app.data.model.MenuItem
 import com.giftexpress.app.data.repository.AuthRepository
@@ -66,6 +68,20 @@ class MainActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                // 1. Close Drawer if open
+                if (binding.drawerLayout.isDrawerOpen(androidx.core.view.GravityCompat.START)) {
+                    binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
+                    return
+                }
+
+                // 2. Try to navigate up in the fragment backstack
+                // This handles sub-pages and tab-to-home navigation
+                if (navController.previousBackStackEntry != null) {
+                    navController.navigateUp()
+                    return
+                }
+
+                // 3. If we are on Home, use the double-tap to exit logic
                 if (doubleBackToExitPressedOnce) {
                     finish()
                     return

@@ -62,8 +62,22 @@ import com.giftexpress.app.ui.components.shimmerEffect
 fun HomeHeader(
     banners: List<SliderBanner>? = null,
     onMenuClick: () -> Unit,
-    onCartClick: () -> Unit
+    onCartClick: () -> Unit,
+    isScrolled: Boolean = false
 ) {
+    val headerVerticalPadding by androidx.compose.animation.core.animateDpAsState(
+        targetValue = if (isScrolled) 4.dp else 12.dp,
+        label = "headerPadding"
+    )
+    val bottomSpacerHeight by androidx.compose.animation.core.animateDpAsState(
+        targetValue = if (isScrolled) 8.dp else 20.dp,
+        label = "bottomSpacer"
+    )
+    val logoHeight by androidx.compose.animation.core.animateDpAsState(
+        targetValue = if (isScrolled) 40.dp else 55.dp,
+        label = "logoHeight"
+    )
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,7 +86,7 @@ fun HomeHeader(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = headerVerticalPadding),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
@@ -89,7 +103,7 @@ fun HomeHeader(
                 painter = painterResource(id = R.drawable.logo_gold_white),
                 contentDescription = "Logo",
                 modifier = Modifier
-                    .height(55.dp)
+                    .height(logoHeight)
                     .width(110.dp)
             )
 
@@ -136,7 +150,7 @@ fun HomeHeader(
 
         Spacer(
             modifier = Modifier
-                .height(20.dp)
+                .height(bottomSpacerHeight)
                 .fillMaxWidth()
         )
 
@@ -357,26 +371,21 @@ fun ProductCard(
 
         Column(
             modifier = Modifier
+                .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
                 .background(colorResource(id = R.color.product_image_bg))
-                .padding(16.dp)
         ) {
-            Row(
+            AsyncImage(
+                model = product.image,
+                contentDescription = product.name,
+                placeholder = painterResource(id = R.drawable.logo),
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 6.dp),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                AsyncImage(
-                    model = product.image,
-                    contentDescription = product.name,
-                    placeholder = painterResource(id = R.drawable.logo),
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.size(92.dp)
-                )
-            }
-
+                    .aspectRatio(1f)
+            )
         }
+
 
         Spacer(modifier = Modifier.height(12.dp))
 

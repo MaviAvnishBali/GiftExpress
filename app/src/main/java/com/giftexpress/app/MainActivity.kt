@@ -166,14 +166,16 @@ class MainActivity : AppCompatActivity() {
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.splashFragment, R.id.loginFragment, R.id.signupFragment, R.id.changePasswordFragment, R.id.forgotPasswordFragment -> {
+                R.id.splashFragment, R.id.loginFragment, R.id.signupFragment, R.id.changePasswordFragment, R.id.forgotPasswordFragment, R.id.categoryFragment,R.id.productDetailsFragment -> {
                     binding.bottomNav.visibility = View.GONE
+                    binding.bottomNavShadow.visibility = View.GONE
                     binding.drawerLayout.setDrawerLockMode(
                         androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_LOCKED_CLOSED
                     )
                 }
                 else -> {
                     binding.bottomNav.visibility = View.VISIBLE
+                    binding.bottomNavShadow.visibility = View.VISIBLE
                     binding.drawerLayout.setDrawerLockMode(
                         androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNLOCKED
                     )

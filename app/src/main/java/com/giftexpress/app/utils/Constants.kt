@@ -20,6 +20,7 @@ object Constants {
     const val KEY_REMEMBER_ME = "remember_me"
     const val KEY_SAVED_EMAIL = "saved_email"
     const val KEY_SAVED_PASSWORD = "saved_password"
+    const val KEY_QUOTE_ID = "quote_id"
     
     // Validation
     const val MIN_PASSWORD_LENGTH = 6

@@ -1,0 +1,161 @@
+Reusing configuration cache.
+> Task :app:preBuild UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:preDevDebugBuild UP-TO-DATE
+> Task :app:preProdDebugBuild UP-TO-DATE
+> Task :app:mergeDevDebugNativeDebugMetadata NO-SOURCE
+> Task :app:processDevDebugGoogleServices UP-TO-DATE
+> Task :app:generateDevDebugResValues UP-TO-DATE
+> Task :app:generateDevDebugResources UP-TO-DATE
+> Task :app:generateSafeArgsDevDebug UP-TO-DATE
+> Task :app:createDevDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:generateSafeArgsProdDebug UP-TO-DATE
+> Task :app:generateDevDebugBuildConfig UP-TO-DATE
+> Task :app:processProdDebugGoogleServices UP-TO-DATE
+> Task :app:extractDeepLinksDevDebug UP-TO-DATE
+> Task :app:javaPreCompileDevDebug UP-TO-DATE
+> Task :app:mapDevDebugSourceSetPaths UP-TO-DATE
+> Task :app:mergeDevDebugShaders UP-TO-DATE
+> Task :app:packageDevDebugResources UP-TO-DATE
+> Task :app:compileDevDebugShaders NO-SOURCE
+> Task :app:generateDevDebugAssets UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsDevDebug UP-TO-DATE
+> Task :app:checkDevDebugAarMetadata UP-TO-DATE
+> Task :app:desugarDevDebugFileDependencies UP-TO-DATE
+> Task :app:parseDevDebugLocalResources UP-TO-DATE
+> Task :app:mergeDevDebugJniLibFolders UP-TO-DATE
+> Task :app:writeDevDebugSigningConfigVersions UP-TO-DATE
+> Task :app:mergeDevDebugResources UP-TO-DATE
+> Task :app:validateSigningDevDebug UP-TO-DATE
+> Task :app:mergeProdDebugNativeDebugMetadata NO-SOURCE
+> Task :app:generateProdDebugResValues UP-TO-DATE
+> Task :app:writeDevDebugAppMetadata UP-TO-DATE
+> Task :app:generateProdDebugResources UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsProdDebug UP-TO-DATE
+> Task :app:checkDevDebugDuplicateClasses UP-TO-DATE
+> Task :app:generateProdDebugBuildConfig UP-TO-DATE
+> Task :app:packageProdDebugResources UP-TO-DATE
+> Task :app:mergeLibDexDevDebug UP-TO-DATE
+> Task :app:mergeDevDebugAssets UP-TO-DATE
+> Task :app:mergeDevDebugNativeLibs NO-SOURCE
+> Task :app:mergeProdDebugResources UP-TO-DATE
+> Task :app:parseProdDebugLocalResources UP-TO-DATE
+> Task :app:mapProdDebugSourceSetPaths UP-TO-DATE
+> Task :app:createProdDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:stripDevDebugDebugSymbols NO-SOURCE
+> Task :app:checkProdDebugAarMetadata UP-TO-DATE
+> Task :app:javaPreCompileProdDebug UP-TO-DATE
+> Task :app:extractDeepLinksProdDebug UP-TO-DATE
+> Task :app:compressDevDebugAssets UP-TO-DATE
+> Task :app:mergeProdDebugShaders UP-TO-DATE
+> Task :app:compileProdDebugShaders NO-SOURCE
+> Task :app:desugarProdDebugFileDependencies UP-TO-DATE
+> Task :app:generateProdDebugAssets UP-TO-DATE
+> Task :app:mergeProdDebugJniLibFolders UP-TO-DATE
+> Task :app:checkProdDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeExtDexDevDebug UP-TO-DATE
+> Task :app:mergeProdDebugNativeLibs NO-SOURCE
+> Task :app:mergeProdDebugAssets UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesDevDebug UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesProdDebug UP-TO-DATE
+> Task :app:stripProdDebugDebugSymbols NO-SOURCE
+> Task :app:processDevDebugMainManifest UP-TO-DATE
+> Task :app:validateSigningProdDebug UP-TO-DATE
+> Task :app:writeProdDebugAppMetadata UP-TO-DATE
+> Task :app:mergeExtDexProdDebug UP-TO-DATE
+> Task :app:processDevDebugManifest UP-TO-DATE
+> Task :app:writeProdDebugSigningConfigVersions UP-TO-DATE
+> Task :app:processProdDebugMainManifest UP-TO-DATE
+> Task :app:mergeLibDexProdDebug UP-TO-DATE
+> Task :app:compressProdDebugAssets UP-TO-DATE
+> Task :app:processDevDebugManifestForPackage UP-TO-DATE
+> Task :app:processProdDebugManifest UP-TO-DATE
+> Task :app:processProdDebugManifestForPackage UP-TO-DATE
+> Task :app:processProdDebugResources UP-TO-DATE
+> Task :app:processDevDebugResources UP-TO-DATE
+> Task :app:kaptGenerateStubsProdDebugKotlin
+> Task :app:kaptGenerateStubsDevDebugKotlin
+> Task :app:kaptProdDebugKotlin
+> Task :app:kaptDevDebugKotlin
+
+> Task :app:compileProdDebugKotlin
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/data/api/ApiService.kt:50:67 Unresolved reference: BaseResponse
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/data/api/ApiService.kt:63:70 Unresolved reference: BaseResponse
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/data/api/ApiService.kt:140:17 Unresolved reference: CartItemDetail
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/data/api/ApiService.kt:150:17 Unresolved reference: CartItemDetail
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/cart/CartViewModel.kt:37:13 'when' expression must be exhaustive, add necessary 'is Loading' branch or 'else' branch instead
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/cart/CartViewModel.kt:39:51 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type CartResponse?
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/cart/CartViewModel.kt:63:13 'when' expression must be exhaustive, add necessary 'is Loading' branch or 'else' branch instead
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/cart/CartViewModel.kt:78:13 'when' expression must be exhaustive, add necessary 'is Loading' branch or 'else' branch instead
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:89:17 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:89:28 One type argument expected. Use 'Success<*>' if you don't want to pass type arguments
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:90:32 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:90:43 One type argument expected. Use 'Success<*>' if you don't want to pass type arguments
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:90:65 Unresolved reference: productDetails
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:98:65 Unresolved reference: it
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:110:19 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:116:33 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:121:20 One type argument expected. Use 'Success<*>' if you don't want to pass type arguments
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:122:44 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:122:55 One type argument expected. Use 'Success<*>' if you don't want to pass type arguments
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:124:43 Type mismatch: inferred type is Any? but ProductDetailsResponse was expected
+
+> Task :app:compileProdDebugKotlin FAILED
+
+> Task :app:compileDevDebugKotlin
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/data/api/ApiService.kt:50:67 Unresolved reference: BaseResponse
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/data/api/ApiService.kt:63:70 Unresolved reference: BaseResponse
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/data/api/ApiService.kt:140:17 Unresolved reference: CartItemDetail
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/data/api/ApiService.kt:150:17 Unresolved reference: CartItemDetail
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/cart/CartViewModel.kt:37:13 'when' expression must be exhaustive, add necessary 'is Loading' branch or 'else' branch instead
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/cart/CartViewModel.kt:39:51 Only safe (?.) or non-null asserted (!!.) calls are allowed on a nullable receiver of type CartResponse?
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/cart/CartViewModel.kt:63:13 'when' expression must be exhaustive, add necessary 'is Loading' branch or 'else' branch instead
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/cart/CartViewModel.kt:78:13 'when' expression must be exhaustive, add necessary 'is Loading' branch or 'else' branch instead
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:89:17 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:89:28 One type argument expected. Use 'Success<*>' if you don't want to pass type arguments
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:90:32 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:90:43 One type argument expected. Use 'Success<*>' if you don't want to pass type arguments
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:90:65 Unresolved reference: productDetails
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:98:65 Unresolved reference: it
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:110:19 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:116:33 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:121:20 One type argument expected. Use 'Success<*>' if you don't want to pass type arguments
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:122:44 Unresolved reference: uiState
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:122:55 One type argument expected. Use 'Success<*>' if you don't want to pass type arguments
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:124:43 Type mismatch: inferred type is Any? but ProductDetailsResponse was expected
+
+> Task :app:compileDevDebugKotlin FAILED
+
+FAILURE: Build completed with 2 failures.
+
+1: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:compileProdDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+2: Task failed with an exception.
+-----------
+* What went wrong:
+Execution failed for task ':app:compileDevDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+==============================================================================
+
+BUILD FAILED in 11s
+65 actionable tasks: 7 executed, 58 up-to-date
+Configuration cache entry reused.

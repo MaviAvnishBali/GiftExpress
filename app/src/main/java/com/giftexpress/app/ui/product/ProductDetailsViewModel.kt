@@ -13,13 +13,19 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+import com.giftexpress.app.data.repository.CartRepository
+
 @HiltViewModel
 class ProductDetailsViewModel @Inject constructor(
-    private val repository: ProductRepository
+    private val repository: ProductRepository,
+    private val cartRepository: CartRepository
 ) : ViewModel() {
 
     private val _productState = MutableStateFlow<UiState<ProductDetailsResponse>>(UiState.Loading)
     val productState: StateFlow<UiState<ProductDetailsResponse>> = _productState.asStateFlow()
+
+    private val _cartState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    val cartState: StateFlow<UiState<Unit>> = _cartState.asStateFlow()
 
     fun getProductDetails(sku: String) {
         viewModelScope.launch {
@@ -37,6 +43,23 @@ class ProductDetailsViewModel @Inject constructor(
                 }
                 is NetworkResult.Loading -> {
                     _productState.value = UiState.Loading
+                }
+            }
+        }
+    }
+
+    fun addToCart(sku: String, qty: Int) {
+        viewModelScope.launch {
+            _cartState.value = UiState.Loading
+            when (val result = cartRepository.addItemToCart(sku, qty)) {
+                is NetworkResult.Success -> {
+                    _cartState.value = UiState.Success(Unit)
+                }
+                is NetworkResult.Error -> {
+                    _cartState.value = UiState.Error(result.message ?: "Failed to add to cart")
+                }
+                is NetworkResult.Loading -> {
+                    _cartState.value = UiState.Loading
                 }
             }
         }

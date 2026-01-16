@@ -33,6 +33,8 @@ fun CartScreen(
     onBackClick: () -> Unit
 ) {
     val cartItems by viewModel.cartItems.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     Scaffold(
         topBar = {
@@ -43,45 +45,79 @@ fun CartScreen(
         },
         containerColor = Color.White
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            items(cartItems) { item ->
-                CartItemRow(
-                    item = item,
-                    onQuantityChange = { newQty -> viewModel.updateQuantity(item.id, newQty) },
-                    onRemove = { viewModel.removeItem(item.id) }
-                )
-                Divider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
-            }
-
-            if (cartItems.isNotEmpty()) {
-                item {
-                    CartSummary(
-                        subtotal = viewModel.subtotal,
-                        shipping = viewModel.shipping,
-                        tax = viewModel.tax,
-                        total = viewModel.total
-                    )
+        Box(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                if (error != null) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .background(Color.Red.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                .padding(16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = error ?: "An error occurred",
+                                color = Color.Red,
+                                fontFamily = Gilroy,
+                                fontSize = 14.sp
+                            )
+                        }
+                    }
                 }
-            } else {
-                item {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 100.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Your cart is empty",
-                            fontFamily = Gilroy,
-                            fontSize = 18.sp,
-                            color = Color.Gray
+
+                items(cartItems) { item ->
+                    CartItemRow(
+                        item = item,
+                        onQuantityChange = { newQty -> viewModel.updateQuantity(item.id, newQty) },
+                        onRemove = { viewModel.removeItem(item.id) }
+                    )
+                    Divider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
+                }
+
+                if (cartItems.isNotEmpty()) {
+                    item {
+                        CartSummary(
+                            subtotal = viewModel.subtotal,
+                            shipping = viewModel.shipping,
+                            tax = viewModel.tax,
+                            total = viewModel.total
                         )
                     }
+                } else if (!isLoading && error == null) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 100.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Your cart is empty",
+                                fontFamily = Gilroy,
+                                fontSize = 18.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.1f))
+                        .clickable(enabled = false) {},
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.Red)
                 }
             }
         }

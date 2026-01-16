@@ -1,6 +1,9 @@
 package com.giftexpress.app.data.api
 
+import com.giftexpress.app.data.model.AddCartItemRequest
 import com.giftexpress.app.data.model.BaseResponse
+import com.giftexpress.app.data.model.CartItemDetail
+import com.giftexpress.app.data.model.CartResponse
 import com.giftexpress.app.data.model.ChangePasswordRequest
 import com.giftexpress.app.data.model.CreateCustomerRequest
 import com.giftexpress.app.data.model.CustomerDetailsResponse
@@ -12,13 +15,17 @@ import com.giftexpress.app.data.model.MenuItem
 import com.giftexpress.app.data.model.Post
 import com.giftexpress.app.data.model.SignupRequest
 import com.giftexpress.app.data.model.SliderResponse
+import com.giftexpress.app.data.model.UpdateCartItemRequest
 import com.giftexpress.app.data.model.UserData
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * Retrofit API interface
@@ -94,23 +101,63 @@ interface ApiService {
      * Get Product Details by SKU
      */
     @GET("giftexpress/product-details/{sku}")
-    suspend fun getProductDetails(@retrofit2.http.Path("sku") sku: String): Response<com.giftexpress.app.data.model.ProductDetailsResponse>
+    suspend fun getProductDetails(@Path("sku") sku: String): Response<com.giftexpress.app.data.model.ProductDetailsResponse>
 
     /**
      * Category Offer and Banner endpoint
      */
     @GET("giftexpress/categoryofferandBanner/{categoryId}")
-    suspend fun getCategoryOfferAndBanner(@retrofit2.http.Path("categoryId") categoryId: Int): Response<com.giftexpress.app.data.model.CategoryOfferAndBannerResponse>
+    suspend fun getCategoryOfferAndBanner(@Path("categoryId") categoryId: Int): Response<com.giftexpress.app.data.model.CategoryOfferAndBannerResponse>
 
     /**
      * Category Products endpoint with pagination
      */
     @GET("giftexpress/products/{categoryId}")
     suspend fun getCategoryProducts(
-        @retrofit2.http.Path("categoryId") categoryId: Int,
-        @retrofit2.http.Query("pageSize") pageSize: Int,
-        @retrofit2.http.Query("currentPage") currentPage: Int,
-        @retrofit2.http.Query("manufacturer") manufacturer: Int? = null
+        @Path("categoryId") categoryId: Int,
+        @Query("pageSize") pageSize: Int,
+        @Query("currentPage") currentPage: Int,
+        @Query("manufacturer") manufacturer: Int? = null
     ): Response<com.giftexpress.app.data.model.CategoryProductsResponse>
+
+    /**
+     * Create/Get Customer Cart (Quote ID)
+     */
+    @POST("carts/mine")
+    suspend fun createCart(@Header("Authorization") token: String): Response<Int>
+
+    /**
+     * Get Customer Cart Details
+     */
+    @GET("carts/mine")
+    suspend fun getCart(@Header("Authorization") token: String): Response<CartResponse>
+
+    /**
+     * Add Item to Customer Cart
+     */
+    @POST("carts/mine/items")
+    suspend fun addItemToCart(
+        @Header("Authorization") token: String,
+        @Body request: AddCartItemRequest
+    ): Response<CartItemDetail>
+
+    /**
+     * Update Item in Customer Cart
+     */
+    @PUT("carts/mine/items/{itemId}")
+    suspend fun updateCartItem(
+        @Header("Authorization") token: String,
+        @Path("itemId") itemId: Int,
+        @Body request: UpdateCartItemRequest
+    ): Response<CartItemDetail>
+
+    /**
+     * Remove Item from Customer Cart
+     */
+    @DELETE("carts/mine/items/{itemId}")
+    suspend fun removeCartItem(
+        @Header("Authorization") token: String,
+        @Path("itemId") itemId: Int
+    ): Response<Boolean>
 
 }

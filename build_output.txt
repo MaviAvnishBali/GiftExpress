@@ -1,0 +1,52 @@
+Reusing configuration cache.
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preProdDebugBuild UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:processProdDebugGoogleServices UP-TO-DATE
+> Task :app:generateProdDebugResValues UP-TO-DATE
+> Task :app:generateProdDebugResources UP-TO-DATE
+> Task :app:createProdDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:generateSafeArgsProdDebug UP-TO-DATE
+> Task :app:generateProdDebugBuildConfig UP-TO-DATE
+> Task :app:packageProdDebugResources UP-TO-DATE
+> Task :app:parseProdDebugLocalResources UP-TO-DATE
+> Task :app:extractDeepLinksProdDebug UP-TO-DATE
+> Task :app:mapProdDebugSourceSetPaths UP-TO-DATE
+> Task :app:mergeProdDebugResources UP-TO-DATE
+> Task :app:checkProdDebugAarMetadata UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsProdDebug UP-TO-DATE
+> Task :app:processProdDebugMainManifest UP-TO-DATE
+> Task :app:processProdDebugManifest UP-TO-DATE
+> Task :app:processProdDebugManifestForPackage UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesProdDebug UP-TO-DATE
+> Task :app:processProdDebugResources UP-TO-DATE
+> Task :app:kaptGenerateStubsProdDebugKotlin UP-TO-DATE
+> Task :app:kaptProdDebugKotlin UP-TO-DATE
+
+> Task :app:compileProdDebugKotlin FAILED
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/home/HomeFragment.kt:47:25 No value passed for parameter 'viewModel'
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/home/HomeFragment.kt:48:42 Unresolved reference: HomeFragmentDirections
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/home/HomeFragment.kt:49:49 Unresolved reference: findNavController
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/home/HomeScreen.kt:32:5 Conflicting declarations: value-parameter viewModel: HomeViewModel, value-parameter viewModel: HomeViewModel
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/home/HomeScreen.kt:33:5 Conflicting declarations: value-parameter viewModel: HomeViewModel, value-parameter viewModel: HomeViewModel
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:58:67 Unresolved reference: ic_search
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsScreen.kt:85:13 'when' expression must be exhaustive, add necessary 'Idle' branch or 'else' branch instead
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsViewModel.kt:29:43 Type mismatch: inferred type is UiState.Success<ProductDetailsResponse?> but UiState<ProductDetailsResponse> was expected
+e: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/ui/product/ProductDetailsViewModel.kt:29:51 Type mismatch: inferred type is ProductDetailsResponse? but ProductDetailsResponse was expected
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileProdDebugKotlin'.
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 7s
+21 actionable tasks: 2 executed, 19 up-to-date
+Configuration cache entry reused.

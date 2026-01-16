@@ -30,8 +30,11 @@
     <color name="discount_red">#D32F2F</color>
 
     <!-- Bottom Navigation -->
-    <color name="bottom_nav_active">#E53935</color>
-    <color name="bottom_nav_inactive">#9E9E9E</color>
+    <color name="bottom_nav_active">#CC1414</color>
+    <color name="bottom_nav_inactive">#535353</color>
+
+    <color name="bottom_nav_title_active">#000000</color>
+    <color name="bottom_nav_title_inactive">#535353</color>
     
     <!-- Status Colors -->
     <color name="status_delivered">#4CAF50</color>

@@ -1,0 +1,116 @@
+Reusing configuration cache.
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDevDebugBuild UP-TO-DATE
+> Task :app:preProdDebugBuild UP-TO-DATE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:mergeDevDebugNativeDebugMetadata NO-SOURCE
+> Task :app:processDevDebugGoogleServices UP-TO-DATE
+> Task :app:generateDevDebugResValues UP-TO-DATE
+> Task :app:generateSafeArgsDevDebug UP-TO-DATE
+> Task :app:processProdDebugGoogleServices UP-TO-DATE
+> Task :app:generateSafeArgsProdDebug UP-TO-DATE
+> Task :app:generateDevDebugResources UP-TO-DATE
+> Task :app:generateDevDebugBuildConfig UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsDevDebug UP-TO-DATE
+> Task :app:createDevDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:checkDevDebugAarMetadata UP-TO-DATE
+> Task :app:extractDeepLinksDevDebug UP-TO-DATE
+> Task :app:javaPreCompileDevDebug UP-TO-DATE
+> Task :app:packageDevDebugResources UP-TO-DATE
+> Task :app:mapDevDebugSourceSetPaths UP-TO-DATE
+> Task :app:mergeDevDebugShaders UP-TO-DATE
+> Task :app:mergeDevDebugResources UP-TO-DATE
+> Task :app:compileDevDebugShaders NO-SOURCE
+> Task :app:generateDevDebugAssets UP-TO-DATE
+> Task :app:desugarDevDebugFileDependencies UP-TO-DATE
+> Task :app:mergeDevDebugJniLibFolders UP-TO-DATE
+> Task :app:validateSigningDevDebug UP-TO-DATE
+> Task :app:parseDevDebugLocalResources UP-TO-DATE
+> Task :app:writeDevDebugAppMetadata UP-TO-DATE
+> Task :app:writeDevDebugSigningConfigVersions UP-TO-DATE
+> Task :app:checkDevDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeProdDebugNativeDebugMetadata NO-SOURCE
+> Task :app:dataBindingMergeDependencyArtifactsProdDebug UP-TO-DATE
+> Task :app:mergeDevDebugAssets UP-TO-DATE
+> Task :app:processDevDebugMainManifest UP-TO-DATE
+> Task :app:mergeLibDexDevDebug UP-TO-DATE
+> Task :app:mergeDevDebugNativeLibs NO-SOURCE
+> Task :app:checkProdDebugAarMetadata UP-TO-DATE
+> Task :app:compressDevDebugAssets UP-TO-DATE
+> Task :app:generateProdDebugBuildConfig UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesDevDebug UP-TO-DATE
+> Task :app:generateProdDebugResValues UP-TO-DATE
+> Task :app:generateProdDebugResources UP-TO-DATE
+> Task :app:processDevDebugManifest UP-TO-DATE
+> Task :app:mergeExtDexDevDebug UP-TO-DATE
+> Task :app:createProdDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:stripDevDebugDebugSymbols NO-SOURCE
+> Task :app:extractDeepLinksProdDebug UP-TO-DATE
+> Task :app:mergeProdDebugShaders UP-TO-DATE
+> Task :app:processDevDebugManifestForPackage UP-TO-DATE
+> Task :app:mapProdDebugSourceSetPaths UP-TO-DATE
+> Task :app:packageProdDebugResources UP-TO-DATE
+> Task :app:javaPreCompileProdDebug UP-TO-DATE
+> Task :app:checkProdDebugDuplicateClasses UP-TO-DATE
+> Task :app:mergeProdDebugResources UP-TO-DATE
+> Task :app:processProdDebugMainManifest UP-TO-DATE
+> Task :app:compileProdDebugShaders NO-SOURCE
+> Task :app:generateProdDebugAssets UP-TO-DATE
+> Task :app:validateSigningProdDebug UP-TO-DATE
+> Task :app:desugarProdDebugFileDependencies UP-TO-DATE
+> Task :app:mergeLibDexProdDebug UP-TO-DATE
+> Task :app:mergeProdDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeProdDebugAssets UP-TO-DATE
+> Task :app:parseProdDebugLocalResources UP-TO-DATE
+> Task :app:writeProdDebugAppMetadata UP-TO-DATE
+> Task :app:processProdDebugManifest UP-TO-DATE
+> Task :app:mergeProdDebugNativeLibs NO-SOURCE
+> Task :app:writeProdDebugSigningConfigVersions UP-TO-DATE
+> Task :app:processProdDebugManifestForPackage UP-TO-DATE
+> Task :app:compressProdDebugAssets UP-TO-DATE
+> Task :app:mergeExtDexProdDebug UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesProdDebug UP-TO-DATE
+> Task :app:stripProdDebugDebugSymbols NO-SOURCE
+> Task :app:processProdDebugResources UP-TO-DATE
+> Task :app:processDevDebugResources UP-TO-DATE
+> Task :app:kaptGenerateStubsDevDebugKotlin
+> Task :app:kaptDevDebugKotlin UP-TO-DATE
+> Task :app:kaptGenerateStubsProdDebugKotlin
+> Task :app:kaptProdDebugKotlin UP-TO-DATE
+
+> Task :app:compileDevDebugKotlin
+w: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/MainActivity.kt:48:13 Variable 'splashScreen' is never used
+
+> Task :app:compileDevDebugJavaWithJavac
+> Task :app:hiltAggregateDepsDevDebug UP-TO-DATE
+
+> Task :app:compileProdDebugKotlin
+w: file:///home/hp/Downloads/Projects/Gift/app/src/main/java/com/giftexpress/app/MainActivity.kt:48:13 Variable 'splashScreen' is never used
+
+> Task :app:hiltJavaCompileDevDebug
+> Task :app:processDevDebugJavaRes UP-TO-DATE
+> Task :app:mergeDevDebugJavaResource UP-TO-DATE
+> Task :app:compileProdDebugJavaWithJavac
+> Task :app:hiltAggregateDepsProdDebug UP-TO-DATE
+> Task :app:transformDevDebugClassesWithAsm
+> Task :app:hiltJavaCompileProdDebug
+> Task :app:processProdDebugJavaRes UP-TO-DATE
+> Task :app:mergeProdDebugJavaResource UP-TO-DATE
+> Task :app:dexBuilderDevDebug
+> Task :app:mergeDevDebugGlobalSynthetics UP-TO-DATE
+> Task :app:transformProdDebugClassesWithAsm
+> Task :app:mergeProjectDexDevDebug
+> Task :app:packageDevDebug
+> Task :app:createDevDebugApkListingFileRedirect UP-TO-DATE
+> Task :app:assembleDevDebug
+> Task :app:dexBuilderProdDebug
+> Task :app:mergeProdDebugGlobalSynthetics UP-TO-DATE
+> Task :app:mergeProjectDexProdDebug
+> Task :app:packageProdDebug
+> Task :app:assembleProdDebug
+> Task :app:assembleDebug
+> Task :app:createProdDebugApkListingFileRedirect UP-TO-DATE
+
+BUILD SUCCESSFUL in 15s
+87 actionable tasks: 17 executed, 70 up-to-date
+Configuration cache entry reused.

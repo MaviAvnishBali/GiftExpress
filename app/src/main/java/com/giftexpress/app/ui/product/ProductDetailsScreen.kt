@@ -1,5 +1,6 @@
 package com.giftexpress.app.ui.product
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -54,6 +56,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -74,11 +77,28 @@ fun ProductDetailsScreen(
     onBackClick: () -> Unit,
     onCartClick: () -> Unit
 ) {
+    val uiState by viewModel.productState.collectAsState()
+    var quantity by remember { mutableStateOf(1) }
+    val cartState by viewModel.cartState.collectAsState()
+    var isAddedToCart by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
     LaunchedEffect(sku) {
         viewModel.getProductDetails(sku)
+        isAddedToCart = false
     }
 
-    val uiState by viewModel.productState.collectAsState()
+    LaunchedEffect(cartState) {
+        when (cartState) {
+            is UiState.Success -> {
+                isAddedToCart = true
+            }
+            is UiState.Error -> {
+                Toast.makeText(context, (cartState as UiState.Error).message, Toast.LENGTH_SHORT).show()
+            }
+            else -> {}
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -86,10 +106,22 @@ fun ProductDetailsScreen(
         },
         bottomBar = {
             if (uiState is UiState.Success) {
-                val product = (uiState as UiState.Success).data.productDetails?.firstOrNull()
+                val product = (uiState as UiState.Success<ProductDetailsResponse>).data.productDetails?.firstOrNull()
                 val sellingPrice = product?.discountPrice ?: product?.price ?: 0.0
                 val originalPrice = if (product?.discountPrice != null) product.price else null
-                BottomBar(sellingPrice = sellingPrice, originalPrice = originalPrice)
+                BottomBar(
+                    sellingPrice = sellingPrice,
+                    originalPrice = originalPrice,
+                    isLoading = cartState is UiState.Loading,
+                    isAddedToCart = isAddedToCart,
+                    onAddToCart = {
+                        if (isAddedToCart) {
+                            onCartClick()
+                        } else {
+                            product?.productId?.let { viewModel.addToCart(it, quantity) }
+                        }
+                    }
+                )
             }
         },
         containerColor = Color.White
@@ -99,20 +131,24 @@ fun ProductDetailsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            when (uiState) {
+            when (val state = uiState) {
                 is UiState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 is UiState.Error -> {
                     Text(
-                        text = (uiState as UiState.Error).message,
+                        text = state.message,
                         color = Color.Red,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
                 is UiState.Success -> {
-                    val productResponse = (uiState as UiState.Success).data
-                    ProductContent(productResponse = productResponse)
+                    val productResponse = state.data
+                    ProductContent(
+                        productResponse = productResponse,
+                        quantity = quantity,
+                        onQuantityChange = { quantity = it }
+                    )
                 }
                 else -> {}
             }
@@ -122,12 +158,12 @@ fun ProductDetailsScreen(
 
 @Composable
 fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit) {
+    var searchText by remember { mutableStateOf("") }
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBackClick) {
             Icon(
@@ -138,41 +174,81 @@ fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit) {
             )
         }
         
-        Row {
-            IconButton(onClick = { /* TODO: Search */ }) {
+        // Search Bar
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(40.dp)
+                .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                .padding(horizontal = 12.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = Color.Black
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                androidx.compose.foundation.text.BasicTextField(
+                    value = searchText,
+                    onValueChange = { searchText = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    textStyle = androidx.compose.ui.text.TextStyle(
+                        fontFamily = Gilroy,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    ),
+                    decorationBox = { innerTextField ->
+                        if (searchText.isEmpty()) {
+                            Text(
+                                text = "Search...",
+                                fontFamily = Gilroy,
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+                        innerTextField()
+                    }
                 )
             }
-            IconButton(onClick = onCartClick) {
-                Icon(
-                    imageVector = Icons.Outlined.ShoppingCart,
-                    contentDescription = "Cart",
-                    tint = Color.Black
-                )
-            }
-            IconButton(onClick = { /* TODO: Wishlist */ }) {
-                Icon(
-                    imageVector = Icons.Outlined.FavoriteBorder,
-                    contentDescription = "Wishlist",
-                    tint = Color.Black
-                )
-            }
+        }
+        
+        Spacer(modifier = Modifier.width(4.dp))
+
+        IconButton(onClick = onCartClick) {
+            Icon(
+                imageVector = Icons.Outlined.ShoppingCart,
+                contentDescription = "Cart",
+                tint = Color.Black,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        IconButton(onClick = { /* TODO: Wishlist */ }) {
+            Icon(
+                imageVector = Icons.Outlined.FavoriteBorder,
+                contentDescription = "Wishlist",
+                tint = Color.Black,
+                modifier = Modifier.size(24.dp)
+            )
         }
     }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ProductContent(productResponse: ProductDetailsResponse) {
+fun ProductContent(
+    productResponse: ProductDetailsResponse,
+    quantity: Int,
+    onQuantityChange: (Int) -> Unit
+) {
     var selectedProduct by remember(productResponse) { 
         mutableStateOf(productResponse.productDetails?.firstOrNull()) 
     }
     val product = selectedProduct ?: return
     val scrollState = rememberScrollState()
-    var quantity by remember { mutableStateOf(1) }
     var showTesterPopup by remember { mutableStateOf(false) }
 
     if (showTesterPopup) {
@@ -314,7 +390,7 @@ fun ProductContent(productResponse: ProductDetailsResponse) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = { if (quantity > 1) quantity-- },
+                        onClick = { if (quantity > 1) onQuantityChange(quantity - 1) },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Text("-", fontSize = 20.sp, color = Color.Gray)
@@ -326,7 +402,7 @@ fun ProductContent(productResponse: ProductDetailsResponse) {
                         modifier = Modifier.padding(horizontal = 12.dp)
                     )
                     IconButton(
-                        onClick = { quantity++ },
+                        onClick = { onQuantityChange(quantity + 1) },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Text("+", fontSize = 20.sp, color = Color.Gray)
@@ -778,71 +854,97 @@ fun ReviewsSection() {
 }
 
 @Composable
-fun BottomBar(sellingPrice: Double, originalPrice: Double? = null) {
+fun BottomBar(
+    sellingPrice: Double,
+    originalPrice: Double? = null,
+    isLoading: Boolean = false,
+    isAddedToCart: Boolean = false,
+    onAddToCart: () -> Unit = {}
+) {
     Surface(
-        shadowElevation = 16.dp,
-        color = Color.White
+        shadowElevation = 8.dp,
+        color = Color.White,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(start = 16.dp, end = 16.dp, bottom = 14.dp)
         ) {
             Button(
-                onClick = { /* TODO: Add to cart */ },
+                onClick = onAddToCart,
+                enabled = !isLoading,
                 modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp),
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF333333)
+                    containerColor = Color(0xFF2B2B2B),
+                    disabledContainerColor = Color(0xFF2B2B2B).copy(alpha = 0.7f)
                 ),
-                shape = RoundedCornerShape(0.dp)
+                shape = RoundedCornerShape(8.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "ADD TO CART",
-                        fontFamily = Gilroy,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color.White
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingCart,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-            
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(50.dp)
-                    .background(Color(0xFF333333)),
-                contentAlignment = Alignment.Center
-            ) {
-                 Row(verticalAlignment = Alignment.CenterVertically) {
-                     Text(
-                        text = "$$sellingPrice",
-                        fontFamily = Gilroy,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = Color.White
-                    )
-                    if (originalPrice != null && originalPrice > sellingPrice) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "$$originalPrice",
-                            fontFamily = Gilroy,
-                            fontSize = 14.sp,
-                            color = Color.Gray,
-                            textDecoration = TextDecoration.LineThrough
-                        )
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        if (isAddedToCart) {
+                            Text(
+                                text = "GO TO CART",
+                                fontFamily = Gilroy,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = Color.White
+                            )
+                        } else {
+                            Text(
+                                text = "ADD TO CART",
+                                fontFamily = Gilroy,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = Color.White
+                            )
+                            
+                            Spacer(modifier = Modifier.width(16.dp))
+                            
+                            // Vertical Separator
+                            Box(
+                                modifier = Modifier
+                                    .width(1.dp)
+                                    .height(24.dp)
+                                    .background(Color.White.copy(alpha = 0.5f))
+                            )
+                            
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            Text(
+                                text = "$$sellingPrice",
+                                fontFamily = Gilroy,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 22.sp,
+                                color = Color.White
+                            )
+                            
+                            if (originalPrice != null && originalPrice > sellingPrice) {
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = "$$originalPrice",
+                                    fontFamily = Gilroy,
+                                    fontSize = 16.sp,
+                                    color = Color.White.copy(alpha = 0.4f),
+                                    textDecoration = TextDecoration.LineThrough
+                                )
+                            }
+                        }
                     }
-                 }
+                }
             }
         }
     }

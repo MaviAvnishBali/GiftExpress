@@ -135,6 +135,7 @@ fun HomeHeader(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cart),
                         contentDescription = "Cart",
+                        tint = Color(0xFFFBDB98),
                         modifier = Modifier.size(24.dp)
                     )
                 }

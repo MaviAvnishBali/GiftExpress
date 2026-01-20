@@ -52,3 +52,12 @@ fabric.properties
 
 # Secrets
 # secrets.properties
+
+# Build output files
+build_output*.txt
+
+# API test files
+api_response.json
+
+# Temporary documentation
+BRAND_SCREENS_FLOW.md

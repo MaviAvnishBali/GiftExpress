@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import com.giftexpress.app.data.model.SliderProduct
 import com.giftexpress.app.ui.components.shimmerEffect
 import com.giftexpress.app.utils.UiState
 
@@ -31,7 +32,11 @@ import com.giftexpress.app.utils.UiState
 fun HomeScreen(
     viewModel: HomeViewModel,
     onMenuClick: () -> Unit,
+    onCategoryClick: (SliderProduct) -> Unit,
     onProductClick: (String) -> Unit,
+    onAddToCart: (String) -> Unit,
+    onGoToCart: () -> Unit,
+    addedSkus: Set<String>,
     onCartClick: () -> Unit
 ) {
     val slidersState by viewModel.slidersState.collectAsState()
@@ -75,7 +80,8 @@ fun HomeScreen(
                             slider.products?.let { products ->
                                 CategorySlider(
                                     title = slider.title ?: "Shop By Category",
-                                    categories = products
+                                    categories = products,
+                                    onCategoryClick = onCategoryClick
                                 )
                             }
                         }
@@ -94,7 +100,10 @@ fun HomeScreen(
                                 ProductSection(
                                     title = slider.title ?: "Products",
                                     products = products,
-                                    onProductClick = onProductClick
+                                    onProductClick = onProductClick,
+                                    onAddToCart = onAddToCart,
+                                    addedSkus = addedSkus,
+                                    onGoToCart = onGoToCart
                                 )
                             }
                         }
@@ -132,7 +141,10 @@ fun HomeScreen(
                                             firstProduct?.id != null -> {
                                                 CategorySlider(
                                                     title = slider.title ?: "Shop By Category",
-                                                    categories = slider.products
+                                                    categories = slider.products,
+                                                    onCategoryClick = { product ->
+                                                        product.sku?.let(onProductClick)
+                                                    }
                                                 )
                                             }
 
@@ -140,7 +152,10 @@ fun HomeScreen(
                                                 ProductSection(
                                                     title = slider.title ?: "Products",
                                                     products = slider.products,
-                                                    onProductClick = onProductClick
+                                                    onProductClick = onProductClick,
+                                                    onAddToCart = onAddToCart,
+                                                    addedSkus = addedSkus,
+                                                    onGoToCart = onGoToCart
                                                 )
                                             }
                                         }

@@ -17,6 +17,8 @@ import com.giftexpress.app.data.model.SignupRequest
 import com.giftexpress.app.data.model.SliderResponse
 import com.giftexpress.app.data.model.UpdateCartItemRequest
 import com.giftexpress.app.data.model.UserData
+import com.giftexpress.app.data.model.BrandResponse
+import com.giftexpress.app.data.model.ProductListResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -159,5 +161,23 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("itemId") itemId: Int
     ): Response<Boolean>
+
+    /**
+     * Get Brand List
+     * GET: /rest/V1/giftexpress/brands
+     */
+    @GET("giftexpress/brands")
+    suspend fun getBrands(): Response<List<BrandResponse>>
+
+    /**
+     * Get Brand Products (Brand Listing API)
+     * GET: /rest/V1/giftexpress/brand/{brandId}/products
+     */
+    @GET("giftexpress/brand/{brandId}/products")
+    suspend fun getBrandProducts(
+        @Path("brandId") brandId: Int,
+        @Query("pageSize") pageSize: Int,
+        @Query("currentPage") currentPage: Int
+    ): Response<ProductListResponse>
 
 }

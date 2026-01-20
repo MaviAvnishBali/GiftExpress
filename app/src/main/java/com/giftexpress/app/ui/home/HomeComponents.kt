@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +25,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
@@ -34,6 +36,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +47,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +57,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.giftexpress.app.R
 import com.giftexpress.app.data.model.SliderBanner
 import com.giftexpress.app.data.model.SliderOffer
@@ -63,7 +70,10 @@ fun HomeHeader(
     banners: List<SliderBanner>? = null,
     onMenuClick: () -> Unit,
     onCartClick: () -> Unit,
-    isScrolled: Boolean = false
+    isScrolled: Boolean = false,
+    searchQuery: String = "",
+    onSearchQueryChange: ((String) -> Unit)? = null,
+    searchPlaceholder: String = "Search for 'Perfume'"
 ) {
     val headerVerticalPadding by androidx.compose.animation.core.animateDpAsState(
         targetValue = if (isScrolled) 4.dp else 12.dp,
@@ -77,6 +87,19 @@ fun HomeHeader(
         targetValue = if (isScrolled) 40.dp else 55.dp,
         label = "logoHeight"
     )
+
+    var query by remember { mutableStateOf(searchQuery) }
+    
+    // Update local query when external query changes
+    androidx.compose.runtime.LaunchedEffect(searchQuery) {
+        query = searchQuery
+    }
+    
+    // Notify parent when query changes
+    val onQueryChange: (String) -> Unit = { newQuery ->
+        query = newQuery
+        onSearchQueryChange?.invoke(newQuery)
+    }
 
     Column(
         modifier = Modifier
@@ -112,7 +135,6 @@ fun HomeHeader(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_cart),
                         contentDescription = "Cart",
-                        tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 }
@@ -130,7 +152,7 @@ fun HomeHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
@@ -139,11 +161,30 @@ fun HomeHeader(
                     tint = Color.Gray
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Search for 'Perfume'",
-                    color = Color.Gray,
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily(Font(R.font.gilroy_regular))
+                BasicTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusable(),
+                    textStyle = TextStyle(
+                        color = Color.Black,
+                        fontSize = 14.sp,
+                        fontFamily = FontFamily(Font(R.font.gilroy_regular))
+                    ),
+                    decorationBox = { innerTextField ->
+                        if (query.isEmpty()) {
+                            Text(
+                                modifier = Modifier.align(Alignment.CenterVertically),
+                                text = searchPlaceholder,
+                                color = Color.Gray,
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily(Font(R.font.gilroy_regular))
+                            )
+                        }
+                        innerTextField()
+                    }
                 )
             }
         }
@@ -198,14 +239,16 @@ fun HeroBanner(
                 .fillMaxWidth()
                 .height(200.dp)
         ) { page ->
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = banners[page].mobImage,
                 contentDescription = "Banner",
                 modifier = Modifier
                     .fillMaxSize()
                     .clip(RoundedCornerShape(cornerRadius)),
                 contentScale = ContentScale.Crop,
-                placeholder = painterResource(id = R.drawable.ic_gift)
+                loading = {
+                    Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                }
             )
         }
 
@@ -239,7 +282,11 @@ fun HeroBanner(
 }
 
 @Composable
-fun CategorySlider(title: String, categories: List<SliderProduct>) {
+fun CategorySlider(
+    title: String,
+    categories: List<SliderProduct>,
+    onCategoryClick: (SliderProduct) -> Unit
+) {
     Column {
         Row(
             modifier = Modifier
@@ -269,14 +316,17 @@ fun CategorySlider(title: String, categories: List<SliderProduct>) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(categories) { category ->
-                CategorySliderItem(category)
+                CategorySliderItem(category, onCategoryClick)
             }
         }
     }
 }
 
 @Composable
-fun CategorySliderItem(category: SliderProduct) {
+fun CategorySliderItem(
+    category: SliderProduct,
+    onCategoryClick: (SliderProduct) -> Unit,
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -287,16 +337,19 @@ fun CategorySliderItem(category: SliderProduct) {
             shape = RoundedCornerShape(4.dp),
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .clickable { onCategoryClick(category) },
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = category.image,
                     contentDescription = category.name,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                    placeholder = painterResource(id = R.drawable.ic_gift)
+                    loading = {
+                        Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                    }
                 )
 
                 Text(
@@ -318,7 +371,14 @@ fun CategorySliderItem(category: SliderProduct) {
 }
 
 @Composable
-fun ProductSection(title: String, products: List<SliderProduct>, onProductClick: (String) -> Unit) {
+fun ProductSection(
+    title: String,
+    products: List<SliderProduct>,
+    onProductClick: (String) -> Unit,
+    onAddToCart: (String) -> Unit,
+    addedSkus: Set<String>,
+    onGoToCart: () -> Unit
+) {
     Column {
         Row(
             modifier = Modifier
@@ -348,7 +408,14 @@ fun ProductSection(title: String, products: List<SliderProduct>, onProductClick:
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(products) { product ->
-                ProductCard(product, onProductClick)
+                val isAdded = product.sku?.let { addedSkus.contains(it) } == true
+                ProductCard(
+                    product = product,
+                    onProductClick = onProductClick,
+                    onAddToCart = { product.sku?.let(onAddToCart) },
+                    onGoToCart = onGoToCart,
+                    isAdded = isAdded
+                )
             }
         }
     }
@@ -358,6 +425,9 @@ fun ProductSection(title: String, products: List<SliderProduct>, onProductClick:
 fun ProductCard(
     product: SliderProduct,
     onProductClick: (String) -> Unit,
+    onAddToCart: () -> Unit = {},
+    onGoToCart: () -> Unit = {},
+    isAdded: Boolean = false,
     modifier: Modifier = Modifier.width(140.dp)
 ) {
     Column(
@@ -375,10 +445,12 @@ fun ProductCard(
                 .clip(RoundedCornerShape(12.dp))
                 .background(colorResource(id = R.color.product_image_bg))
         ) {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = product.image,
                 contentDescription = product.name,
-                placeholder = painterResource(id = R.drawable.logo),
+                loading = {
+                    Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                },
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -465,13 +537,13 @@ fun ProductCard(
                         color = colorResource(id = R.color.primary),
                         RoundedCornerShape(6.dp)
                     )
-                    .clickable { }
+                    .clickable { if (isAdded) onGoToCart() else onAddToCart() }
                     .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Add to cart",
+                        text = if (isAdded) "Go to cart" else "Add to cart",
                         fontSize = 12.sp,
                         fontFamily = FontFamily(Font(R.font.gilroy_semi_bold)),
                         color = colorResource(id = R.color.primary)
@@ -597,12 +669,14 @@ fun BrandItem(brand: SliderProduct) {
     ) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (!brand.image.isNullOrEmpty()) {
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = brand.image,
                     contentDescription = brand.name,
                     modifier = Modifier.padding(12.dp),
                     contentScale = ContentScale.Fit,
-                    placeholder = painterResource(id = R.drawable.ic_gift)
+                    loading = {
+                        Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                    }
                 )
             } else {
                 Text(
@@ -619,7 +693,7 @@ fun BrandItem(brand: SliderProduct) {
 
 @Composable
 fun PromoBanner(imageUrl: String) {
-    AsyncImage(
+    SubcomposeAsyncImage(
         model = imageUrl,
         contentDescription = "Promo Banner",
         modifier = Modifier
@@ -627,7 +701,9 @@ fun PromoBanner(imageUrl: String) {
             .padding(vertical = 16.dp)
             .height(150.dp),
         contentScale = ContentScale.Crop,
-        placeholder = painterResource(id = R.drawable.ic_gift)
+        loading = {
+            Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+        }
     )
 }
 
@@ -682,14 +758,16 @@ fun OffersSection(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 pageSpacing = 8.dp
             ) { page ->
-                AsyncImage(
+                SubcomposeAsyncImage(
                     model = offers[page].image,
                     contentDescription = "Offer",
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(12.dp)),
                     contentScale = ContentScale.FillBounds,
-                    placeholder = painterResource(id = R.drawable.ic_gift)
+                    loading = {
+                        Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                    }
                 )
             }
         }

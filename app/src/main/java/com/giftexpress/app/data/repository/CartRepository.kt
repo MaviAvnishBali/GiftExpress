@@ -42,7 +42,11 @@ class CartRepository @Inject constructor(
             val token = getAuthToken() ?: return NetworkResult.Error("User not logged in")
             val response = apiService.getCart("Bearer $token")
             if (response.isSuccessful && response.body() != null) {
-                NetworkResult.Success(response.body()!!)
+                val cartResponse = response.body()!!
+                cartResponse.id?.let { quoteId ->
+                    dataStore.edit { it[keyQuoteId] = quoteId.toString() }
+                }
+                NetworkResult.Success(cartResponse)
             } else {
                 NetworkResult.Error("Failed to fetch cart: ${response.message()}")
             }

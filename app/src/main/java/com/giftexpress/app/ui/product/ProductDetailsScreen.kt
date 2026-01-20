@@ -9,6 +9,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -62,6 +63,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import android.text.Html
+import android.widget.TextView
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.res.ResourcesCompat
+import com.giftexpress.app.R
 import com.giftexpress.app.data.model.ProductDetail
 import com.giftexpress.app.data.model.ProductDetailsResponse
 import com.giftexpress.app.data.model.SliderProduct
@@ -74,13 +80,18 @@ import kotlin.math.roundToInt
 fun ProductDetailsScreen(
     sku: String,
     viewModel: ProductDetailsViewModel,
+    addedSkus: Set<String>,
     onBackClick: () -> Unit,
-    onCartClick: () -> Unit
+    onCartClick: () -> Unit,
+    onProductCardAddToCart: (String) -> Unit,
+    onProductCardGoToCart: () -> Unit,
+    onProductClick: (String) -> Unit
 ) {
     val uiState by viewModel.productState.collectAsState()
     var quantity by remember { mutableStateOf(1) }
     val cartState by viewModel.cartState.collectAsState()
     var isAddedToCart by remember { mutableStateOf(false) }
+    var selectedProduct by remember { mutableStateOf<ProductDetail?>(null) }
     val context = LocalContext.current
 
     LaunchedEffect(sku) {
@@ -92,6 +103,7 @@ fun ProductDetailsScreen(
         when (cartState) {
             is UiState.Success -> {
                 isAddedToCart = true
+                Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
             }
             is UiState.Error -> {
                 Toast.makeText(context, (cartState as UiState.Error).message, Toast.LENGTH_SHORT).show()
@@ -106,7 +118,11 @@ fun ProductDetailsScreen(
         },
         bottomBar = {
             if (uiState is UiState.Success) {
-                val product = (uiState as UiState.Success<ProductDetailsResponse>).data.productDetails?.firstOrNull()
+                val response = (uiState as UiState.Success<ProductDetailsResponse>).data
+                if (selectedProduct == null) {
+                    selectedProduct = response.productDetails?.firstOrNull()
+                }
+                val product = selectedProduct
                 val sellingPrice = product?.discountPrice ?: product?.price ?: 0.0
                 val originalPrice = if (product?.discountPrice != null) product.price else null
                 BottomBar(
@@ -147,7 +163,13 @@ fun ProductDetailsScreen(
                     ProductContent(
                         productResponse = productResponse,
                         quantity = quantity,
-                        onQuantityChange = { quantity = it }
+                        onQuantityChange = { quantity = it },
+                        addedSkus = addedSkus,
+                        onProductCardAddToCart = onProductCardAddToCart,
+                        onProductCardGoToCart = onProductCardGoToCart,
+                        onProductClick = onProductClick,
+                        selectedProduct = selectedProduct,
+                        onVariantSelected = { selectedProduct = it }
                     )
                 }
                 else -> {}
@@ -242,12 +264,15 @@ fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit) {
 fun ProductContent(
     productResponse: ProductDetailsResponse,
     quantity: Int,
-    onQuantityChange: (Int) -> Unit
+    onQuantityChange: (Int) -> Unit,
+    addedSkus: Set<String>,
+    onProductCardAddToCart: (String) -> Unit,
+    onProductCardGoToCart: () -> Unit,
+    onProductClick: (String) -> Unit,
+    selectedProduct: ProductDetail?,
+    onVariantSelected: (ProductDetail) -> Unit
 ) {
-    var selectedProduct by remember(productResponse) { 
-        mutableStateOf(productResponse.productDetails?.firstOrNull()) 
-    }
-    val product = selectedProduct ?: return
+    val product = selectedProduct ?: productResponse.productDetails?.firstOrNull() ?: return
     val scrollState = rememberScrollState()
     var showTesterPopup by remember { mutableStateOf(false) }
 
@@ -270,7 +295,12 @@ fun ProductContent(
             },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = { showTesterPopup = false }) {
-                    Text("Close", fontFamily = Gilroy, fontWeight = FontWeight.Bold, color = Color(0xFFE53935))
+                    Text(
+                        "Close",
+                        fontFamily = Gilroy,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFE53935)
+                    )
                 }
             },
             containerColor = Color.White,
@@ -309,7 +339,7 @@ fun ProductContent(
                         )
                     }
                 }
-                
+
                 // Pager Indicator
                 Row(
                     Modifier
@@ -319,7 +349,8 @@ fun ProductContent(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     repeat(images.size) { iteration ->
-                        val color = if (pagerState.currentPage == iteration) Color(0xFF4CAF50) else Color.LightGray
+                        val color =
+                            if (pagerState.currentPage == iteration) Color(0xFF4CAF50) else Color.LightGray
                         Box(
                             modifier = Modifier
                                 .padding(2.dp)
@@ -341,7 +372,7 @@ fun ProductContent(
                 fontSize = 20.sp,
                 color = Color.Black
             )
-            
+
             // Brand
             Text(
                 text = product.manufacturer ?: "",
@@ -369,7 +400,7 @@ fun ProductContent(
                         fontSize = 24.sp,
                         color = Color.Black
                     )
-                    
+
                     if (originalPrice != null && originalPrice > sellingPrice) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -434,9 +465,9 @@ fun ProductContent(
                 fontSize = 14.sp,
                 color = Color.Black
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
-            
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -453,9 +484,9 @@ fun ProductContent(
                     color = Color(0xFF4CAF50)
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             // Info Table
             ProductInfoRow("SKU", product.sku ?: "")
             ProductInfoRow("Type", product.attributes?.type ?: "")
@@ -470,7 +501,7 @@ fun ProductContent(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Select Sizes
             Text(
                 text = "Select Sizes",
@@ -480,31 +511,32 @@ fun ProductContent(
                 color = Color.Black
             )
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             // Size Grid/List
             productResponse.productDetails?.let { variants ->
                 SizeSelectionList(
                     variants = variants,
-                    selectedVariant = product,
-                    onVariantSelected = { selectedProduct = it }
+                    selectedVariant = selectedProduct,
+                    onVariantSelected = onVariantSelected
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // More From Brand
-            Text(
-                text = "MORE FROM ${product.manufacturer?.uppercase()}",
-                fontFamily = Gilroy,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            
-            productResponse.moreProductList?.let { moreProducts ->
+
+            val moreProducts = productResponse.moreProductList.orEmpty()
+            if (moreProducts.isNotEmpty()) {
+                Text(
+                    text = "MORE FROM ${product.manufacturer?.uppercase()}",
+                    fontFamily = Gilroy,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.Black
+                )
+                Spacer(modifier = Modifier.height(12.dp))
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
                     items(moreProducts) { moreProduct ->
                         ProductCard(
@@ -517,27 +549,27 @@ fun ProductContent(
                                 attributes = moreProduct.attributes
                             ),
                             onProductClick = { clickedSku ->
-
-                            }
+                                onProductClick(clickedSku)
+                            },
+                            onAddToCart = { moreProduct.sku?.let(onProductCardAddToCart) },
+                            onGoToCart = onProductCardGoToCart,
+                            isAdded = moreProduct.sku?.let { addedSkus.contains(it) } == true
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
+
             // Tabs (Details, Shipping, Reviews)
             ProductTabsSection(product)
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
-            // Reviews Section
-            ReviewsSection()
-            
+
+
             Spacer(modifier = Modifier.height(80.dp))
         }
+        }
     }
-}
 
 @Composable
 fun ProductInfoRow(
@@ -572,7 +604,7 @@ fun ProductInfoRow(
                 )
             }
         }
-        
+
         if (!isHelp) {
             Text(
                 text = value,
@@ -599,8 +631,7 @@ fun SizeSelectionList(
             ) {
                 rowItems.forEach { variant ->
                     Box(modifier = Modifier.weight(1f)) {
-                        // Mocking sold out state for demonstration if SKU contains "59" (matching the image's 59ml example)
-                        val isSoldOut = variant.size?.contains("59") == true 
+                        val isSoldOut = variant.size?.contains("59") == true
                         SizeItem(
                             variant = variant,
                             isSelected = variant.sku == selectedVariant?.sku,
@@ -629,7 +660,7 @@ fun SizeItem(
         isSoldOut -> Color(0xFFF5F5F5)
         else -> Color.White
     }
-    
+
     val textColor = if (isSelected) Color.White else Color.Black
     val subTextColor = if (isSelected) Color.White.copy(alpha = 0.7f) else Color.Gray
 
@@ -681,7 +712,7 @@ fun SizeItem(
                     fontSize = 15.sp,
                     color = textColor
                 )
-                
+
                 if (isSoldOut) {
                     Text(
                         text = "Sold Out",
@@ -702,7 +733,7 @@ fun SizeItem(
                         fontFamily = Gilroy,
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
-                        color = Color(0xFF00C853) // Brighter green for contrast
+                        color = Color(0xFF00C853)
                     )
                     Text(
                         text = "Ready To Ship",
@@ -716,19 +747,17 @@ fun SizeItem(
     }
 }
 
-
-
 @Composable
 fun ProductTabsSection(product: ProductDetail) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Details", "Shipping Information", "Review")
-    
+
     Column {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp) // Spacing between buttons
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             tabs.forEachIndexed { index, title ->
                 val isSelected = selectedTab == index
@@ -750,17 +779,14 @@ fun ProductTabsSection(product: ProductDetail) {
                 }
             }
         }
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         when (selectedTab) {
             0 -> DetailsTab(product)
-            1 -> Text(
-                text = product.shippingInformation?.details ?: "No shipping info",
-                fontFamily = Gilroy,
-                fontSize = 14.sp,
-                color = Color.Black,
-                lineHeight = 20.sp
+            1 -> HtmlText(
+                html = product.shippingInformation?.details ?: "No shipping info",
+                modifier = Modifier.fillMaxWidth()
             )
             2 -> ReviewsSection()
         }
@@ -768,14 +794,29 @@ fun ProductTabsSection(product: ProductDetail) {
 }
 
 @Composable
+fun HtmlText(html: String, modifier: Modifier = Modifier) {
+    AndroidView(
+        modifier = modifier,
+        factory = { context ->
+            TextView(context).apply {
+                setTextColor(android.graphics.Color.BLACK)
+                textSize = 14f
+                typeface = ResourcesCompat.getFont(context, R.font.gilroy_regular)
+                setLineSpacing(0f, 1.2f)
+            }
+        },
+        update = { textView ->
+            textView.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
+        }
+    )
+}
+
+@Composable
 fun DetailsTab(product: ProductDetail) {
     Column {
-        Text(
-            text = product.details?.description ?: "",
-            fontFamily = Gilroy,
-            fontSize = 14.sp,
-            color = Color.Black,
-            lineHeight = 20.sp
+        HtmlText(
+            html = product.details?.description ?: "",
+            modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -786,7 +827,7 @@ fun DetailsTab(product: ProductDetail) {
             color = Color.Black
         )
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         val details = product.details
         ProductInfoRow("UPC", details?.upc ?: "")
         ProductInfoRow("Shop By In stock", "0.000000")
@@ -911,17 +952,16 @@ fun BottomBar(
                                 fontSize = 18.sp,
                                 color = Color.White
                             )
-                            
+
                             Spacer(modifier = Modifier.width(16.dp))
-                            
-                            // Vertical Separator
+
                             Box(
                                 modifier = Modifier
                                     .width(1.dp)
                                     .height(24.dp)
                                     .background(Color.White.copy(alpha = 0.5f))
                             )
-                            
+
                             Spacer(modifier = Modifier.width(16.dp))
 
                             Text(
@@ -931,7 +971,7 @@ fun BottomBar(
                                 fontSize = 22.sp,
                                 color = Color.White
                             )
-                            
+
                             if (originalPrice != null && originalPrice > sellingPrice) {
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(

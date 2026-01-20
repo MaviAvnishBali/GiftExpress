@@ -82,12 +82,12 @@
         android:label="Categories"
         tools:layout="@layout/fragment_categories" />
 
-    <!-- Offers Fragment -->
+    <!-- Brands Fragment -->
     <fragment
         android:id="@+id/offersFragment"
-        android:name="com.giftexpress.app.ui.offers.OffersFragment"
-        android:label="Offers"
-        tools:layout="@layout/fragment_offers" />
+        android:name="com.giftexpress.app.ui.brands.BrandsFragment"
+        android:label="Brands"
+        tools:layout="@layout/fragment_home" />
 
     <!-- Orders Fragment -->
     <fragment
@@ -253,5 +253,7 @@
         android:name="com.giftexpress.app.ui.cart.CartFragment"
         android:label="Shopping Cart"
         tools:layout="@layout/fragment_account" />
+
+
 
 </navigation>

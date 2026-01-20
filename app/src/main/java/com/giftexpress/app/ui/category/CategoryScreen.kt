@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.FavoriteBorder
@@ -19,7 +18,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.giftexpress.app.R
@@ -33,7 +31,10 @@ fun CategoryScreen(
     viewModel: CategoryViewModel,
     onBackClick: () -> Unit,
     onProductClick: (String) -> Unit,
-    onCartClick: () -> Unit
+    onCartClick: () -> Unit,
+    onAddToCart: (String) -> Unit,
+    onGoToCart: () -> Unit,
+    addedSkus: Set<String>
 ) {
     val categoryDataState by viewModel.categoryDataState.collectAsState()
     val productsState by viewModel.productsState.collectAsState()
@@ -73,13 +74,16 @@ fun CategoryScreen(
                                     item(span = { GridItemSpan(3) }) {
                                         if (slider.title?.contains("Popular", ignoreCase = true) == true) {
                                             BrandSection(
-                                                title = slider.title ?: "",
+                                                title = slider.title,
                                                 brands = slider.categories ?: slider.products ?: emptyList()
                                             )
                                         } else {
                                             CategorySlider(
                                                 title = slider.title ?: "",
-                                                categories = slider.categories ?: slider.products ?: emptyList()
+                                                categories = slider.categories ?: slider.products ?: emptyList(),
+                                                onCategoryClick = { product ->
+                                                    product.sku?.let(onProductClick)
+                                                }
                                             )
                                         }
                                     }
@@ -101,9 +105,13 @@ fun CategoryScreen(
                 when (val state = productsState) {
                     is UiState.Success -> {
                         items(state.data) { product ->
+                            val isAdded = product.sku?.let { addedSkus.contains(it) } == true
                             ProductCard(
                                 product = product,
                                 onProductClick = onProductClick,
+                                onAddToCart = { product.sku?.let(onAddToCart) },
+                                onGoToCart = onGoToCart,
+                                isAdded = isAdded,
                                 modifier = Modifier.fillMaxWidth()
                             )
                             

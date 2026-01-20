@@ -18,6 +18,7 @@ data class SliderProduct(
     @SerializedName("image") val image: String? = null,
     @SerializedName("sku") val sku: String? = null,
     @SerializedName("attributes") val attributes: List<String>? = null,
+    @SerializedName("perfumeType") val perfumeType: String? = null,
     @SerializedName("url") val url: String? = null,
     @SerializedName("id") val id: String? = null,
     @SerializedName("category_id") val categoryId: Int? = null

@@ -8,23 +8,26 @@ import androidx.fragment.app.Fragment
 import com.giftexpress.app.databinding.FragmentCategoriesBinding
 import dagger.hilt.android.AndroidEntryPoint
 
+import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.viewModels
+import com.giftexpress.app.ui.theme.GiftExpressTheme
+
 @AndroidEntryPoint
 class CategoriesFragment : Fragment() {
 
-    private var _binding: FragmentCategoriesBinding? = null
-    private val binding get() = _binding!!
+    private val viewModel: CategoriesViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentCategoriesBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+        return ComposeView(requireContext()).apply {
+            setContent {
+                GiftExpressTheme {
+                    CategoriesScreen(viewModel = viewModel)
+                }
+            }
+        }
     }
 }

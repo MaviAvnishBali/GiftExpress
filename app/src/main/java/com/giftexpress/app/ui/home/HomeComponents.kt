@@ -477,7 +477,7 @@ fun ProductCard(
 
         // SUBTITLE
         Text(
-            text = "Eau De Perfume",
+            text = product.subtitle,
             fontSize = 11.sp,
             color = Color.Gray,
             fontFamily = FontFamily(Font(R.font.gilroy_regular)),

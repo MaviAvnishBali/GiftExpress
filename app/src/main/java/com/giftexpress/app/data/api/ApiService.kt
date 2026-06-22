@@ -180,4 +180,11 @@ interface ApiService {
         @Query("currentPage") currentPage: Int
     ): Response<ProductListResponse>
 
+    /**
+     * Categories Main Screen endpoint
+     * GET: /rest/V1/giftexpress/combined-menu/hyva-topmenu-mobile
+     */
+    @GET("giftexpress/combined-menu/hyva-topmenu-mobile")
+    suspend fun getCategoriesMainScreen(): Response<com.giftexpress.app.data.model.CategoriesMainScreenResponse>
+
 }

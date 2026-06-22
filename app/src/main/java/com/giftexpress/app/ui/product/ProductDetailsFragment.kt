@@ -32,29 +32,29 @@ class ProductDetailsFragment : Fragment() {
                 val navController = findNavController()
                 val addedSkus by cartViewModel.addedSkus.collectAsState(initial = emptySet())
                 androidx.compose.material3.MaterialTheme(typography = com.giftexpress.app.ui.theme.GiftExpressTypography) {
-                    ProductDetailsScreen(
-                        sku = args.sku,
-                        viewModel = viewModel,
-                        addedSkus = addedSkus,
-                        onBackClick = {
-                            navController.navigateUp()
-                        },
-                        onCartClick = {
-                            navController.navigate(R.id.cartFragment)
-                        },
-                        onProductCardAddToCart = { sku ->
-                            cartViewModel.addProductToCart(sku)
-                        },
-                        onProductCardGoToCart = {
-                            navController.navigate(R.id.cartFragment)
-                        },
-                        onProductClick = { sku ->
-                            val bundle = Bundle().apply {
-                                putString("sku", sku)
+                        ProductDetailsScreen(
+                            sku = args.sku,
+                            viewModel = viewModel,
+                            addedSkus = addedSkus,
+                            onBackClick = {
+                                navController.navigateUp()
+                            },
+                            onCartClick = {
+                                navController.navigate(R.id.cartFragment)
+                            },
+                            onProductCardAddToCart = { sku ->
+                                cartViewModel.addProductToCart(sku)
+                            },
+                            onProductCardGoToCart = {
+                                navController.navigate(R.id.cartFragment)
+                            },
+                            onProductClick = { sku ->
+                                val bundle = Bundle().apply {
+                                    putString("sku", sku)
+                                }
+                                navController.navigate(R.id.productDetailsFragment, bundle)
                             }
-                            navController.navigate(R.id.productDetailsFragment, bundle)
-                        }
-                    )
+                        )
                 }
             }
         }

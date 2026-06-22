@@ -44,36 +44,36 @@ class BrandsFragment : Fragment() {
                 }
 
                 MaterialTheme(typography = GiftExpressTypography) {
-                    BrandsScreen(
-                        viewModel = viewModel,
-                        onBackClick = {
-                            findNavController().navigateUp()
-                        },
-                        onBrandClick = { brandId, brandName ->
-                            viewModel.selectBrand(brandId, brandName)
-                        },
-                        onProductClick = { sku ->
-                            val bundle = Bundle().apply {
-                                putString("sku", sku)
-                            }
-                            findNavController().navigate(R.id.productDetailsFragment, bundle)
-                        },
-                        onCartClick = {
-                            findNavController().navigate(R.id.cartFragment)
-                        },
-                        onMenuClick = {
-                            val drawerLayout = requireActivity().findViewById<androidx.drawerlayout.widget.DrawerLayout>(
-                                R.id.drawer_layout)
-                            drawerLayout?.openDrawer(androidx.core.view.GravityCompat.START)
-                        },
-                        onAddToCart = { sku ->
-                            cartViewModel.addProductToCart(sku)
-                        },
-                        onGoToCart = {
-                            findNavController().navigate(R.id.cartFragment)
-                        },
-                        addedSkus = addedSkus
-                    )
+                        BrandsScreen(
+                            viewModel = viewModel,
+                            onBackClick = {
+                                findNavController().navigateUp()
+                            },
+                            onBrandClick = { brandId, brandName ->
+                                viewModel.selectBrand(brandId, brandName)
+                            },
+                            onProductClick = { sku ->
+                                val bundle = Bundle().apply {
+                                    putString("sku", sku)
+                                }
+                                findNavController().navigate(R.id.productDetailsFragment, bundle)
+                            },
+                            onCartClick = {
+                                findNavController().navigate(R.id.cartFragment)
+                            },
+                            onMenuClick = {
+                                val drawerLayout = requireActivity().findViewById<androidx.drawerlayout.widget.DrawerLayout>(
+                                    R.id.drawer_layout)
+                                drawerLayout?.openDrawer(androidx.core.view.GravityCompat.START)
+                            },
+                            onAddToCart = { sku ->
+                                cartViewModel.addProductToCart(sku)
+                            },
+                            onGoToCart = {
+                                findNavController().navigate(R.id.cartFragment)
+                            },
+                            addedSkus = addedSkus
+                        )
                 }
             }
         }

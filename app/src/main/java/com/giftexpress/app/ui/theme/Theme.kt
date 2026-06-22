@@ -95,3 +95,13 @@ val GiftExpressTypography = Typography(
         platformStyle = PlatformTextStyle(includeFontPadding = false)
     )
 )
+
+@androidx.compose.runtime.Composable
+fun GiftExpressTheme(
+    content: @androidx.compose.runtime.Composable () -> Unit
+) {
+    androidx.compose.material3.MaterialTheme(
+        typography = GiftExpressTypography,
+        content = content
+    )
+}

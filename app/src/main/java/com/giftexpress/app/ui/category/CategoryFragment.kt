@@ -39,28 +39,28 @@ class CategoryFragment : Fragment() {
             setContent {
                 val addedSkus by cartViewModel.addedSkus.collectAsState(initial = emptySet())
                 MaterialTheme(typography = com.giftexpress.app.ui.theme.GiftExpressTypography) {
-                    CategoryScreen(
-                        categoryId = categoryId,
-                        categoryName = categoryName,
-                        viewModel = viewModel,
-                        onBackClick = { findNavController().navigateUp() },
-                        onProductClick = { sku ->
-                            val bundle = Bundle().apply {
-                                putString("sku", sku)
-                            }
-                            findNavController().navigate(R.id.productDetailsFragment, bundle)
-                        },
-                        onCartClick = {
-                            navController.navigate(R.id.cartFragment)
-                        },
-                        onAddToCart = { sku ->
-                            cartViewModel.addProductToCart(sku)
-                        },
-                        onGoToCart = {
-                            navController.navigate(R.id.cartFragment)
-                        },
-                        addedSkus = addedSkus
-                    )
+                        CategoryScreen(
+                            categoryId = categoryId,
+                            categoryName = categoryName,
+                            viewModel = viewModel,
+                            onBackClick = { findNavController().navigateUp() },
+                            onProductClick = { sku ->
+                                val bundle = Bundle().apply {
+                                    putString("sku", sku)
+                                }
+                                findNavController().navigate(R.id.productDetailsFragment, bundle)
+                            },
+                            onCartClick = {
+                                navController.navigate(R.id.cartFragment)
+                            },
+                            onAddToCart = { sku ->
+                                cartViewModel.addProductToCart(sku)
+                            },
+                            onGoToCart = {
+                                navController.navigate(R.id.cartFragment)
+                            },
+                            addedSkus = addedSkus
+                        )
                 }
             }
         }

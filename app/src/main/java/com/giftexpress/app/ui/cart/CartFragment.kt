@@ -25,10 +25,10 @@ class CartFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 MaterialTheme(typography = GiftExpressTypography) {
-                    CartScreen(
-                        viewModel = viewModel,
-                        onBackClick = { findNavController().navigateUp() }
-                    )
+                        CartScreen(
+                            viewModel = viewModel,
+                            onBackClick = { findNavController().navigateUp() }
+                        )
                 }
             }
         }

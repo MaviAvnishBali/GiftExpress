@@ -38,6 +38,10 @@ class SplashFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        findNavController().navigate(
+            R.id.action_splashFragment_to_homeFragment
+        )
         
         // Observe login status
         observeLoginStatus()
@@ -56,15 +60,15 @@ class SplashFragment : Fragment() {
                     when (isLoggedIn) {
                         true -> {
                             // Navigate to home screen
-                            findNavController().navigate(
-                                R.id.action_splashFragment_to_homeFragment
-                            )
+//                            findNavController().navigate(
+//                                R.id.action_splashFragment_to_homeFragment
+//                            )
                         }
                         false -> {
                             // Navigate to login screen
-                            findNavController().navigate(
-                                R.id.action_splashFragment_to_loginFragment
-                            )
+//                            findNavController().navigate(
+//                                R.id.action_splashFragment_to_loginFragment
+//                            )
                         }
                         null -> {
                             // Still loading, do nothing

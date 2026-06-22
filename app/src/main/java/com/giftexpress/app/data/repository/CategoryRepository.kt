@@ -39,4 +39,17 @@ class CategoryRepository @Inject constructor(
             NetworkResult.Error("Error fetching products: ${e.localizedMessage ?: "Unknown error"}")
         }
     }
+
+    suspend fun getCategoriesMainScreen(): NetworkResult<com.giftexpress.app.data.model.CategoriesMainScreenResponse> {
+        return try {
+            val response = apiService.getCategoriesMainScreen()
+            if (response.isSuccessful && response.body() != null) {
+                NetworkResult.Success(response.body()!!)
+            } else {
+                NetworkResult.Error("Failed to fetch categories: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error("Error fetching categories: ${e.localizedMessage ?: "Unknown error"}")
+        }
+    }
 }

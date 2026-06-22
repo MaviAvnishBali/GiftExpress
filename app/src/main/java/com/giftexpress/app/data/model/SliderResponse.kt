@@ -17,12 +17,17 @@ data class SliderProduct(
     @SerializedName("price") val price: Double? = null,
     @SerializedName("image") val image: String? = null,
     @SerializedName("sku") val sku: String? = null,
+    @SerializedName("as_low_as") val asLowAs: Boolean? = null,
     @SerializedName("attributes") val attributes: List<String>? = null,
     @SerializedName("perfumeType") val perfumeType: String? = null,
     @SerializedName("url") val url: String? = null,
+    @SerializedName("product_id") val productId: Int? = null,
     @SerializedName("id") val id: String? = null,
     @SerializedName("category_id") val categoryId: Int? = null
-)
+) {
+    val subtitle: String
+        get() = attributes?.firstOrNull() ?: perfumeType ?: "Eau De Perfume"
+}
 
 data class SliderBanner(
     @SerializedName("title") val title: String? = null,

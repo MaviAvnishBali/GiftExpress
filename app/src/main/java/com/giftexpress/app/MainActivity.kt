@@ -23,6 +23,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import com.giftexpress.app.utils.NetworkObserver
+import com.giftexpress.app.ui.components.NoInternetScreen
 import javax.inject.Inject
 
 /**
@@ -65,6 +67,7 @@ class MainActivity : AppCompatActivity() {
         setupNavigation()
         setupDrawer() // Call the new setupDrawer function
         observeMenu()
+        setupNetworkObserver()
 
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -202,6 +205,39 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    private fun setupNetworkObserver() {
+        val networkObserver = NetworkObserver(this)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                networkObserver.observe.collect { status ->
+                    when (status) {
+                        NetworkObserver.Status.Unavailable, NetworkObserver.Status.Lost -> {
+                            showNoInternetOverlay()
+                        }
+                        else -> {
+                            hideNoInternetOverlay()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showNoInternetOverlay() {
+        binding.noInternetComposeView.visibility = View.VISIBLE
+        binding.noInternetComposeView.setContent {
+            androidx.compose.material3.MaterialTheme(typography = com.giftexpress.app.ui.theme.GiftExpressTypography) {
+                NoInternetScreen(onRetry = {
+                    // Status will update automatically
+                })
+            }
+        }
+    }
+
+    private fun hideNoInternetOverlay() {
+        binding.noInternetComposeView.visibility = View.GONE
+    }
+
     /**
      * Handle up navigation
      */

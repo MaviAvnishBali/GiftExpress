@@ -33,39 +33,39 @@ class AccountFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 androidx.compose.material3.MaterialTheme() {
-                    AccountScreen(
-                        viewModel = viewModel,
-                        onNavigateToOrders = {
-                            findNavController().navigate(R.id.ordersFragment)
-                        },
-                        onNavigateToWishlist = {
-                            // Navigate to wishlist
-                        },
-                        onNavigateToAddressBook = {
-                            findNavController().navigate(R.id.addressBookFragment)
-                        },
-                        onNavigateToAccountInfo = {
-                            findNavController().navigate(R.id.accountInfoFragment)
-                        },
-                        onNavigateToRewardPoints = {
-                            findNavController().navigate(R.id.rewardsFragment)
-                        },
-                        onNavigateToRewardHistory = {
-                            findNavController().navigate(R.id.rewardsHistoryFragment)
-                        },
-                        onNavigateToAboutUs = {
-                            findNavController().navigate(R.id.aboutUsFragment)
-                        },
-                        onNavigateToShippingInfo = {
-                            findNavController().navigate(R.id.shippingInfoFragment)
-                        },
-                        onNavigateToPrivacyPolicy = {
-                            findNavController().navigate(R.id.privacyPolicyFragment)
-                        },
-                        onNavigateToTermsConditions = {
-                            findNavController().navigate(R.id.termsConditionsFragment)
-                        }
-                    )
+                        AccountScreen(
+                            viewModel = viewModel,
+                            onNavigateToOrders = {
+                                findNavController().navigate(R.id.ordersFragment)
+                            },
+                            onNavigateToWishlist = {
+                                // Navigate to wishlist
+                            },
+                            onNavigateToAddressBook = {
+                                findNavController().navigate(R.id.addressBookFragment)
+                            },
+                            onNavigateToAccountInfo = {
+                                findNavController().navigate(R.id.accountInfoFragment)
+                            },
+                            onNavigateToRewardPoints = {
+                                findNavController().navigate(R.id.rewardsFragment)
+                            },
+                            onNavigateToRewardHistory = {
+                                findNavController().navigate(R.id.rewardsHistoryFragment)
+                            },
+                            onNavigateToAboutUs = {
+                                findNavController().navigate(R.id.aboutUsFragment)
+                            },
+                            onNavigateToShippingInfo = {
+                                findNavController().navigate(R.id.shippingInfoFragment)
+                            },
+                            onNavigateToPrivacyPolicy = {
+                                findNavController().navigate(R.id.privacyPolicyFragment)
+                            },
+                            onNavigateToTermsConditions = {
+                                findNavController().navigate(R.id.termsConditionsFragment)
+                            }
+                        )
                 }
             }
         }

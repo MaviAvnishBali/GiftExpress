@@ -1,9 +1,11 @@
 package com.giftexpress.app.ui.account
 
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -11,6 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.giftexpress.app.R
 import com.giftexpress.app.ui.theme.Gilroy
 
@@ -63,18 +66,46 @@ fun StaticContentScreen(
 }
 
 @Composable
-fun AboutUsScreen(onBackClick: () -> Unit) {
-        StaticContentScreen(title = "About Gift Express", onBackClick = onBackClick) {
+fun CmsWebViewContent(html: String, modifier: Modifier = Modifier) {
+    val styledHtml = """
+        <html><head><style>
+        body { font-family: sans-serif; font-size: 15px; color: #333; padding: 8px; line-height: 1.5; }
+        </style></head><body>$html</body></html>
+    """.trimIndent()
+    AndroidView(
+        modifier = modifier.fillMaxWidth().heightIn(min = 200.dp),
+        factory = { ctx ->
+            WebView(ctx).apply {
+                webViewClient = WebViewClient()
+                settings.javaScriptEnabled = false
+            }
+        },
+        update = { webView ->
+            webView.loadDataWithBaseURL(null, styledHtml, "text/html", "UTF-8", null)
+        }
+    )
+}
+
+@Composable
+fun AboutUsScreen(cmsViewModel: CmsViewModel? = null, onBackClick: () -> Unit) {
+    val liveContent = cmsViewModel?.getPageContent("about")
+    StaticContentScreen(title = "About Gift Express", onBackClick = onBackClick) {
+        if (liveContent != null) {
+            CmsWebViewContent(html = liveContent)
+        } else {
             Paragraph("Giftexpress.com is an online retailer of genuine brand-name fragrances headquartered in New Jersey. Established in 2016, the company has consistently provided high-quality products at competitive prices accompanied by exceptional customer service. As a family-owned and operated business, Giftexpress.com is committed to facilitating a seamless shopping experience for its customers.")
             Paragraph("The company ranks among the largest online discount fragrance retailers, specializing in authentic brand-name fragrances for both men and women.")
             Paragraph("With an extensive inventory of over 5,000 genuine brand-name fragrances, Giftexpress.com ensures that all products are authentic and of high quality.")
             Paragraph("The company takes pride in its integrity, as it does not sell counterfeit or imitation products. Should any customer be dissatisfied with their order for any reason, they may return it for a full refund.")
         }
     }
+}
 
 @Composable
-fun ShippingInfoScreen(onBackClick: () -> Unit) {
+fun ShippingInfoScreen(cmsViewModel: CmsViewModel? = null, onBackClick: () -> Unit) {
+    val liveContent = cmsViewModel?.getPageContent("shipping")
     StaticContentScreen(title = "Shipping Information", onBackClick = onBackClick) {
+        if (liveContent != null) { CmsWebViewContent(html = liveContent); return@StaticContentScreen }
         Paragraph("Any orders placed on the weekend will ship the following business day.")
         SectionHeader("FREE U.S. Shipping on orders with product total of $59.95 or more (excluding shipping and other charges). Otherwise, shipping is $7.95.")
         Paragraph("Orders shipped through Ground Shipping take 5-7 business days (Excluding Weekends and Holidays) to arrive. Orders are shipped via USPS, FedEx and UPS.")
@@ -91,8 +122,10 @@ fun ShippingInfoScreen(onBackClick: () -> Unit) {
 }
 
 @Composable
-fun PrivacyPolicyScreen(onBackClick: () -> Unit) {
+fun PrivacyPolicyScreen(cmsViewModel: CmsViewModel? = null, onBackClick: () -> Unit) {
+    val liveContent = cmsViewModel?.getPageContent("privacy")
     StaticContentScreen(title = "Privacy Policy", onBackClick = onBackClick) {
+        if (liveContent != null) { CmsWebViewContent(html = liveContent); return@StaticContentScreen }
         Paragraph("Thank you for visiting our web site. This privacy policy tells you how we use personal information collected at this site. Please read this privacy policy before using the site or submitting any personal information. By using the site, you are accepting the conditions described in this privacy policy. These conditions may be changed at any time. You are encouraged to review the privacy policy whenever you visit the site to make sure that you understand how any personal information you provide will be used.")
         Paragraph("Note, the privacy practices set forth in this privacy policy are for this web site only. If you link to other web sites, please review the privacy policies posted at those sites.")
         SectionHeader("Collection Of Information")
@@ -119,8 +152,10 @@ fun PrivacyPolicyScreen(onBackClick: () -> Unit) {
 }
 
 @Composable
-fun TermsConditionsScreen(onBackClick: () -> Unit) {
+fun TermsConditionsScreen(cmsViewModel: CmsViewModel? = null, onBackClick: () -> Unit) {
+    val liveContent = cmsViewModel?.getPageContent("terms")
     StaticContentScreen(title = "Terms and Conditions", onBackClick = onBackClick) {
+        if (liveContent != null) { CmsWebViewContent(html = liveContent); return@StaticContentScreen }
         Paragraph("The following document is in your benefit, while you are accessing the site i.e. www.giftexpress.com and its services provided to you. Please keep in mind certain terms & conditions.")
         SectionHeader("Membership")
         Paragraph("Only members can use the site by signing in and assured of approving the terms & conditions of the company.")

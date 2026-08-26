@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -73,7 +75,9 @@ fun HomeHeader(
     isScrolled: Boolean = false,
     searchQuery: String = "",
     onSearchQueryChange: ((String) -> Unit)? = null,
-    searchPlaceholder: String = "Search for 'Perfume'"
+    searchPlaceholder: String = "Search for 'Perfume'",
+    onSearchBarClick: (() -> Unit)? = null,
+    cartCount: Int = 0
 ) {
     val headerVerticalPadding by androidx.compose.animation.core.animateDpAsState(
         targetValue = if (isScrolled) 4.dp else 12.dp,
@@ -131,13 +135,32 @@ fun HomeHeader(
             )
 
             Row {
-                IconButton(onClick = onCartClick) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_cart),
-                        contentDescription = "Cart",
-                        tint = Color(0xFFFBDB98),
-                        modifier = Modifier.size(24.dp)
-                    )
+                Box {
+                    IconButton(onClick = onCartClick) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_cart),
+                            contentDescription = "Cart",
+                            tint = Color(0xFFFBDB98),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    if (cartCount > 0) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(18.dp)
+                                .clip(CircleShape)
+                                .background(Color.Red),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (cartCount > 99) "99+" else cartCount.toString(),
+                                color = Color.White,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -145,7 +168,11 @@ fun HomeHeader(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = 16.dp)
+                .then(
+                    if (onSearchBarClick != null) Modifier.clickable { onSearchBarClick() }
+                    else Modifier
+                ),
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -162,31 +189,42 @@ fun HomeHeader(
                     tint = Color.Gray
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                BasicTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusable(),
-                    textStyle = TextStyle(
-                        color = Color.Black,
+                if (onSearchBarClick != null) {
+                    // Non-interactive placeholder — clicking the card navigates to Search
+                    Text(
+                        text = searchPlaceholder,
+                        color = Color.Gray,
                         fontSize = 14.sp,
-                        fontFamily = FontFamily(Font(R.font.gilroy_regular))
-                    ),
-                    decorationBox = { innerTextField ->
-                        if (query.isEmpty()) {
-                            Text(
-                                modifier = Modifier.align(Alignment.CenterVertically),
-                                text = searchPlaceholder,
-                                color = Color.Gray,
-                                fontSize = 14.sp,
-                                fontFamily = FontFamily(Font(R.font.gilroy_regular))
-                            )
+                        fontFamily = FontFamily(Font(R.font.gilroy_regular)),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else {
+                    BasicTextField(
+                        value = query,
+                        onValueChange = onQueryChange,
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusable(),
+                        textStyle = TextStyle(
+                            color = Color.Black,
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily(Font(R.font.gilroy_regular))
+                        ),
+                        decorationBox = { innerTextField ->
+                            if (query.isEmpty()) {
+                                Text(
+                                    modifier = Modifier.align(Alignment.CenterVertically),
+                                    text = searchPlaceholder,
+                                    color = Color.Gray,
+                                    fontSize = 14.sp,
+                                    fontFamily = FontFamily(Font(R.font.gilroy_regular))
+                                )
+                            }
+                            innerTextField()
                         }
-                        innerTextField()
-                    }
-                )
+                    )
+                }
             }
         }
 
@@ -212,7 +250,8 @@ fun HeroBanner(
     banners: List<SliderBanner>,
     modifier: Modifier = Modifier,
     cornerRadius: androidx.compose.ui.unit.Dp = 12.dp,
-    contentPadding: PaddingValues = PaddingValues(12.dp)
+    contentPadding: PaddingValues = PaddingValues(12.dp),
+    onBannerClick: ((SliderBanner) -> Unit)? = null
 ) {
     if (banners.isEmpty()) return
 
@@ -221,7 +260,7 @@ fun HeroBanner(
     // Auto-scroll logic
     androidx.compose.runtime.LaunchedEffect(pagerState.settledPage) {
         if (banners.size > 1) {
-            kotlinx.coroutines.delay(3000) // 3 seconds delay
+            kotlinx.coroutines.delay(3000)
             if (!pagerState.isScrollInProgress) {
                 val nextPage = (pagerState.settledPage + 1) % banners.size
                 pagerState.animateScrollToPage(nextPage)
@@ -240,13 +279,28 @@ fun HeroBanner(
                 .fillMaxWidth()
                 .height(200.dp)
         ) { page ->
+            val banner = banners[page]
             SubcomposeAsyncImage(
-                model = banners[page].mobImage,
+                model = banner.mobImage,
                 contentDescription = "Banner",
                 modifier = Modifier
                     .fillMaxSize()
-                    .clip(RoundedCornerShape(cornerRadius)),
-                contentScale = ContentScale.Crop,
+                    .clip(RoundedCornerShape(cornerRadius))
+                    .then(
+                        // Match iOS: every banner is tappable; the handler decides what (if
+                        // anything) to do based on type (product/category/brand). Use
+                        // detectTapGestures rather than Modifier.clickable — a plain clickable
+                        // inside a HorizontalPager competes with the pager's horizontal drag
+                        // detector and frequently loses, so taps never fire (this was the B-01
+                        // "banner tap does not redirect" bug). pointerInput + detectTapGestures
+                        // coexists with the drag gesture and reliably delivers the tap.
+                        if (onBannerClick != null)
+                            Modifier.pointerInput(banner) {
+                                detectTapGestures { onBannerClick(banner) }
+                            }
+                        else Modifier
+                    ),
+                contentScale = ContentScale.Fit,
                 loading = {
                     Box(modifier = Modifier.fillMaxSize().shimmerEffect())
                 }
@@ -286,7 +340,8 @@ fun HeroBanner(
 fun CategorySlider(
     title: String,
     categories: List<SliderProduct>,
-    onCategoryClick: (SliderProduct) -> Unit
+    onCategoryClick: (SliderProduct) -> Unit,
+    onArrowClick: (() -> Unit)? = null   // iOS: tabBarController.selectedIndex = 1
 ) {
     Column {
         Row(
@@ -305,7 +360,9 @@ fun CategorySlider(
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = "More",
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier
+                    .size(16.dp)
+                    .then(if (onArrowClick != null) Modifier.clickable { onArrowClick() } else Modifier),
                 tint = colorResource(id = R.color.primary)
             )
         }
@@ -330,44 +387,42 @@ fun CategorySliderItem(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top,
         modifier = Modifier
-            .width(101.dp)
-            .height(118.dp)
+            .width(90.dp)
+            .height(108.dp)
+            .clickable { onCategoryClick(category) }
     ) {
-        Card(
-            shape = RoundedCornerShape(4.dp),
+        // Image: 70x70, scaleAspectFit, centered horizontally, at top
+        SubcomposeAsyncImage(
+            model = category.image,
+            contentDescription = category.name,
             modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .clickable { onCategoryClick(category) },
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                SubcomposeAsyncImage(
-                    model = category.image,
-                    contentDescription = category.name,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                    loading = {
-                        Box(modifier = Modifier.fillMaxSize().shimmerEffect())
-                    }
-                )
-
-                Text(
-                    text = category.name ?: "",
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp),
-                    textAlign = TextAlign.Start,
-                    fontSize = 11.sp,
-                    fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-                    color = Color.Black,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+                .size(70.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop,
+            loading = {
+                Box(modifier = Modifier.fillMaxSize().shimmerEffect())
             }
-        }
+        )
 
+        // Gap = 79 - 70 = 9dp (matches iOS label.frame.y - image bottom)
+        Spacer(modifier = Modifier.height(9.dp))
+
+        // Label: bold 10sp, centered, max 2 lines, 5dp horizontal padding
+        Text(
+            text = category.name ?: "",
+            textAlign = TextAlign.Center,
+            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+            fontSize = 10.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            color = Color.Black,
+            lineHeight = 12.sp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 5.dp)
+        )
     }
 }
 
@@ -378,8 +433,25 @@ fun ProductSection(
     onProductClick: (String) -> Unit,
     onAddToCart: (String) -> Unit,
     addedSkus: Set<String>,
-    onGoToCart: () -> Unit
+    onGoToCart: () -> Unit,
+    onSeeAllClick: ((specialFlag: Int, title: String) -> Unit)? = null,
+    onSliderSeeAllClick: ((categoryId: Int?, title: String) -> Unit)? = null,
+    onAddToWishlist: (String) -> Unit = {}
 ) {
+    val specialFlag = when {
+        title.contains("best sell", ignoreCase = true) -> 15
+        title.contains("new arriv", ignoreCase = true) -> 17
+        title.contains("featured", ignoreCase = true) -> 14
+        else -> null
+    }
+    // Non-special sliders (e.g. Men's / Women's Fragrances, Ahuja Products) are routed
+    // by the Fragment via title; category sliders also carry a category_id on their products.
+    val sectionCategoryId = products.firstOrNull { it.categoryId != null }?.categoryId
+    val arrowAction: (() -> Unit)? = when {
+        specialFlag != null && onSeeAllClick != null -> { { onSeeAllClick(specialFlag, title) } }
+        onSliderSeeAllClick != null -> { { onSliderSeeAllClick(sectionCategoryId, title) } }
+        else -> null
+    }
     Column {
         Row(
             modifier = Modifier
@@ -397,7 +469,13 @@ fun ProductSection(
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = "More",
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier
+                    .size(16.dp)
+                    .then(
+                        if (arrowAction != null)
+                            Modifier.clickable { arrowAction() }
+                        else Modifier
+                    ),
                 tint = colorResource(id = R.color.primary)
             )
         }
@@ -415,7 +493,8 @@ fun ProductSection(
                     onProductClick = onProductClick,
                     onAddToCart = { product.sku?.let(onAddToCart) },
                     onGoToCart = onGoToCart,
-                    isAdded = isAdded
+                    isAdded = isAdded,
+                    onAddToWishlist = { product.sku?.let(onAddToWishlist) }
                 )
             }
         }
@@ -429,6 +508,8 @@ fun ProductCard(
     onAddToCart: () -> Unit = {},
     onGoToCart: () -> Unit = {},
     isAdded: Boolean = false,
+    onAddToWishlist: (() -> Unit)? = null,
+    isWishlistedInitial: Boolean = false,
     modifier: Modifier = Modifier.width(140.dp)
 ) {
     Column(
@@ -440,11 +521,31 @@ fun ProductCard(
 
     ) {
 
-        Column(
+        if (onAddToWishlist != null) {
+            var isWishlistedLocal by remember { mutableStateOf(isWishlistedInitial) }
+            Icon(
+                painter = painterResource(id = if (isWishlistedLocal) R.drawable.ic_heart else R.drawable.ic_heart_outlined),
+                contentDescription = "Wishlist",
+                tint = if (isWishlistedLocal) Color(0xFFFF6B6B) else Color.Black,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(top = 0.dp, end = 8.dp)
+                    .size(20.dp)
+                    .clickable(
+                        interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                        indication = null // Removes the default circular ripple
+                    ) {
+                        isWishlistedLocal = !isWishlistedLocal
+                        onAddToWishlist.invoke()
+                    }
+            )
+        }
+
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(colorResource(id = R.color.product_image_bg))
+                .background(Color.White)
         ) {
             SubcomposeAsyncImage(
                 model = product.image,
@@ -457,6 +558,7 @@ fun ProductCard(
                     .fillMaxWidth()
                     .aspectRatio(1f)
             )
+
         }
 
 
@@ -494,7 +596,7 @@ fun ProductCard(
                 fontFamily = FontFamily(Font(R.font.gilroy_regular)),
             )
             Text(
-                text = "$${product.price ?: 0.0}",
+                text = "$${String.format(java.util.Locale.US, "%.2f", product.price ?: 0.0)}",
                 fontSize = 16.sp,
                 fontFamily = FontFamily(Font(R.font.gilroy_bold)),
                 color = colorResource(id = R.color.primary)
@@ -617,7 +719,12 @@ fun ProductCardShimmer() {
 
 
 @Composable
-fun BrandSection(title: String, brands: List<SliderProduct>) {
+fun BrandSection(
+    title: String,
+    brands: List<SliderProduct>,
+    onArrowClick: (() -> Unit)? = null,      // iOS: tabBarController.selectedIndex = 2
+    onBrandClick: ((SliderProduct) -> Unit)? = null  // iOS: navigateToProductLiting(brand)
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -625,7 +732,6 @@ fun BrandSection(title: String, brands: List<SliderProduct>) {
             .background(colorResource(id = R.color.section_bg))
             .padding(bottom = 30.dp)
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -642,7 +748,9 @@ fun BrandSection(title: String, brands: List<SliderProduct>) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_arrow_right),
                 contentDescription = "More",
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier
+                    .size(16.dp)
+                    .then(if (onArrowClick != null) Modifier.clickable { onArrowClick() } else Modifier),
                 tint = colorResource(id = R.color.primary)
             )
         }
@@ -652,18 +760,19 @@ fun BrandSection(title: String, brands: List<SliderProduct>) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(brands) { brand ->
-                BrandItem(brand)
+                BrandItem(brand, onClick = onBrandClick?.let { { it(brand) } })
             }
         }
     }
 }
 
 @Composable
-fun BrandItem(brand: SliderProduct) {
+fun BrandItem(brand: SliderProduct, onClick: (() -> Unit)? = null) {
     Card(
         modifier = Modifier
             .width(91.dp)
-            .height(80.dp),
+            .height(80.dp)
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -680,8 +789,12 @@ fun BrandItem(brand: SliderProduct) {
                     }
                 )
             } else {
+                val fallbackName = brand.url?.substringAfterLast("/")?.removeSuffix(".html")
+                    ?.replace("-", " ")
+                    ?.split(" ")
+                    ?.joinToString(" ") { it.replaceFirstChar { char -> char.uppercaseChar() } }
                 Text(
-                    text = brand.name ?: "",
+                    text = brand.name ?: fallbackName ?: "",
                     fontSize = 12.sp,
                     fontFamily = FontFamily(Font(R.font.gilroy_bold)),
                     textAlign = TextAlign.Center,
@@ -713,7 +826,8 @@ fun PromoBanner(imageUrl: String) {
 fun OffersSection(
     title: String,
     offers: List<SliderOffer>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onOfferClick: ((SliderOffer) -> Unit)? = null   // iOS: offer.type based navigation
 ) {
     if (offers.isEmpty()) return
 
@@ -759,13 +873,23 @@ fun OffersSection(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 pageSpacing = 8.dp
             ) { page ->
+                val offer = offers[page]
                 SubcomposeAsyncImage(
-                    model = offers[page].image,
+                    model = offer.image,
                     contentDescription = "Offer",
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.FillBounds,
+                        .clip(RoundedCornerShape(12.dp))
+                        .then(
+                            // Same as HeroBanner: use detectTapGestures so the tap isn't
+                            // swallowed by the pager's horizontal drag detector.
+                            if (onOfferClick != null && offer.urlApi.isNotBlank())
+                                Modifier.pointerInput(offer) {
+                                    detectTapGestures { onOfferClick(offer) }
+                                }
+                            else Modifier
+                        ),
+                    contentScale = ContentScale.Fit,
                     loading = {
                         Box(modifier = Modifier.fillMaxSize().shimmerEffect())
                     }
@@ -785,5 +909,9 @@ fun PreviewProductCard() {
         sku = "12345",
         id = "1"
     )
-    ProductCard(product = sampleProduct, onProductClick = {})
+    ProductCard(
+        product = sampleProduct, 
+        onProductClick = {},
+        onAddToWishlist = {}
+    )
 }

@@ -5,8 +5,14 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.giftexpress.app.data.api.ApiService
+import com.giftexpress.app.data.api.AuthInterceptor
+import com.giftexpress.app.data.api.TokenManager
+import com.giftexpress.app.data.repository.AddressRepository
 import com.giftexpress.app.data.repository.AuthRepository
+import com.giftexpress.app.data.repository.ContentRepository
 import com.giftexpress.app.data.repository.HomeRepository
+import com.giftexpress.app.data.repository.OrderRepository
+import com.giftexpress.app.data.repository.RewardRepository
 import com.giftexpress.app.utils.Constants
 import dagger.Module
 import dagger.Provides
@@ -43,18 +49,46 @@ object AppModule {
         return context.dataStore
     }
 
+
+
     /**
-     * Provides OkHttpClient with logging interceptor
+     * Provides AuthInterceptor
      */
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideAuthInterceptor(
+        tokenManager: TokenManager
+    ): AuthInterceptor =
+        AuthInterceptor(tokenManager)
+
+    /**
+     * Provides TokenAuthenticator — transparently refreshes the access token
+     * on any 401 (handles the 2-hour cart token expiry).
+     */
+    @Provides
+    @Singleton
+    fun provideTokenAuthenticator(
+        tokenManager: TokenManager
+    ): com.giftexpress.app.data.api.TokenAuthenticator =
+        com.giftexpress.app.data.api.TokenAuthenticator(tokenManager)
+
+    /**
+     * Provides OkHttpClient with auth + logging interceptors and a token authenticator
+     */
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: com.giftexpress.app.data.api.TokenAuthenticator
+    ): OkHttpClient {
         val loggingInterceptor = HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 
         return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)   // Auth first, then logging
             .addInterceptor(loggingInterceptor)
+            .authenticator(tokenAuthenticator) // Auto-refresh on 401
             .connectTimeout(Constants.CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(Constants.READ_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(Constants.WRITE_TIMEOUT, TimeUnit.SECONDS)
@@ -95,9 +129,11 @@ object AppModule {
     @Singleton
     fun provideAuthRepository(
         apiService: ApiService,
-        dataStore: DataStore<Preferences>
+        dataStore: DataStore<Preferences>,
+        tokenManager: TokenManager,
+        cartCountManager: com.giftexpress.app.data.repository.CartCountManager
     ): AuthRepository {
-        return AuthRepository(apiService, dataStore)
+        return AuthRepository(apiService, dataStore, tokenManager, cartCountManager)
     }
 
     /**
@@ -114,7 +150,71 @@ object AppModule {
      */
     @Provides
     @Singleton
-    fun provideProductRepository(apiService: ApiService): com.giftexpress.app.data.repository.ProductRepository {
-        return com.giftexpress.app.data.repository.ProductRepository(apiService)
+    fun provideProductRepository(apiService: ApiService, authRepository: com.giftexpress.app.data.repository.AuthRepository): com.giftexpress.app.data.repository.ProductRepository {
+        return com.giftexpress.app.data.repository.ProductRepository(apiService, authRepository)
+    }
+
+    /**
+     * Provides WishlistRepository
+     */
+    @Provides
+    @Singleton
+    fun provideWishlistRepository(apiService: ApiService, authRepository: com.giftexpress.app.data.repository.AuthRepository): com.giftexpress.app.data.repository.WishlistRepository =
+        com.giftexpress.app.data.repository.WishlistRepository(apiService, authRepository)
+
+    /**
+     * Provides CheckoutRepository
+     */
+    @Provides
+    @Singleton
+    fun provideCheckoutRepository(apiService: ApiService): com.giftexpress.app.data.repository.CheckoutRepository =
+        com.giftexpress.app.data.repository.CheckoutRepository(apiService)
+
+    /**
+     * Provides OrderRepository
+     */
+    @Provides
+    @Singleton
+    fun provideOrderRepository(apiService: ApiService): OrderRepository = OrderRepository(apiService)
+
+    /**
+     * Provides RewardRepository
+     */
+    @Provides
+    @Singleton
+    fun provideRewardRepository(apiService: ApiService): RewardRepository = RewardRepository(apiService)
+
+    /**
+     * Provides ContentRepository
+     */
+    @Provides
+    @Singleton
+    fun provideContentRepository(apiService: ApiService): ContentRepository =
+        ContentRepository(apiService)
+
+    /**
+     * Provides AddressRepository
+     */
+    @Provides
+    @Singleton
+    fun provideAddressRepository(apiService: ApiService): AddressRepository =
+        AddressRepository(apiService)
+
+    /**
+     * Provides WizzyOkHttpClient (separate client for Wizzy AI APIs)
+     */
+    @Provides
+    @Singleton
+    @javax.inject.Named("wizzy")
+    fun provideWizzyOkHttpClient(): okhttp3.OkHttpClient {
+        val loggingInterceptor = okhttp3.logging.HttpLoggingInterceptor().apply {
+            level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY
+        }
+        return okhttp3.OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(Constants.CONNECT_TIMEOUT, TimeUnit.SECONDS)
+            .readTimeout(Constants.READ_TIMEOUT, TimeUnit.SECONDS)
+            .writeTimeout(Constants.WRITE_TIMEOUT, TimeUnit.SECONDS)
+            .build()
     }
 }

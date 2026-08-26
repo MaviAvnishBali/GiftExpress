@@ -26,17 +26,46 @@ class CategoryRepository @Inject constructor(
         categoryId: Int,
         pageSize: Int,
         currentPage: Int,
-        manufacturer: Int? = null
+        manufacturer: Int? = null,
+        sortBy: String? = null,
+        sortOrder: String? = null,
+        specialFlag: Int? = null,
+        filters: Map<String, String> = emptyMap()
     ): NetworkResult<CategoryProductsResponse> {
         return try {
-            val response = apiService.getCategoryProducts(categoryId, pageSize, currentPage, manufacturer)
+            val response = apiService.getCategoryProducts(categoryId, pageSize, currentPage, manufacturer, sortBy, sortOrder, specialFlag, filters)
             if (response.isSuccessful && response.body() != null) {
                 NetworkResult.Success(response.body()!!)
+            } else if (response.code() == 404) {
+                NetworkResult.Success(CategoryProductsResponse(items = emptyList()))
             } else {
                 NetworkResult.Error("Failed to fetch products: ${response.message()}")
             }
         } catch (e: Exception) {
             NetworkResult.Error("Error fetching products: ${e.localizedMessage ?: "Unknown error"}")
+        }
+    }
+
+    suspend fun getSpecialProducts(
+        specialFlag: Int,
+        pageSize: Int,
+        currentPage: Int,
+        sortBy: String? = null,
+        sortOrder: String? = null,
+        manufacturer: Int? = null,
+        filters: Map<String, String> = emptyMap()
+    ): NetworkResult<CategoryProductsResponse> {
+        return try {
+            val response = apiService.getSpecialProducts(specialFlag, pageSize, currentPage, sortBy, sortOrder, manufacturer, filters)
+            if (response.isSuccessful && response.body() != null) {
+                NetworkResult.Success(response.body()!!)
+            } else if (response.code() == 404) {
+                NetworkResult.Success(CategoryProductsResponse(items = emptyList()))
+            } else {
+                NetworkResult.Error("Failed to fetch products: ${response.message()}")
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error("Error: ${e.localizedMessage ?: "Unknown error"}")
         }
     }
 

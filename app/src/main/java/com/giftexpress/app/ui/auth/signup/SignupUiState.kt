@@ -15,4 +15,5 @@ data class SignupUiState(
 sealed class SignupEvent {
     data class SignupSuccess(val user: User) : SignupEvent()
     data class ShowError(val message: String) : SignupEvent()
+    data class DuplicateEmail(val message: String) : SignupEvent()
 }

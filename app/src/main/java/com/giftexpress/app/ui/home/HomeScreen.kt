@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,7 +36,17 @@ fun HomeScreen(
     onAddToCart: (String) -> Unit,
     onGoToCart: () -> Unit,
     addedSkus: Set<String>,
-    onCartClick: () -> Unit
+    onCartClick: () -> Unit,
+    onSearchClick: (() -> Unit)? = null,
+    onSeeAllClick: ((specialFlag: Int, title: String) -> Unit)? = null,
+    onSliderSeeAllClick: ((categoryId: Int?, title: String) -> Unit)? = null, // → Category/Brand listing (Men's/Women's Fragrances, Ahuja Products)
+    onCategoryArrowClick: (() -> Unit)? = null,       // → Categories tab
+    onBrandArrowClick: (() -> Unit)? = null,           // → Brands tab
+    onBrandItemClick: ((SliderProduct) -> Unit)? = null, // → BrandProducts
+    onBannerClick: ((com.giftexpress.app.data.model.SliderBanner) -> Unit)? = null,
+    onOfferClick: ((com.giftexpress.app.data.model.SliderOffer) -> Unit)? = null,
+    cartCount: Int = 0,
+    onAddToWishlist: (String) -> Unit = {}
 ) {
     val slidersState by viewModel.slidersState.collectAsState()
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -50,7 +61,9 @@ fun HomeScreen(
                 banners = null,
                 onMenuClick = onMenuClick,
                 onCartClick = onCartClick,
-                isScrolled = false
+                isScrolled = false,
+                onSearchBarClick = onSearchClick,
+                cartCount = cartCount
             )
             // Show shimmer below header
             HomeShimmerLoading()
@@ -62,7 +75,9 @@ fun HomeScreen(
                 banners = null,
                 onMenuClick = onMenuClick,
                 onCartClick = onCartClick,
-                isScrolled = isScrolled
+                isScrolled = isScrolled,
+                onSearchBarClick = onSearchClick,
+                cartCount = cartCount
             )
 
             // 2. Dynamic Sections based on Sequence (Scrollable)
@@ -79,7 +94,8 @@ fun HomeScreen(
                                 HeroBanner(
                                     banners = banners,
                                     cornerRadius = 0.dp,
-                                    contentPadding = PaddingValues(0.dp)
+                                    contentPadding = PaddingValues(0.dp),
+                                    onBannerClick = onBannerClick
                                 )
                             }
                         }
@@ -89,7 +105,8 @@ fun HomeScreen(
                                 CategorySlider(
                                     title = slider.title ?: "Shop By Category",
                                     categories = products,
-                                    onCategoryClick = onCategoryClick
+                                    onCategoryClick = onCategoryClick,
+                                    onArrowClick = onCategoryArrowClick
                                 )
                             }
                         }
@@ -98,7 +115,8 @@ fun HomeScreen(
                             slider.offers?.let { offers ->
                                 OffersSection(
                                     title = slider.title ?: "Offers",
-                                    offers = offers
+                                    offers = offers,
+                                    onOfferClick = onOfferClick
                                 )
                             }
                         }
@@ -111,7 +129,10 @@ fun HomeScreen(
                                     onProductClick = onProductClick,
                                     onAddToCart = onAddToCart,
                                     addedSkus = addedSkus,
-                                    onGoToCart = onGoToCart
+                                    onGoToCart = onGoToCart,
+                                    onSeeAllClick = onSeeAllClick,
+                                    onSliderSeeAllClick = onSliderSeeAllClick,
+                                    onAddToWishlist = onAddToWishlist
                                 )
                             }
                         }
@@ -120,21 +141,22 @@ fun HomeScreen(
                             slider.products?.let { products ->
                                 BrandSection(
                                     title = slider.title ?: "Popular Brands",
-                                    brands = products
+                                    brands = products,
+                                    onArrowClick = onBrandArrowClick,
+                                    onBrandClick = onBrandItemClick
                                 )
                             }
                         }
 
                         // Fallback for older structure or missing type
                         else -> {
-                            if (slider.type == null) {
-                                when {
-                                    slider.banners != null -> {
-                                        HeroBanner(banners = slider.banners)
-                                        slider.banners.firstOrNull()?.let { banner ->
-                                            PromoBanner(imageUrl = banner.mobImage ?: "")
-                                        }
+                            when {
+                                slider.banners != null -> {
+                                    HeroBanner(banners = slider.banners, onBannerClick = onBannerClick)
+                                    slider.banners.firstOrNull()?.let { banner ->
+                                        PromoBanner(imageUrl = banner.mobImage ?: "")
                                     }
+                                }
 
                                     slider.products != null -> {
                                         val firstProduct = slider.products.firstOrNull()
@@ -142,7 +164,9 @@ fun HomeScreen(
                                             firstProduct?.price == null && firstProduct?.name == null && firstProduct?.url != null -> {
                                                 BrandSection(
                                                     title = slider.title ?: "Popular Brands",
-                                                    brands = slider.products
+                                                    brands = slider.products,
+                                                    onArrowClick = onBrandArrowClick,
+                                                    onBrandClick = onBrandItemClick
                                                 )
                                             }
 
@@ -163,13 +187,15 @@ fun HomeScreen(
                                                     onProductClick = onProductClick,
                                                     onAddToCart = onAddToCart,
                                                     addedSkus = addedSkus,
-                                                    onGoToCart = onGoToCart
+                                                    onGoToCart = onGoToCart,
+                                                    onSeeAllClick = onSeeAllClick,
+                                                    onSliderSeeAllClick = onSliderSeeAllClick,
+                                                    onAddToWishlist = onAddToWishlist
                                                 )
                                             }
                                         }
                                     }
                                 }
-                            }
                         }
                     }
                 }
@@ -208,7 +234,14 @@ fun HomeShimmerLoading() {
                             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clip(RoundedCornerShape(12.dp))) {
                                 Box(
                                     modifier = Modifier
-                                        .width(102.dp).height(118.dp)
+                                        .width(102.dp).height(102.dp).clip(RoundedCornerShape(50))
+                                        .shimmerEffect()
+
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .width(90.dp).height(20.dp)
                                         .shimmerEffect()
 
                                 )

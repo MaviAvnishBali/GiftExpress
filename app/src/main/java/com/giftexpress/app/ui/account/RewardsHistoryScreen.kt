@@ -7,7 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,45 +15,34 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.giftexpress.app.R
+import com.giftexpress.app.data.model.RewardHistoryItem
+import com.giftexpress.app.ui.components.shimmerEffect
 import com.giftexpress.app.ui.theme.Gilroy
-
-data class RewardTransaction(
-    val day: String,
-    val monthYear: String,
-    val name: String,
-    val amount: String,
-    val points: String
-)
+import com.giftexpress.app.utils.UiState
 
 @Composable
 fun RewardsHistoryScreen(
+    viewModel: RewardsViewModel,
     onBackClick: () -> Unit
 ) {
-    val transactions = listOf(
-        RewardTransaction("30", "Dec 25", "Raman Kumar S O Mehar CHA,IN", "INR 250.00", "2"),
-        RewardTransaction("01", "Dec 25", "Raman Kumar S O Mehar CHA,IN", "INR 250.00", "2"),
-        RewardTransaction("12", "Dec 25", "Raman Kumar S O Mehar CHA,IN", "INR 250.00", "2"),
-        RewardTransaction("08", "Dec 25", "Raman Kumar S O Mehar CHA,IN", "INR 250.00", "2"),
-        RewardTransaction("23", "Dec 25", "Raman Kumar S O Mehar CHA,IN", "INR 250.00", "2"),
-        RewardTransaction("19", "Dec 25", "Raman Kumar S O Mehar CHA,IN", "INR 250.00", "2"),
-        RewardTransaction("27", "Dec 25", "Raman Kumar S O Mehar CHA,IN", "INR 250.00", "2")
-    )
+    val historyState by viewModel.historyState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.loadHistory()
+    }
 
     Scaffold(
         topBar = {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBackClick) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_back),
+                        painter = painterResource(R.drawable.ic_back),
                         contentDescription = "Back",
                         tint = Color.Black
                     )
@@ -68,37 +57,68 @@ fun RewardsHistoryScreen(
         },
         containerColor = Color(0xFFF8F8F8)
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp)
-        ) {
-            items(transactions) { transaction ->
-                RewardTransactionCard(transaction)
+        Box(Modifier.fillMaxSize().padding(paddingValues)) {
+            when (val state = historyState) {
+                is UiState.Loading -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        contentPadding = PaddingValues(vertical = 16.dp)
+                    ) {
+                        items(5) {
+                            Box(Modifier.fillMaxWidth().height(90.dp).shimmerEffect())
+                        }
+                    }
+                }
+                is UiState.Error -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(state.message, color = Color.Gray, fontFamily = Gilroy)
+                            Spacer(Modifier.height(12.dp))
+                            Button(onClick = { viewModel.loadHistory() },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333))) {
+                                Text("Retry", color = Color.White)
+                            }
+                        }
+                    }
+                }
+                is UiState.Success -> {
+                    val items = state.data
+                    if (items.isEmpty()) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("No reward history yet", fontFamily = Gilroy, color = Color.Gray)
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(vertical = 16.dp)
+                        ) {
+                            items(items) { item ->
+                                RewardTransactionCard(item)
+                            }
+                        }
+                    }
+                }
+                else -> {}
             }
         }
     }
 }
 
 @Composable
-fun RewardTransactionCard(transaction: RewardTransaction) {
+fun RewardTransactionCard(item: RewardHistoryItem) {
     Card(
         shape = RoundedCornerShape(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         modifier = Modifier
             .fillMaxWidth()
-            .border(0.5.dp, Color.LightGray.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
+            .border(0.5.dp, Color.LightGray.copy(0.5f), RoundedCornerShape(4.dp))
     ) {
         Column {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min)
             ) {
-                // Date Section
                 Column(
                     modifier = Modifier
                         .width(70.dp)
@@ -109,83 +129,50 @@ fun RewardTransactionCard(transaction: RewardTransaction) {
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = transaction.day,
+                        text = item.getDisplayDay(),
                         fontFamily = FontFamily(Font(R.font.gilroy_bold)),
                         fontSize = 24.sp,
                         color = Color(0xFF333333)
                     )
                     Text(
-                        text = transaction.monthYear,
+                        text = item.getDisplayMonth(),
                         fontFamily = FontFamily(Font(R.font.gilroy_medium)),
                         fontSize = 12.sp,
                         color = Color(0xFF333333)
                     )
                 }
 
-                // Middle Section
                 Row(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(12.dp),
+                    modifier = Modifier.weight(1f).padding(12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = transaction.name,
+                        text = item.comment.ifBlank { item.action },
                         fontFamily = FontFamily(Font(R.font.gilroy_regular)),
                         fontSize = 13.sp,
                         color = Color.Gray,
                         modifier = Modifier.weight(1.2f),
                         lineHeight = 18.sp
                     )
-                    
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.End
-                    ) {
+
+                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                        val amountColor = if (item.amount >= 0) Color(0xFF2E7D32) else Color(0xFFC62828)
+                        val sign = if (item.amount >= 0) "+" else ""
                         Text(
-                            text = "Transaction",
-                            fontFamily = FontFamily(Font(R.font.gilroy_regular)),
-                            fontSize = 13.sp,
-                            color = Color.Gray
+                            text = "${sign}${item.amount} pts",
+                            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+                            fontSize = 14.sp,
+                            color = amountColor
                         )
                         Text(
-                            text = "Amount: ${transaction.amount}",
+                            text = "Balance: ${item.pointsLeft}",
                             fontFamily = FontFamily(Font(R.font.gilroy_regular)),
-                            fontSize = 13.sp,
+                            fontSize = 12.sp,
                             color = Color.Gray
                         )
                     }
                 }
             }
-
-            // Bottom Section
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFF5F5F5))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Point Earned By You:",
-                    fontFamily = FontFamily(Font(R.font.gilroy_regular)),
-                    fontSize = 13.sp,
-                    color = Color.Gray
-                )
-                Text(
-                    text = transaction.points,
-                    fontFamily = FontFamily(Font(R.font.gilroy_regular)),
-                    fontSize = 13.sp,
-                    color = Color.Black
-                )
-            }
         }
     }
-}
-
-@Preview
-@Composable
-fun PreviewRewardsHistoryScreen() {
-    RewardsHistoryScreen(onBackClick = {})
 }

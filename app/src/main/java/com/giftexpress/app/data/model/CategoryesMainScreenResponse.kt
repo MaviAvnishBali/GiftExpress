@@ -11,13 +11,14 @@ data class MenuResponse(
 
 data class Menu(
     @SerializedName("title") val title: String? = null,
-
     @SerializedName("category_id") val categoryId: Int? = null,
-
     @SerializedName("image") val image: String? = null,
-
+    @SerializedName("category_image") val categoryImage: String? = null,
     @SerializedName("submenu") val submenu: Submenu? = null
-)
+) {
+    // Use categoryImage if available, fall back to image — matches iOS categoryImage priority
+    val displayImage: String? get() = categoryImage?.takeIf { it.isNotBlank() } ?: image
+}
 
 data class Submenu(
     @SerializedName("StatusCode") val statusCode: Int? = null,

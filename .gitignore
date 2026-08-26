@@ -32,6 +32,8 @@ local.properties
 # Keystore files
 *.jks
 *.keystore
+/keystores/
+keystore.properties
 
 # Google Services
 # google-services.json
@@ -48,8 +50,23 @@ fabric.properties
 # Build output files
 build_output*.txt
 
-# API test files
+# API / data test files
 api_response.json
+order_detail.json
+orders_history.json
+*.json.bak
+
+# Build / release outputs (APKs, bundles, metadata)
+*.apk
+*.apks
+/app/prod
+/app/release
+**/release/output-metadata.json
+**/outputs/
 
 # Temporary documentation
 BRAND_SCREENS_FLOW.md
+
+# Misc
+.kotlin/
+*.hprof

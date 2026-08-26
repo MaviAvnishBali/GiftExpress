@@ -14,17 +14,14 @@ import com.giftexpress.app.R
 import com.giftexpress.app.databinding.FragmentSplashBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-/**
- * Splash Screen Fragment
- * Checks login status and navigates to appropriate screen
- */
 @AndroidEntryPoint
-class SplashFragment : Fragment() {
+class SplashFragment @Inject constructor() : Fragment() {
 
     private var _binding: FragmentSplashBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: SplashViewModel by viewModels()
 
     override fun onCreateView(
@@ -38,41 +35,18 @@ class SplashFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        findNavController().navigate(
-            R.id.action_splashFragment_to_homeFragment
-        )
-        
-        // Observe login status
         observeLoginStatus()
-        
-        // Check login status
         viewModel.checkLoginStatus()
     }
 
-    /**
-     * Observe login status and navigate accordingly
-     */
     private fun observeLoginStatus() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.isLoggedIn.collect { isLoggedIn ->
                     when (isLoggedIn) {
-                        true -> {
-                            // Navigate to home screen
-//                            findNavController().navigate(
-//                                R.id.action_splashFragment_to_homeFragment
-//                            )
-                        }
-                        false -> {
-                            // Navigate to login screen
-//                            findNavController().navigate(
-//                                R.id.action_splashFragment_to_loginFragment
-//                            )
-                        }
-                        null -> {
-                            // Still loading, do nothing
-                        }
+                        true -> findNavController().navigate(R.id.action_splashFragment_to_homeFragment)
+                        false -> findNavController().navigate(R.id.action_splashFragment_to_homeFragment)
+                        null -> { /* still checking — stay on splash */ }
                     }
                 }
             }

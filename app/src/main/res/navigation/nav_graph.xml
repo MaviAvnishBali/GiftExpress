@@ -11,13 +11,13 @@
         android:name="com.giftexpress.app.ui.splash.SplashFragment"
         android:label="@string/app_name"
         tools:layout="@layout/fragment_splash">
-        
+
         <action
             android:id="@+id/action_splashFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
-        
+
         <action
             android:id="@+id/action_splashFragment_to_homeFragment"
             app:destination="@id/homeFragment"
@@ -31,11 +31,11 @@
         android:name="com.giftexpress.app.ui.auth.login.LoginFragment"
         android:label="@string/login"
         tools:layout="@layout/fragment_login">
-        
+
         <action
             android:id="@+id/action_loginFragment_to_signupFragment"
             app:destination="@id/signupFragment" />
-        
+
         <action
             android:id="@+id/action_loginFragment_to_homeFragment"
             app:destination="@id/homeFragment"
@@ -60,7 +60,7 @@
         android:name="com.giftexpress.app.ui.auth.signup.SignupFragment"
         android:label="@string/signup"
         tools:layout="@layout/fragment_signup">
-        
+
         <action
             android:id="@+id/action_signupFragment_to_homeFragment"
             app:destination="@id/homeFragment"
@@ -73,7 +73,12 @@
         android:id="@+id/homeFragment"
         android:name="com.giftexpress.app.ui.home.HomeFragment"
         android:label="@string/home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+
+        <action
+            android:id="@+id/action_homeFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
+    </fragment>
 
     <!-- Categories Fragment -->
     <fragment
@@ -117,7 +122,7 @@
         android:name="com.giftexpress.app.ui.account.AccountFragment"
         android:label="Account"
         tools:layout="@layout/fragment_account">
-        
+
         <action
             android:id="@+id/action_accountFragment_to_loginFragment"
             app:destination="@id/loginFragment"
@@ -143,6 +148,10 @@
         <action
             android:id="@+id/action_accountFragment_to_termsConditionsFragment"
             app:destination="@id/termsConditionsFragment" />
+
+        <action
+            android:id="@+id/action_accountFragment_to_wishlistFragment"
+            app:destination="@id/wishlistFragment" />
     </fragment>
 
     <!-- About Us Fragment -->
@@ -180,16 +189,20 @@
         android:label="Change Password"
         tools:layout="@layout/fragment_change_password" />
 
-
     <!-- Product Details Fragment -->
     <fragment
         android:id="@+id/productDetailsFragment"
         android:name="com.giftexpress.app.ui.product.ProductDetailsFragment"
         android:label="Product Details"
-        tools:layout="@layout/fragment_order_details"> <!-- Reusing layout for tools preview, or create empty one -->
+        tools:layout="@layout/fragment_order_details">
         <argument
             android:name="sku"
             app:argType="string" />
+        <argument
+            android:name="fallbackImageUrl"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
     <!-- Category Fragment -->
@@ -212,6 +225,17 @@
         android:name="com.giftexpress.app.ui.address.AddressBookFragment"
         android:label="Address Book"
         tools:layout="@layout/fragment_account" />
+
+    <!-- Address Book Bottom Sheet -->
+    <dialog
+        android:id="@+id/addressBookBottomSheet"
+        android:name="com.giftexpress.app.ui.address.AddressBookBottomSheet"
+        android:label="Address Book">
+        <argument
+            android:name="isSelectionMode"
+            app:argType="boolean"
+            android:defaultValue="false" />
+    </dialog>
 
     <!-- Address Form Fragment -->
     <fragment
@@ -252,8 +276,130 @@
         android:id="@+id/cartFragment"
         android:name="com.giftexpress.app.ui.cart.CartFragment"
         android:label="Shopping Cart"
+        tools:layout="@layout/fragment_account">
+
+        <action
+            android:id="@+id/action_cartFragment_to_checkoutFragment"
+            app:destination="@id/checkoutFragment" />
+    </fragment>
+
+    <!-- Wishlist Fragment -->
+    <fragment
+        android:id="@+id/wishlistFragment"
+        android:name="com.giftexpress.app.ui.wishlist.WishlistFragment"
+        android:label="My Wish List"
         tools:layout="@layout/fragment_account" />
 
+    <!-- Search Fragment -->
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.giftexpress.app.ui.search.SearchFragment"
+        android:label="Search"
+        tools:layout="@layout/fragment_home">
 
+        <action
+            android:id="@+id/action_searchFragment_to_searchListingFragment"
+            app:destination="@id/searchListingFragment" />
+    </fragment>
+
+    <!-- Search Listing Fragment -->
+    <fragment
+        android:id="@+id/searchListingFragment"
+        android:name="com.giftexpress.app.ui.search.SearchListingFragment"
+        android:label="Search Results"
+        tools:layout="@layout/fragment_home">
+        <argument
+            android:name="searchString"
+            app:argType="string"
+            android:defaultValue="" />
+
+        <action
+            android:id="@+id/action_searchListingFragment_to_productDetailsFragment"
+            app:destination="@id/productDetailsFragment" />
+    </fragment>
+
+    <!-- Checkout Fragment -->
+    <fragment
+        android:id="@+id/checkoutFragment"
+        android:name="com.giftexpress.app.ui.checkout.CheckoutFragment"
+        android:label="Checkout"
+        tools:layout="@layout/fragment_account">
+
+        <action
+            android:id="@+id/action_checkoutFragment_to_paymentFragment"
+            app:destination="@id/paymentFragment" />
+    </fragment>
+
+    <!-- Payment Fragment -->
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.giftexpress.app.ui.payment.PaymentFragment"
+        android:label="Payment"
+        tools:layout="@layout/fragment_account">
+        <argument
+            android:name="total"
+            app:argType="float"
+            android:defaultValue="0" />
+
+        <action
+            android:id="@+id/action_paymentFragment_to_orderSuccessFragment"
+            app:destination="@id/orderSuccessFragment" />
+    </fragment>
+
+    <!-- Order Success Fragment -->
+    <fragment
+        android:id="@+id/orderSuccessFragment"
+        android:name="com.giftexpress.app.ui.payment.OrderSuccessFragment"
+        android:label="Order Placed"
+        tools:layout="@layout/fragment_account">
+        <argument
+            android:name="orderId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
+    <!-- Contact Us Fragment -->
+    <fragment
+        android:id="@+id/contactUsFragment"
+        android:name="com.giftexpress.app.ui.account.ContactUsFragment"
+        android:label="Contact Us"
+        tools:layout="@layout/fragment_account" />
+
+    <!-- Perfume Enquiry Fragment -->
+    <fragment
+        android:id="@+id/perfumeEnquiryFragment"
+        android:name="com.giftexpress.app.ui.account.PerfumeEnquiryFragment"
+        android:label="Perfume Enquiry"
+        tools:layout="@layout/fragment_account" />
+
+    <!-- Unified product listing (Best Sellers, New Arrivals, Featured, and brand catalogs) -->
+    <fragment
+        android:id="@+id/specialProductsFragment"
+        android:name="com.giftexpress.app.ui.products.SpecialProductsFragment"
+        android:label="Special Products"
+        tools:layout="@layout/fragment_home">
+        <argument
+            android:name="specialFlag"
+            app:argType="integer" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+        <argument
+            android:name="bannerUrl"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="categoryId"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <argument
+            android:name="brandId"
+            app:argType="integer"
+            android:defaultValue="0" />
+        <action
+            android:id="@+id/action_specialProductsFragment_to_productDetailsFragment"
+            app:destination="@id/productDetailsFragment" />
+    </fragment>
 
 </navigation>

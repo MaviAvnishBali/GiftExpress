@@ -52,6 +52,7 @@ data class CartResponse(
     @SerializedName("grand_total") val grandTotal: Double?
 )
 
+// Matches iOS CartProduct — response from GET carts/mine/items
 data class CartItemDetail(
     @SerializedName("item_id") val itemId: Int?,
     @SerializedName("sku") val sku: String?,
@@ -60,12 +61,16 @@ data class CartItemDetail(
     @SerializedName("price") val price: Double?,
     @SerializedName("product_type") val productType: String?,
     @SerializedName("quote_id") val quoteId: String?,
-    @SerializedName("attributes") val attributes: CartItemAttributes?,
-    @SerializedName("image") val image: String?
-)
+    @SerializedName("extension_attributes") val extensionAttributes: CartItemExtensionAttributes?
+) {
+    val image: String? get() = extensionAttributes?.productImage
+    val size: String? get() = extensionAttributes?.availableSizes
+}
 
-data class CartItemAttributes(
-    @SerializedName("size") val size: String?
+// Matches iOS ExtensionAttributes{product_image, available_sizes}
+data class CartItemExtensionAttributes(
+    @SerializedName("product_image") val productImage: String?,
+    @SerializedName("available_sizes") val availableSizes: String?
 )
 
 data class CartCustomer(

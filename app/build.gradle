@@ -29,11 +29,21 @@ android {
             dimension "environment"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
-            buildConfigField "String", "BASE_URL", "\"https://e03a53d91a.nxcli.io/rest/V1/\""
+            buildConfigField "String", "BASE_URL", "\"https://magento-1620955-6409883.cloudwaysapps.com/rest/V1/\""
+            // Dev server uses Stripe TEST secret key → must use matching TEST publishable key
+            buildConfigField "String", "STRIPE_PUBLISHABLE_KEY", "\"pk_test_CHILA26UhShgh9EoL9hBLJfe\""
+            // PayPal SANDBOX client ID (from developer.paypal.com → Apps & Credentials → Sandbox)
+            buildConfigField "String", "PAYPAL_CLIENT_ID", "\"AT0Xh2hEj2jT13TKtMEcNTPljnReZ9e46b0viKJCXz_968Qxcq25GAdRgFI8k5HimQcVlS_J9uWW7uiR\""
+            buildConfigField "String", "PAYPAL_ENVIRONMENT", "\"sandbox\""
         }
         prod {
             dimension "environment"
-            buildConfigField "String", "BASE_URL", "\"https://e03a53d91a.nxcli.io/rest/V1/\""
+            buildConfigField "String", "BASE_URL", "\"https://giftexpress.com/rest/V1/\""
+            // Production uses LIVE Stripe key
+            buildConfigField "String", "STRIPE_PUBLISHABLE_KEY", "\"pk_live_duGJaQa7hYil2RbDtsg3gFJL\""
+            // PayPal LIVE client ID — pending: merchant account profile incomplete / merchant ID not issued yet
+            buildConfigField "String", "PAYPAL_CLIENT_ID", "\"REPLACE_WITH_LIVE_CLIENT_ID\""
+            buildConfigField "String", "PAYPAL_ENVIRONMENT", "\"live\""
         }
     }
 
@@ -48,6 +58,8 @@ android {
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro"
             )
+            // Use debug signing config for local release builds so devRelease can be tested
+            signingConfig signingConfigs.debug
         }
     }
 
@@ -94,6 +106,7 @@ dependencies {
     implementation "com.google.dagger:hilt-android:2.48"
     implementation 'com.google.firebase:firebase-auth:23.0.0'
     implementation 'com.google.android.gms:play-services-auth:21.0.0'
+    implementation 'com.google.android.gms:play-services-wallet:19.3.0'
     kapt "com.google.dagger:hilt-compiler:2.48"
 
     // Retrofit & Networking
@@ -136,7 +149,16 @@ dependencies {
     implementation "io.coil-kt:coil-compose:2.5.0"
 
     // Lottie (Animations)
-    implementation 'com.airbnb.android:lottie-compose:6.0.0'
+    implementation 'com.airbnb.android:lottie-compose:6.4.1'
+
+    // Stripe Payment SDK
+    implementation 'com.stripe:stripe-android:20.47.0'
+
+    // PayPal Payment SDK (web checkout via Chrome Custom Tabs)
+    implementation 'com.paypal.android:paypal-web-payments:2.3.0'
+
+    // Chrome Custom Tabs — hosted-page checkout for Amazon Pay / Afterpay
+    implementation 'androidx.browser:browser:1.8.0'
 
     // Testing
     testImplementation 'junit:junit:4.13.2'

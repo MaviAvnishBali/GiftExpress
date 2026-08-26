@@ -58,6 +58,14 @@
 -dontwarn retrofit2.KotlinExtensions
 -dontwarn retrofit2.KotlinExtensions$*
 
+# R8 full-mode: keep generic signatures of Retrofit's Response/Call so
+# suspend functions and parameterised return types deserialize correctly.
+-keep,allowobfuscation,allowshrinking interface retrofit2.Call
+-keep,allowobfuscation,allowshrinking class retrofit2.Response
+-keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
+-if interface * { @retrofit2.http.* <methods>; }
+-keep,allowobfuscation interface <1>
+
 # === OkHttp ===
 -keepattributes Signature
 -keepattributes *Annotation*
@@ -75,6 +83,10 @@
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
+# Keep fields annotated with @SerializedName (survives R8 field obfuscation)
+-keepclassmembers,allowobfuscation class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
 
 # Keep all data model classes
 -keep class com.giftexpress.app.data.model.** { *; }
@@ -125,6 +137,9 @@
 -keepclassmembers class * extends androidx.navigation.fragment.NavHostFragment {
     *;
 }
+
+# Keep all UI Fragments (prevents FragmentInstantiationException with Navigation & Hilt)
+-keep class com.giftexpress.app.ui.** { *; }
 
 # === Glide ===
 -keep public class * implements com.bumptech.glide.module.GlideModule
@@ -182,3 +197,16 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+# === Stripe Payment SDK ===
+-keep class com.stripe.android.** { *; }
+-keep interface com.stripe.android.** { *; }
+-keep class com.stripe.android.model.** { *; }
+-keep class com.stripe.android.pushProvisioning.** { *; }
+-dontwarn com.stripe.android.**
+# Stripe references some optional 3DS classes reflectively
+-dontwarn com.stripe.android.pushProvisioning.**
+
+# === Lottie ===
+-keep class com.airbnb.lottie.** { *; }
+-dontwarn com.airbnb.lottie.**

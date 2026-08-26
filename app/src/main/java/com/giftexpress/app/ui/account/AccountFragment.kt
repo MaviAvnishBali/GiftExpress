@@ -39,7 +39,7 @@ class AccountFragment : Fragment() {
                                 findNavController().navigate(R.id.ordersFragment)
                             },
                             onNavigateToWishlist = {
-                                // Navigate to wishlist
+                                findNavController().navigate(R.id.action_accountFragment_to_wishlistFragment)
                             },
                             onNavigateToAddressBook = {
                                 findNavController().navigate(R.id.addressBookFragment)
@@ -64,6 +64,12 @@ class AccountFragment : Fragment() {
                             },
                             onNavigateToTermsConditions = {
                                 findNavController().navigate(R.id.termsConditionsFragment)
+                            },
+                            onNavigateToContactUs = {
+                                findNavController().navigate(R.id.contactUsFragment)
+                            },
+                            onNavigateToPerfumeEnquiry = {
+                                findNavController().navigate(R.id.perfumeEnquiryFragment)
                             }
                         )
                 }

@@ -138,4 +138,9 @@ class LoginViewModel @Inject constructor(
             _event.emit(LoginEvent.ShowError(message))
         }
     }
+
+    fun getPendingCartSku(): String? = authRepository.pendingCartSku
+    fun clearPendingCartSku() { authRepository.pendingCartSku = null }
+    fun getPendingWishlistSku(): String? = authRepository.pendingWishlistSku
+    fun clearPendingWishlistSku() { authRepository.pendingWishlistSku = null }
 }

@@ -1,10 +1,14 @@
 package com.giftexpress.app.ui.product
 
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,9 +18,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
@@ -26,8 +32,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
@@ -54,22 +62,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import android.text.Html
-import android.widget.TextView
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.res.ResourcesCompat
+import coil.compose.AsyncImage
 import com.giftexpress.app.R
 import com.giftexpress.app.data.model.ProductDetail
 import com.giftexpress.app.data.model.ProductDetailsResponse
+import com.giftexpress.app.data.model.ProductReview
 import com.giftexpress.app.data.model.SliderProduct
 import com.giftexpress.app.ui.home.ProductCard
 import com.giftexpress.app.ui.theme.Gilroy
@@ -79,13 +90,17 @@ import kotlin.math.roundToInt
 @Composable
 fun ProductDetailsScreen(
     sku: String,
+    fallbackImageUrl: String? = null,
     viewModel: ProductDetailsViewModel,
     addedSkus: Set<String>,
     onBackClick: () -> Unit,
     onCartClick: () -> Unit,
+    onMainAddToCart: (String, Int) -> Unit,
     onProductCardAddToCart: (String) -> Unit,
     onProductCardGoToCart: () -> Unit,
-    onProductClick: (String) -> Unit
+    onProductClick: (String) -> Unit,
+    onAddToWishlist: ((String) -> Unit)? = null,
+    cartCount: Int = 0
 ) {
     val uiState by viewModel.productState.collectAsState()
     var quantity by remember { mutableStateOf(1) }
@@ -114,7 +129,16 @@ fun ProductDetailsScreen(
 
     Scaffold(
         topBar = {
-            ProductTopBar(onBackClick = onBackClick, onCartClick = onCartClick)
+            ProductTopBar(
+                onBackClick = onBackClick,
+                onCartClick = onCartClick,
+                cartCount = cartCount,
+                onWishlistClick = {
+                    val currentSku = (uiState as? UiState.Success)
+                        ?.data?.productDetails?.firstOrNull()?.sku
+                    if (currentSku != null) onAddToWishlist?.invoke(currentSku)
+                }
+            )
         },
         bottomBar = {
             if (uiState is UiState.Success) {
@@ -123,18 +147,18 @@ fun ProductDetailsScreen(
                     selectedProduct = response.productDetails?.firstOrNull()
                 }
                 val product = selectedProduct
-                val sellingPrice = product?.discountPrice ?: product?.price ?: 0.0
-                val originalPrice = if (product?.discountPrice != null) product.price else null
+                val unitPrice = product?.discountPrice ?: product?.price ?: 0.0
+                val originalUnitPrice = if (product?.discountPrice != null) product.price else null
                 BottomBar(
-                    sellingPrice = sellingPrice,
-                    originalPrice = originalPrice,
+                    sellingPrice = unitPrice * quantity,
+                    originalPrice = originalUnitPrice?.times(quantity),
                     isLoading = cartState is UiState.Loading,
                     isAddedToCart = isAddedToCart,
                     onAddToCart = {
                         if (isAddedToCart) {
                             onCartClick()
                         } else {
-                            product?.productId?.let { viewModel.addToCart(it, quantity) }
+                            product?.sku?.let { onMainAddToCart(it, quantity) }
                         }
                     }
                 )
@@ -169,7 +193,10 @@ fun ProductDetailsScreen(
                         onProductCardGoToCart = onProductCardGoToCart,
                         onProductClick = onProductClick,
                         selectedProduct = selectedProduct,
-                        onVariantSelected = { selectedProduct = it }
+                        onVariantSelected = { selectedProduct = it },
+                        viewModel = viewModel,
+                        onAddToWishlist = onAddToWishlist,
+                        fallbackImageUrl = fallbackImageUrl
                     )
                 }
                 else -> {}
@@ -179,7 +206,7 @@ fun ProductDetailsScreen(
 }
 
 @Composable
-fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit) {
+fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit, onWishlistClick: () -> Unit = {}, cartCount: Int = 0) {
     var searchText by remember { mutableStateOf("") }
     Row(
         modifier = Modifier
@@ -240,24 +267,56 @@ fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit) {
         
         Spacer(modifier = Modifier.width(4.dp))
 
-        IconButton(onClick = onCartClick) {
+        IconButton(onClick = onWishlistClick) {
             Icon(
-                imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = "Cart",
+                imageVector = Icons.Outlined.FavoriteBorder,
+                contentDescription = "Add to Wishlist",
                 tint = Color.Black,
                 modifier = Modifier.size(24.dp)
             )
         }
-        IconButton(onClick = { /* TODO: Wishlist */ }) {
-            Icon(
-                imageVector = Icons.Outlined.FavoriteBorder,
-                contentDescription = "Wishlist",
-                tint = Color.Black,
-                modifier = Modifier.size(24.dp)
-            )
+        Box {
+            IconButton(onClick = onCartClick) {
+                Icon(
+                    imageVector = Icons.Outlined.ShoppingCart,
+                    contentDescription = "Cart",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            if (cartCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(18.dp)
+                        .clip(CircleShape)
+                        .background(Color.Red),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (cartCount > 99) "99+" else cartCount.toString(),
+                        color = Color.White,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
+
+/**
+ * True if the URL points at a real image file. Rejects blanks and the broken Magento
+ * placeholder path that has an empty filename (".../placeholder/.jpg").
+ */
+private fun String.isUsableImageUrl(): Boolean {
+    if (isBlank()) return false
+    val fileName = substringAfterLast('/').substringBeforeLast('.', missingDelimiterValue = "")
+    return fileName.isNotBlank()
+}
+
+/** Format a monetary amount to 2 decimals, avoiding float artefacts like 251.5499999999999. */
+private fun Double.asPrice(): String = String.format(java.util.Locale.US, "%.2f", this)
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -270,11 +329,19 @@ fun ProductContent(
     onProductCardGoToCart: () -> Unit,
     onProductClick: (String) -> Unit,
     selectedProduct: ProductDetail?,
-    onVariantSelected: (ProductDetail) -> Unit
+    onVariantSelected: (ProductDetail) -> Unit,
+    viewModel: ProductDetailsViewModel? = null,
+    onAddToWishlist: ((String) -> Unit)? = null,
+    fallbackImageUrl: String? = null
 ) {
     val product = selectedProduct ?: productResponse.productDetails?.firstOrNull() ?: return
     val scrollState = rememberScrollState()
     var showTesterPopup by remember { mutableStateOf(false) }
+    var zoomImageUrl by remember { mutableStateOf<String?>(null) }
+
+    if (zoomImageUrl != null) {
+        ZoomableImageDialog(imageUrl = zoomImageUrl!!, onDismiss = { zoomImageUrl = null })
+    }
 
     if (showTesterPopup) {
         androidx.compose.material3.AlertDialog(
@@ -314,10 +381,23 @@ fun ProductContent(
             .verticalScroll(scrollState)
             .padding(bottom = 16.dp)
     ) {
-        // Image Carousel
-        val images = product.images ?: emptyList()
+        // Image Carousel.
+        // Some variants (e.g. testers) return a broken Magento placeholder with an empty
+        // filename (".../placeholder/.jpg" → 404). Drop those, and if the selected variant
+        // has no usable image fall back to the first variant's images (matches iOS:
+        // selectedProduct?.images ?? productList.first?.images).
+        val variantImages = product.images.orEmpty().filter { it.isUsableImageUrl() }
+        val images = variantImages.ifEmpty {
+            productResponse.productDetails?.firstOrNull()?.images.orEmpty().filter { it.isUsableImageUrl() }
+        }.ifEmpty {
+            listOfNotNull(fallbackImageUrl?.takeIf { it.isUsableImageUrl() })
+        }
         if (images.isNotEmpty()) {
             val pagerState = rememberPagerState(pageCount = { images.size })
+            // Reset to first image whenever the selected variant changes
+            LaunchedEffect(product.sku) {
+                if (pagerState.currentPage != 0) pagerState.scrollToPage(0)
+            }
             Box(modifier = Modifier.fillMaxWidth()) {
                 HorizontalPager(
                     state = pagerState,
@@ -328,7 +408,8 @@ fun ProductContent(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White),
+                            .background(Color.White)
+                            .clickable { zoomImageUrl = images[page] },
                         contentAlignment = Alignment.Center
                     ) {
                         AsyncImage(
@@ -372,6 +453,8 @@ fun ProductContent(
                 fontSize = 20.sp,
                 color = Color.Black
             )
+            
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Brand
             Text(
@@ -383,9 +466,12 @@ fun ProductContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Price Section
+            // Price Section — unit prices drive the per-quantity total shown below
             val sellingPrice = product.discountPrice ?: product.price ?: 0.0
             val originalPrice = if (product.discountPrice != null) product.price else null
+            // Displayed amounts update dynamically with the selected quantity
+            val displaySellingPrice = sellingPrice * quantity
+            val displayOriginalPrice = originalPrice?.times(quantity)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -394,17 +480,17 @@ fun ProductContent(
             ) {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = "$$sellingPrice",
+                        text = "$${displaySellingPrice.asPrice()}",
                         fontFamily = Gilroy,
                         fontWeight = FontWeight.Bold,
                         fontSize = 24.sp,
                         color = Color.Black
                     )
 
-                    if (originalPrice != null && originalPrice > sellingPrice) {
+                    if (displayOriginalPrice != null && displayOriginalPrice > displaySellingPrice) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "$$originalPrice",
+                            text = "$${displayOriginalPrice.asPrice()}",
                             fontFamily = Gilroy,
                             fontSize = 16.sp,
                             color = Color.Gray,
@@ -444,11 +530,11 @@ fun ProductContent(
             // Savings Row
             if (originalPrice != null && originalPrice > sellingPrice) {
                 Row {
-                    val savings = originalPrice - sellingPrice
-                    val savingsPercent = ((savings / originalPrice) * 100).roundToInt()
+                    val savings = (originalPrice - sellingPrice) * quantity
+                    val savingsPercent = (((originalPrice - sellingPrice) / originalPrice) * 100).roundToInt()
 
                     Text(
-                        text = "SAVINGS - $$savings ($savingsPercent%)",
+                        text = "SAVINGS - $${savings.asPrice()} ($savingsPercent%)",
                         fontFamily = Gilroy,
                         fontSize = 12.sp,
                         color = Color(0xFF4CAF50) // Green
@@ -514,9 +600,14 @@ fun ProductContent(
 
             // Size Grid/List
             productResponse.productDetails?.let { variants ->
+                val firstValidImage = variants.mapNotNull { it.images?.firstOrNull() }
+                    .firstOrNull { !it.contains("placeholder") }
+                val finalFallback = firstValidImage ?: fallbackImageUrl
+
                 SizeSelectionList(
                     variants = variants,
                     selectedVariant = selectedProduct,
+                    fallbackImage = finalFallback,
                     onVariantSelected = onVariantSelected
                 )
             }
@@ -553,7 +644,8 @@ fun ProductContent(
                             },
                             onAddToCart = { moreProduct.sku?.let(onProductCardAddToCart) },
                             onGoToCart = onProductCardGoToCart,
-                            isAdded = moreProduct.sku?.let { addedSkus.contains(it) } == true
+                            isAdded = moreProduct.sku?.let { addedSkus.contains(it) } == true,
+                            onAddToWishlist = { moreProduct.sku?.let { onAddToWishlist?.invoke(it) } }
                         )
                     }
                 }
@@ -561,7 +653,7 @@ fun ProductContent(
             }
 
             // Tabs (Details, Shipping, Reviews)
-            ProductTabsSection(product)
+            ProductTabsSection(product = product, sku = product.sku ?: "", viewModel = viewModel)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -620,6 +712,7 @@ fun ProductInfoRow(
 fun SizeSelectionList(
     variants: List<ProductDetail>,
     selectedVariant: ProductDetail?,
+    fallbackImage: String?,
     onVariantSelected: (ProductDetail) -> Unit
 ) {
     val chunkedVariants = variants.chunked(2)
@@ -636,6 +729,7 @@ fun SizeSelectionList(
                             variant = variant,
                             isSelected = variant.sku == selectedVariant?.sku,
                             isSoldOut = isSoldOut,
+                            fallbackImage = fallbackImage,
                             onClick = { if (!isSoldOut) onVariantSelected(variant) }
                         )
                     }
@@ -653,6 +747,7 @@ fun SizeItem(
     variant: ProductDetail,
     isSelected: Boolean,
     isSoldOut: Boolean,
+    fallbackImage: String?,
     onClick: () -> Unit
 ) {
     val backgroundColor = when {
@@ -685,8 +780,11 @@ fun SizeItem(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val rawImage = variant.images?.firstOrNull()
+            val finalImage = if (rawImage == null || rawImage.contains("placeholder")) fallbackImage else rawImage
+            
             AsyncImage(
-                model = variant.images?.firstOrNull(),
+                model = finalImage,
                 contentDescription = null,
                 modifier = Modifier
                     .size(40.dp)
@@ -706,7 +804,7 @@ fun SizeItem(
                 )
                 val sellingPrice = variant.discountPrice ?: variant.price ?: 0.0
                 Text(
-                    text = "$$sellingPrice",
+                    text = "$${sellingPrice.asPrice()}",
                     fontFamily = Gilroy,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
@@ -748,9 +846,15 @@ fun SizeItem(
 }
 
 @Composable
-fun ProductTabsSection(product: ProductDetail) {
+fun ProductTabsSection(product: ProductDetail, sku: String = "", viewModel: ProductDetailsViewModel? = null) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("Details", "Shipping Information", "Review")
+
+    LaunchedEffect(selectedTab) {
+        if (selectedTab == 2 && sku.isNotBlank() && viewModel != null) {
+            viewModel.loadReviews(sku)
+        }
+    }
 
     Column {
         Row(
@@ -788,25 +892,42 @@ fun ProductTabsSection(product: ProductDetail) {
                 html = product.shippingInformation?.details ?: "No shipping info",
                 modifier = Modifier.fillMaxWidth()
             )
-            2 -> ReviewsSection()
+            2 -> ReviewsSection(sku = sku, viewModel = viewModel)
         }
     }
 }
 
 @Composable
 fun HtmlText(html: String, modifier: Modifier = Modifier) {
+    // Rendered in a WebView: TextView + Html.fromHtml collapses <ul>/<li>/<h*> and
+    // ignores CSS, which left the Shipping Information tab unformatted. Magento template
+    // directives like {{store url='...'}} are stripped so they don't leak into the output.
+    val cleaned = html.replace(Regex("\\{\\{.*?\\}\\}"), "")
+    val styledHtml = """
+        <html><head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
+        <style>
+        body { font-family: sans-serif; font-size: 14px; color: #333333; margin: 0; padding: 0; line-height: 1.5; }
+        h1 { font-size: 18px; margin: 12px 0 8px; }
+        h2 { font-size: 16px; margin: 12px 0 6px; }
+        p { margin: 0 0 10px; }
+        ul { padding-left: 20px; margin: 0 0 10px; }
+        li { margin-bottom: 4px; }
+        a { color: #1976D2; }
+        img { max-width: 100%; height: auto; }
+        </style></head><body>$cleaned</body></html>
+    """.trimIndent()
     AndroidView(
-        modifier = modifier,
+        modifier = modifier.fillMaxWidth().heightIn(min = 80.dp),
         factory = { context ->
-            TextView(context).apply {
-                setTextColor(android.graphics.Color.BLACK)
-                textSize = 14f
-                typeface = ResourcesCompat.getFont(context, R.font.gilroy_regular)
-                setLineSpacing(0f, 1.2f)
+            WebView(context).apply {
+                webViewClient = WebViewClient()
+                settings.javaScriptEnabled = false
+                setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
         },
-        update = { textView ->
-            textView.text = Html.fromHtml(html, Html.FROM_HTML_MODE_COMPACT)
+        update = { webView ->
+            webView.loadDataWithBaseURL(null, styledHtml, "text/html", "UTF-8", null)
         }
     )
 }
@@ -840,55 +961,224 @@ fun DetailsTab(product: ProductDetail) {
 }
 
 @Composable
-fun ReviewsSection() {
+fun ReviewsSection(sku: String = "", viewModel: ProductDetailsViewModel? = null) {
+    val reviewsStateFlow = viewModel?.reviewsState
+    val submitStateFlow = viewModel?.submitReviewState
+    val reviewsState by (reviewsStateFlow?.collectAsState() ?: remember { mutableStateOf<UiState<List<ProductReview>>>(UiState.Idle) })
+    val submitState by (submitStateFlow?.collectAsState() ?: remember { mutableStateOf<UiState<Boolean>>(UiState.Idle) })
+    var showWriteForm by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    LaunchedEffect(submitState) {
+        if (submitState is UiState.Success) {
+            Toast.makeText(context, "Review submitted!", Toast.LENGTH_SHORT).show()
+            showWriteForm = false
+            viewModel?.resetSubmitReviewState()
+        }
+        if (submitState is UiState.Error) {
+            Toast.makeText(context, (submitState as UiState.Error).message, Toast.LENGTH_SHORT).show()
+            viewModel?.resetSubmitReviewState()
+        }
+    }
+
     Column {
-        Text(
-            text = "Customer Review",
-            fontFamily = Gilroy,
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = Color.Black
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text(
-                    text = "4.8",
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 48.sp,
-                    color = Color(0xFF333333)
-                )
-                Text(
-                    text = "out of stars",
-                    fontFamily = Gilroy,
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Row {
-                repeat(5) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = Color(0xFFCDDC39),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.weight(1f))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Customer Reviews",
+                fontFamily = Gilroy,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color.Black
+            )
             Button(
-                onClick = { /* TODO */ },
+                onClick = { showWriteForm = !showWriteForm },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)),
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(4.dp),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
             ) {
                 Text(
-                    text = "WRITE A REVIEW",
+                    text = if (showWriteForm) "CANCEL" else "WRITE A REVIEW",
                     fontFamily = Gilroy,
                     color = Color.White,
                     fontSize = 12.sp
                 )
+            }
+        }
+
+        if (showWriteForm && viewModel != null) {
+            Spacer(Modifier.height(16.dp))
+            WriteReviewForm(
+                sku = sku,
+                isSubmitting = submitState is UiState.Loading,
+                onSubmit = { nickname, title, detail, rating ->
+                    viewModel.submitReview(sku, nickname, title, detail, rating)
+                }
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        when (val state = reviewsState) {
+            is UiState.Loading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally).size(32.dp))
+            is UiState.Error -> Text(state.message, color = Color.Gray, fontFamily = Gilroy, fontSize = 13.sp)
+            is UiState.Success -> {
+                val reviews = state.data
+                if (reviews.isEmpty()) {
+                    Text("No reviews yet. Be the first!", fontFamily = Gilroy, color = Color.Gray, fontSize = 13.sp)
+                } else {
+                    reviews.forEach { review ->
+                        ReviewCard(review = review)
+                        Spacer(Modifier.height(12.dp))
+                    }
+                }
+            }
+            else -> {}
+        }
+    }
+}
+
+@Composable
+private fun WriteReviewForm(
+    sku: String,
+    isSubmitting: Boolean,
+    onSubmit: (nickname: String, title: String, detail: String, rating: Int) -> Unit
+) {
+    var nickname by remember { mutableStateOf("") }
+    var title by remember { mutableStateOf("") }
+    var detail by remember { mutableStateOf("") }
+    var rating by remember { mutableStateOf(5) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, Color.LightGray.copy(0.5f), RoundedCornerShape(8.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("Write a Review", fontFamily = Gilroy, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+
+        // Star rating selector
+        Row {
+            repeat(5) { index ->
+                val filled = index < rating
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = null,
+                    tint = if (filled) Color(0xFFFFC107) else Color.LightGray,
+                    modifier = Modifier.size(32.dp).clickable { rating = index + 1 }
+                )
+            }
+        }
+
+        ReviewTextField("Nickname *", nickname) { nickname = it }
+        ReviewTextField("Review Title *", title) { title = it }
+        ReviewTextField("Review *", detail) { detail = it }
+
+        Button(
+            onClick = {
+                if (nickname.isNotBlank() && title.isNotBlank() && detail.isNotBlank()) {
+                    onSubmit(nickname, title, detail, rating)
+                }
+            },
+            enabled = !isSubmitting,
+            modifier = Modifier.fillMaxWidth().height(44.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
+            shape = RoundedCornerShape(4.dp)
+        ) {
+            if (isSubmitting) {
+                CircularProgressIndicator(modifier = Modifier.size(20.dp), color = Color.White, strokeWidth = 2.dp)
+            } else {
+                Text("SUBMIT REVIEW", fontFamily = Gilroy, fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReviewTextField(label: String, value: String, onValueChange: (String) -> Unit) {
+    Column {
+        Text(label, fontFamily = Gilroy, fontSize = 12.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 4.dp))
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            textStyle = TextStyle(fontFamily = Gilroy, fontSize = 14.sp, color = Color.Black),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(1.dp, Color.LightGray.copy(0.5f), RoundedCornerShape(4.dp))
+                .padding(10.dp)
+        )
+    }
+}
+
+@Composable
+private fun ReviewCard(review: ProductReview) {
+    val avgRating = review.averageRating()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(0.5.dp, Color.LightGray.copy(0.5f), RoundedCornerShape(8.dp))
+            .padding(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row {
+                repeat(5) { i ->
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = if (i < avgRating.toInt()) Color(0xFFFFC107) else Color.LightGray,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+            Text(review.nickname, fontFamily = Gilroy, fontSize = 12.sp, color = Color.Gray)
+        }
+        Spacer(Modifier.height(6.dp))
+        Text(review.title, fontFamily = Gilroy, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
+        Spacer(Modifier.height(4.dp))
+        Text(review.detail, fontFamily = Gilroy, fontSize = 13.sp, color = Color.DarkGray, lineHeight = 18.sp)
+    }
+}
+
+@Composable
+fun ZoomableImageDialog(imageUrl: String, onDismiss: () -> Unit) {
+    var scale by remember { mutableStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
+    val transformState = rememberTransformableState { zoomChange, panChange, _ ->
+        scale = (scale * zoomChange).coerceIn(1f, 5f)
+        offset += panChange
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+        ) {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer(scaleX = scale, scaleY = scale, translationX = offset.x, translationY = offset.y)
+                    .transformable(state = transformState),
+                contentScale = ContentScale.Fit
+            )
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.align(Alignment.TopEnd).padding(16.dp).statusBarsPadding()
+            ) {
+                Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White, modifier = Modifier.size(28.dp))
             }
         }
     }
@@ -965,7 +1255,7 @@ fun BottomBar(
                             Spacer(modifier = Modifier.width(16.dp))
 
                             Text(
-                                text = "$$sellingPrice",
+                                text = "$${sellingPrice.asPrice()}",
                                 fontFamily = Gilroy,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 22.sp,
@@ -975,7 +1265,7 @@ fun BottomBar(
                             if (originalPrice != null && originalPrice > sellingPrice) {
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Text(
-                                    text = "$$originalPrice",
+                                    text = "$${originalPrice.asPrice()}",
                                     fontFamily = Gilroy,
                                     fontSize = 16.sp,
                                     color = Color.White.copy(alpha = 0.4f),

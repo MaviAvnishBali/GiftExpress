@@ -39,7 +39,7 @@ data class ProductListResponse(
     @SerializedName("page_size") val pageSize: Int,
     @SerializedName("current_page") val currentPage: Int,
     @SerializedName("total_pages") val totalPages: Int,
-    @SerializedName("filters") val filters: List<Filter>
+    @SerializedName("filters") val filters: List<ProductFilter>?
 )
 
 data class ProductItem(
@@ -48,16 +48,4 @@ data class ProductItem(
     @SerializedName("image") val image: String?,
     @SerializedName("sku") val sku: String?,
     @SerializedName("attributes") val attributes: List<String>?
-)
-
-data class Filter(
-    @SerializedName("name") val name: String?,
-    @SerializedName("request_var") val requestVar: String?,
-    @SerializedName("options") val options: List<FilterOption>
-)
-
-data class FilterOption(
-    @SerializedName("label") val label: String?,
-    @SerializedName("value") val value: String?,
-    @SerializedName("count") val count: Int?
 )

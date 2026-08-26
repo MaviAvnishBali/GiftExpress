@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -19,18 +20,18 @@ import com.giftexpress.app.utils.showToast
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.Locale
 
 /**
- * Signup Fragment
- * Handles user registration UI and interactions
+ * Signup Fragment — matches iOS SignUpViewController
+ * Fields: First Name, Last Name, DOB (yyyy-MM-dd), Email, Password, Confirm Password, Newsletter
+ * After signup: auto-logs in and navigates to home (same as iOS callLoginAPI)
  */
 @AndroidEntryPoint
 class SignupFragment : Fragment() {
 
     private var _binding: FragmentSignupBinding? = null
     private val binding get() = _binding!!
-    
+
     private val viewModel: SignupViewModel by viewModels()
 
     override fun onCreateView(
@@ -44,58 +45,56 @@ class SignupFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+        // DOB field: read-only, only openable via date picker (matches iOS inputView = dobPicker)
+        binding.etDOB.isFocusable = false
+        binding.etDOB.isFocusableInTouchMode = false
+        binding.etDOB.setOnClickListener { showDatePicker() }
         setupClickListeners()
         observeSignupState()
     }
 
-    /**
-     * Setup click listeners for buttons
-     */
-    /**
-     * Setup click listeners for buttons
-     */
     private fun setupClickListeners() {
         binding.btnSignup.setOnClickListener {
             val firstName = binding.etFirstName.text.toString().trim()
             val lastName = binding.etLastName.text.toString().trim()
             val dob = binding.etDOB.text.toString().trim()
             val email = binding.etEmail.text.toString().trim()
-            val password = binding.etPassword.text.toString().trim()
-            val confirmPassword = binding.etConfirmPassword.text.toString().trim()
-            
-            viewModel.signup(firstName, lastName, dob, email, password, confirmPassword)
+            val password = binding.etPassword.text.toString()
+            val confirmPassword = binding.etConfirmPassword.text.toString()
+            val isSubscribed = binding.signupfornewsleter.isChecked
+
+            viewModel.signup(firstName, lastName, dob, email, password, confirmPassword, isSubscribed)
         }
-        
+
         binding.ivBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
-        // Password Toggle
+        // Password toggle
         var isPasswordVisible = false
         binding.ivPasswordToggle.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
-            if (isPasswordVisible) {
-                binding.etPassword.inputType = android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                binding.ivPasswordToggle.setImageResource(R.drawable.ic_visibility)
-            } else {
-                binding.etPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                binding.ivPasswordToggle.setImageResource(R.drawable.ic_visibility_off)
-            }
+            binding.etPassword.inputType = if (isPasswordVisible)
+                android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            else
+                android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            binding.ivPasswordToggle.setImageResource(
+                if (isPasswordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
+            )
             binding.etPassword.setSelection(binding.etPassword.text.length)
         }
 
-        // Confirm Password Toggle
+        // Confirm password toggle
         var isConfirmPasswordVisible = false
         binding.ivConfirmPasswordToggle.setOnClickListener {
             isConfirmPasswordVisible = !isConfirmPasswordVisible
-            if (isConfirmPasswordVisible) {
-                binding.etConfirmPassword.inputType = android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                binding.ivConfirmPasswordToggle.setImageResource(R.drawable.ic_visibility)
-            } else {
-                binding.etConfirmPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                binding.ivConfirmPasswordToggle.setImageResource(R.drawable.ic_visibility_off)
-            }
+            binding.etConfirmPassword.inputType = if (isConfirmPasswordVisible)
+                android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            else
+                android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            binding.ivConfirmPasswordToggle.setImageResource(
+                if (isConfirmPasswordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
+            )
             binding.etConfirmPassword.setSelection(binding.etConfirmPassword.text.length)
         }
 
@@ -103,50 +102,34 @@ class SignupFragment : Fragment() {
             showToast("We need your DOB to verify your age.")
         }
 
-        // DOB Date Picker
-        binding.ivDOB.setOnClickListener {
-            showDatePicker()
+        // Calendar icon opens date picker
+        binding.ivDOB.setOnClickListener { showDatePicker() }
+    }
+
+    /**
+     * DOB picker — stores yyyy-MM-dd format matching iOS (formatter.dateFormat = "yyyy-MM-dd")
+     * No future dates allowed (matches iOS dobPicker.maximumDate = Date())
+     */
+    private fun showDatePicker() {
+        val cal = Calendar.getInstance()
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, day ->
+                // API format: yyyy-MM-dd (same as iOS)
+                binding.etDOB.setText(String.format("%04d-%02d-%02d", year, month + 1, day))
+            },
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            datePicker.maxDate = System.currentTimeMillis() // no future dates
+            show()
         }
     }
 
-    /**
-     * Show Date Picker Dialog
-     */
-    private fun showDatePicker() {
-        val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-        val datePickerDialog = DatePickerDialog(
-            requireContext(),
-            { _, selectedYear, selectedMonth, selectedDay ->
-
-                val formattedDate = String.format(
-                    Locale.getDefault(),
-                    "%02d/%02d/%04d",
-                    selectedDay,
-                    selectedMonth + 1,
-                    selectedYear
-                )
-
-                binding.etDOB.setText(formattedDate)
-            },
-            year,
-            month,
-            day
-        )
-
-        datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
-        datePickerDialog.show()
-    }
-    /**
-     * Observe signup state from ViewModel
-     */
     private fun observeSignupState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                // Observe State (Loading)
                 launch {
                     viewModel.state.collect { state ->
                         if (state.isLoading) {
@@ -159,17 +142,15 @@ class SignupFragment : Fragment() {
                     }
                 }
 
-                // Observe Events (Success, Error)
                 launch {
                     viewModel.event.collect { event ->
                         when (event) {
                             is SignupEvent.SignupSuccess -> {
-                                showToast("Signup successful!")
+                                showToast("Login successful 🎉")
                                 findNavController().navigate(R.id.action_signupFragment_to_homeFragment)
                             }
-                            is SignupEvent.ShowError -> {
-                                showToast(event.message)
-                            }
+                            is SignupEvent.ShowError -> showToast(event.message)
+                            is SignupEvent.DuplicateEmail -> showDuplicateEmailDialog(event.message)
                         }
                     }
                 }
@@ -180,13 +161,24 @@ class SignupFragment : Fragment() {
     /**
      * Enable/disable input fields and button
      */
+    private fun showDuplicateEmailDialog(message: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Account Exists")
+            .setMessage(message)
+            .setPositiveButton("Login") { _, _ ->
+                findNavController().navigateUp() // go back to Login
+            }
+            .setNegativeButton("OK", null)
+            .show()
+    }
+
     private fun enableInputs(enabled: Boolean) {
         binding.etFirstName.isEnabled = enabled
         binding.etLastName.isEnabled = enabled
-        binding.etDOB.isEnabled = enabled
         binding.etEmail.isEnabled = enabled
         binding.etPassword.isEnabled = enabled
         binding.etConfirmPassword.isEnabled = enabled
+        binding.signupfornewsleter.isEnabled = enabled
         binding.btnSignup.isEnabled = enabled
     }
 

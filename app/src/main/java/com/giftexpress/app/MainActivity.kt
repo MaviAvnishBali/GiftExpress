@@ -68,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         setupDrawer() // Call the new setupDrawer function
         observeMenu()
         setupNetworkObserver()
+        startTokenRefresh()
 
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -159,17 +160,50 @@ class MainActivity : AppCompatActivity() {
 
         navController = navHostFragment.navController
 
-        // 🚫 Disable automatic screen titles
-        navController.addOnDestinationChangedListener { _, _, _ ->
+        // Bottom nav destination IDs — used to sync selection on back press / programmatic nav
+        val bottomNavIds = setOf(
+            R.id.homeFragment,
+            R.id.categoriesFragment,
+            R.id.offersFragment,
+            R.id.ordersFragment,
+            R.id.accountFragment
+        )
+
+        // Sync bottom nav indicator whenever the NavController destination changes.
+        // Using menu.findItem().isChecked directly avoids re-triggering setOnItemSelectedListener.
+        navController.addOnDestinationChangedListener { _, destination, _ ->
             title = ""
+            if (destination.id in bottomNavIds) {
+                binding.bottomNav.menu.findItem(destination.id)?.isChecked = true
+            }
         }
 
-        binding.bottomNav.setupWithNavController(navController)
+        // Guard auth-required bottom nav tabs on user click
+        binding.bottomNav.setOnItemSelectedListener { item ->
+            if (item.itemId == navController.currentDestination?.id) {
+                // Already on this destination — do nothing (avoid duplicate back-stack entries)
+                return@setOnItemSelectedListener true
+            }
+            val authRequired = item.itemId in listOf(R.id.ordersFragment, R.id.accountFragment)
+            if (authRequired) {
+                lifecycleScope.launch {
+                    if (!authRepository.isLoggedIn()) {
+                        navController.navigate(R.id.loginFragment)
+                    } else {
+                        navController.navigate(item.itemId)
+                    }
+                }
+                true
+            } else {
+                navController.navigate(item.itemId)
+                true
+            }
+        }
         binding.navView.setupWithNavController(navController)
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.splashFragment, R.id.loginFragment, R.id.signupFragment, R.id.changePasswordFragment, R.id.forgotPasswordFragment, R.id.categoryFragment,R.id.productDetailsFragment -> {
+                R.id.splashFragment, R.id.loginFragment, R.id.signupFragment, R.id.changePasswordFragment, R.id.forgotPasswordFragment, R.id.categoryFragment, R.id.productDetailsFragment, R.id.specialProductsFragment -> {
                     binding.bottomNav.visibility = View.GONE
                     binding.bottomNavShadow.visibility = View.GONE
                     binding.drawerLayout.setDrawerLockMode(
@@ -239,9 +273,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
+     * Token refresh: the server issues 60-minute access tokens, so we refresh on every
+     * app foreground AND every 45 minutes — comfortably ahead of expiry. (The previous
+     * 90-minute interval was longer than the token's own lifetime, guaranteeing a window
+     * where every authenticated call — e.g. the cart — failed with a 401.)
+     */
+    private fun startTokenRefresh() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                if (authRepository.isLoggedIn()) {
+                    authRepository.refreshToken()
+                }
+                while (true) {
+                    kotlinx.coroutines.delay(45 * 60 * 1000L) // 45 minutes (< 60-min token life)
+                    if (authRepository.isLoggedIn()) {
+                        authRepository.refreshToken()
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Handle up navigation
      */
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    /**
+     * PayPal web checkout returns to the app via a deep link (launchMode="singleTop").
+     * Store the new intent so PaymentFragment can complete the checkout in onResume().
+     */
+    override fun onNewIntent(intent: android.content.Intent?) {
+        super.onNewIntent(intent)
+        if (intent != null) setIntent(intent)
     }
 }

@@ -33,7 +33,8 @@ fun AllBrandsScreen(
     viewModel: BrandViewModel,
     onMenuClick: () -> Unit,
     onCartClick: () -> Unit,
-    onBrandClick: (Int, String) -> Unit
+    onBrandClick: (Int, String) -> Unit,
+    cartCount: Int = 0
 ) {
     val brandsState by viewModel.brandsState.collectAsState()
     var searchQuery by remember { mutableStateOf("") }
@@ -98,7 +99,8 @@ fun AllBrandsScreen(
             isScrolled = isScrolled,
             searchQuery = searchQuery,
             onSearchQueryChange = { searchQuery = it },
-            searchPlaceholder = "Search Brands"
+            searchPlaceholder = "Search Brands",
+            cartCount = cartCount
         )
 
         Box(modifier = Modifier.weight(1f)) {
@@ -243,7 +245,7 @@ fun BrandListItem(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape),
-                    contentScale = ContentScale.Crop
+                    contentScale = ContentScale.Fit
                 )
             } else {
                 // Placeholder with initials

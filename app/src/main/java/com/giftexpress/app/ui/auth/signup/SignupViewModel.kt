@@ -37,43 +37,44 @@ class SignupViewModel @Inject constructor(
     /**
      * Perform signup with validation
      */
-    fun signup(firstName: String, lastName: String, dob: String, email: String, password: String, confirmPassword: String) {
-        // Validate inputs
-        if (firstName.isBlank()) return emitError("First Name is required")
-
-        if (lastName.isBlank()) return emitError("Last Name is required")
-
-        if (dob.isBlank()) return emitError("Date of Birth is required")
-        
-        if (email.isBlank()) return emitError("Email is required")
-        
+    fun signup(
+        firstName: String,
+        lastName: String,
+        dob: String,
+        email: String,
+        password: String,
+        confirmPassword: String,
+        isSubscribed: Boolean = false
+    ) {
+        if (firstName.isBlank()) return emitError("Please enter First Name")
+        if (lastName.isBlank()) return emitError("Please enter Last Name")
+        if (dob.isBlank()) return emitError("Please select Date of Birth")
+        if (email.isBlank()) return emitError("Please enter Email")
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches())
-            return emitError("Invalid email format")
-        
-        if (password.isBlank()) return emitError("Password is required")
-        
-        if (password.length < 6)
-            return emitError("Password must be at least 6 characters")
-        
-        if (password != confirmPassword)
-            return emitError("Passwords do not match")
+            return emitError("Please enter a valid Email")
+        if (password.isBlank()) return emitError("Please enter Password")
+        if (password.length < 6) return emitError("Password must be at least 6 characters")
+        if (confirmPassword.isBlank()) return emitError("Please enter Confirm Password")
+        if (password != confirmPassword) return emitError("Password and Confirm Password must be same")
 
-        // Perform signup
         _state.update { it.copy(isLoading = true) }
-        
+
         viewModelScope.launch {
-            when (val result = authRepository.signup(firstName, lastName, dob, email, password)) {
+            when (val result = authRepository.signup(firstName, lastName, dob, email, password, isSubscribed)) {
                 is NetworkResult.Success -> {
                     _state.update { it.copy(isLoading = false) }
                     _event.emit(SignupEvent.SignupSuccess(result.data!!))
                 }
                 is NetworkResult.Error -> {
                     _state.update { it.copy(isLoading = false) }
-                    emitError(result.message ?: "Signup failed")
+                    val isDuplicateEmail = result.message?.contains("same email", ignoreCase = true) == true
+                    if (isDuplicateEmail) {
+                        _event.emit(SignupEvent.DuplicateEmail(result.message ?: "Account already exists"))
+                    } else {
+                        emitError(result.message ?: "Signup failed")
+                    }
                 }
-                is NetworkResult.Loading -> {
-                    // Already set to loading
-                }
+                is NetworkResult.Loading -> {}
             }
         }
     }

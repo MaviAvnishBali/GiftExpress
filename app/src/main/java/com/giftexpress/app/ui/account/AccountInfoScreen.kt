@@ -1,6 +1,11 @@
 package com.giftexpress.app.ui.account
 
+import android.app.DatePickerDialog
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import coil.compose.AsyncImage
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -27,27 +33,34 @@ import androidx.compose.ui.unit.sp
 import com.giftexpress.app.R
 import com.giftexpress.app.data.model.CustomerDetailsResponse
 import com.giftexpress.app.ui.components.AppTextField
-
+import com.giftexpress.app.utils.UiState
+import java.util.Calendar
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 
 @Composable
 fun AccountInfoScreen(
+    viewModel: AccountViewModel? = null,
     userData: CustomerDetailsResponse? = null,
     onBackClick: () -> Unit,
     onSaveClick: (CustomerDetailsResponse) -> Unit,
     onChangePasswordClick: () -> Unit
 ) {
-    var firstName by remember { mutableStateOf(userData?.firstName ?: "Harmandeep") }
-    var lastName by remember { mutableStateOf(userData?.lastName ?: "Singh") }
-    var dateOfBirth by remember { mutableStateOf(userData?.dob ?: "03/03/2022") }
-    var email by remember { mutableStateOf(userData?.email ?: "ikseo2@gmail.com") }
+    val customerDetails: CustomerDetailsResponse? = viewModel?.customerDetails?.collectAsState()?.value ?: userData
+    val isSaving: Boolean = viewModel?.updateProfileState?.collectAsState()?.value is UiState.Loading
+
+    var firstName by remember(customerDetails) { mutableStateOf(customerDetails?.firstName ?: "") }
+    var lastName by remember(customerDetails) { mutableStateOf(customerDetails?.lastName ?: "") }
+    var dateOfBirth by remember(customerDetails) { mutableStateOf(customerDetails?.dob ?: "") }
+    var email by remember(customerDetails) { mutableStateOf(customerDetails?.email ?: "") }
     
+    val context = LocalContext.current
     var isChangePasswordChecked by remember { mutableStateOf(false) }
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     
+    var isEmailEditable by remember { mutableStateOf(false) }
     var currentPasswordVisible by remember { mutableStateOf(false) }
     var newPasswordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
@@ -78,8 +91,9 @@ fun AccountInfoScreen(
         bottomBar = {
             Button(
                 onClick = {
-                    // Handle save
+                    viewModel?.updateProfile(firstName, lastName, email, dateOfBirth)
                 },
+                enabled = !isSaving,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
@@ -107,42 +121,7 @@ fun AccountInfoScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Profile Picture
-            item {
-                Box(
-                    modifier = Modifier.padding(vertical = 16.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_profile),
-                        contentDescription = "Profile Picture",
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFE0E0E0)),
-                        contentScale = ContentScale.Crop
-                    )
-                    
-                    // Camera Icon
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .offset(x = 4.dp, y = 4.dp)
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(Color.White)
-                            .border(1.dp, Color.LightGray.copy(alpha = 0.5f), CircleShape)
-                            .clickable { /* Handle image pick */ },
-                        contentAlignment = Alignment.Center
-                    ) {
-                         Icon(
-                            painter = painterResource(id = R.drawable.ic_profile), // Should be camera
-                            contentDescription = "Edit Profile Picture",
-                            modifier = Modifier.size(18.dp),
-                            tint = Color.Black
-                        )
-                    }
-                }
-            }
+
 
             item {
                 AppTextField(
@@ -168,13 +147,27 @@ fun AccountInfoScreen(
                     value = dateOfBirth,
                     onValueChange = { dateOfBirth = it },
                     isRequired = true,
+                    readOnly = true,
                     trailingIcon = {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_calendar),
-                            contentDescription = "Select Date",
-                            modifier = Modifier.padding(end = 16.dp).size(20.dp),
-                            tint = Color.Black
-                        )
+                        IconButton(onClick = {
+                            val cal = Calendar.getInstance()
+                            DatePickerDialog(
+                                context,
+                                { _, year, month, day ->
+                                    dateOfBirth = "%04d-%02d-%02d".format(year, month + 1, day)
+                                },
+                                cal.get(Calendar.YEAR),
+                                cal.get(Calendar.MONTH),
+                                cal.get(Calendar.DAY_OF_MONTH)
+                            ).show()
+                        }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_calendar),
+                                contentDescription = "Select Date",
+                                modifier = Modifier.size(20.dp),
+                                tint = Color.Black
+                            )
+                        }
                     }
                 )
             }
@@ -185,14 +178,16 @@ fun AccountInfoScreen(
                     value = email,
                     onValueChange = { email = it },
                     isRequired = true,
-                    readOnly = true,
+                    readOnly = !isEmailEditable,
                     trailingIcon = {
-                         Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Edit Email",
-                            modifier = Modifier.padding(end = 16.dp).size(20.dp),
-                            tint = Color.Black
-                        )
+                        IconButton(onClick = { isEmailEditable = !isEmailEditable }) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit Email",
+                                modifier = Modifier.size(20.dp),
+                                tint = if (isEmailEditable) Color(0xFFF57C00) else Color.Black
+                            )
+                        }
                     }
                 )
             }

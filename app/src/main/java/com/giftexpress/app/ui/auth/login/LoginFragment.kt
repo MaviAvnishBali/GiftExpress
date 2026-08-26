@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -37,6 +38,8 @@ class LoginFragment : Fragment() {
     private val binding get() = _binding!!
     
     private val viewModel: LoginViewModel by viewModels()
+    private val cartViewModel: com.giftexpress.app.ui.cart.CartViewModel by activityViewModels()
+    private val wishlistViewModel: com.giftexpress.app.ui.wishlist.WishlistViewModel by viewModels()
     
     private lateinit var googleSignInClient: GoogleSignInClient
     
@@ -46,33 +49,30 @@ class LoginFragment : Fragment() {
         val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
         try {
             val account = task.getResult(ApiException::class.java)
-            val idToken = account?.idToken
+            // socialId = account.id (Google user ID), matches what iOS sends as user.userID
             val socialId = account?.id ?: ""
-            if (idToken != null) {
-                val email = account.email ?: ""
-                val displayName = account.displayName ?: ""
-                val givenName = account.givenName ?: ""
-                val familyName = account.familyName ?: ""
-                
-                // Use givenName as firstName, familyName as lastName
-                var firstName = givenName
-                var lastName = familyName
-                
-                if (firstName.isEmpty() && displayName.isNotEmpty()) {
-                    val parts = displayName.split(" ")
-                    firstName = parts.firstOrNull() ?: ""
-                    lastName = parts.drop(1).joinToString(" ")
-                }
-                
-                val fallbackFirstName = email.substringBefore("@").ifBlank { "GiftExpress" }
-                val fallbackLastName = "User"
-                val finalFirstName = firstName.ifBlank { fallbackFirstName }
-                val finalLastName = lastName.ifBlank { fallbackLastName }
-                
-                viewModel.googleLogin(email, finalFirstName, finalLastName, socialId)
-            } else {
-                showToast("Failed to get ID token")
+            val email = account?.email ?: ""
+
+            if (email.isBlank() || socialId.isBlank()) {
+                showToast("Google Sign-In failed: could not get account info")
+                return@registerForActivityResult
             }
+
+            val givenName = account?.givenName ?: ""
+            val familyName = account?.familyName ?: ""
+            val displayName = account?.displayName ?: ""
+
+            var firstName = givenName
+            var lastName = familyName
+            if (firstName.isEmpty() && displayName.isNotEmpty()) {
+                val parts = displayName.split(" ")
+                firstName = parts.firstOrNull() ?: ""
+                lastName = parts.drop(1).joinToString(" ")
+            }
+            val finalFirstName = firstName.ifBlank { email.substringBefore("@") }
+            val finalLastName = lastName.ifBlank { "User" }
+
+            viewModel.googleLogin(email, finalFirstName, finalLastName, socialId)
         } catch (e: ApiException) {
             Log.e("LoginFragment", "Google Sign-In failed", e)
             showToast("Google Sign-In failed: ${e.statusCode}")
@@ -92,12 +92,17 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         
         // Initialize Google Sign-In Client
+        // We only need email + user ID (socialId), matching iOS which uses user.userID
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
+            .requestProfile()
             .build()
         googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
         
+        // Hide back button when login is the root screen (navigated from splash)
+        val hasPreviousScreen = findNavController().previousBackStackEntry != null
+        binding.ivBack.visibility = if (hasPreviousScreen) View.VISIBLE else View.GONE
+
         setupListeners()
         observeLoginState()
     }
@@ -135,17 +140,17 @@ class LoginFragment : Fragment() {
             findNavController().navigate(R.id.action_loginFragment_to_signupFragment)
         }
 
-        // Password Toggle
+        // Password Toggle — preserve autofillHints by using transformationMethod instead of inputType
         var isPasswordVisible = false
         binding.ivPasswordToggle.setOnClickListener {
             isPasswordVisible = !isPasswordVisible
-            if (isPasswordVisible) {
-                binding.etPassword.inputType = android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                binding.ivPasswordToggle.setImageResource(R.drawable.ic_visibility)
-            } else {
-                binding.etPassword.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
-                binding.ivPasswordToggle.setImageResource(R.drawable.ic_visibility_off)
-            }
+            binding.etPassword.transformationMethod = if (isPasswordVisible)
+                android.text.method.HideReturnsTransformationMethod.getInstance()
+            else
+                android.text.method.PasswordTransformationMethod.getInstance()
+            binding.ivPasswordToggle.setImageResource(
+                if (isPasswordVisible) R.drawable.ic_visibility else R.drawable.ic_visibility_off
+            )
             binding.etPassword.setSelection(binding.etPassword.text.length)
         }
 
@@ -198,6 +203,19 @@ class LoginFragment : Fragment() {
                         when (event) {
                             is LoginEvent.LoginSuccess -> {
                                 showToast("Login Successful")
+                                
+                                val pendingCart = viewModel.getPendingCartSku()
+                                val pendingWishlist = viewModel.getPendingWishlistSku()
+                                
+                                if (pendingCart != null) {
+                                    cartViewModel.addProductToCart(pendingCart)
+                                    viewModel.clearPendingCartSku()
+                                }
+                                if (pendingWishlist != null) {
+                                    wishlistViewModel.addToWishlist(pendingWishlist)
+                                    viewModel.clearPendingWishlistSku()
+                                }
+
                                 findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
                             }
                             is LoginEvent.ShowError -> {

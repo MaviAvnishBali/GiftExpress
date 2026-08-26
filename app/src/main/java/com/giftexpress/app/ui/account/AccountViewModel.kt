@@ -2,6 +2,7 @@ package com.giftexpress.app.ui.account
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.giftexpress.app.data.model.CustomerDetailsResponse
 import com.giftexpress.app.data.model.User
 import com.giftexpress.app.data.repository.AuthRepository
 import com.giftexpress.app.utils.NetworkResult
@@ -27,11 +28,18 @@ class AccountViewModel @Inject constructor(
     private val _changePasswordState = MutableStateFlow<UiState<Boolean>>(UiState.Idle)
     val changePasswordState: StateFlow<UiState<Boolean>> = _changePasswordState
 
+    private val _customerDetails = MutableStateFlow<CustomerDetailsResponse?>(null)
+    val customerDetails: StateFlow<CustomerDetailsResponse?> = _customerDetails
+
+    private val _updateProfileState = MutableStateFlow<UiState<Boolean>>(UiState.Idle)
+    val updateProfileState: StateFlow<UiState<Boolean>> = _updateProfileState
+
     private val _logoutState = MutableStateFlow(false)
     val logoutState: StateFlow<Boolean> = _logoutState
 
     init {
         loadUserProfile()
+        loadCustomerDetails()
     }
 
     /**
@@ -43,6 +51,34 @@ class AccountViewModel @Inject constructor(
                 _user.value = user
             }
         }
+    }
+
+    private fun loadCustomerDetails() {
+        viewModelScope.launch {
+            when (val result = authRepository.getCustomerDetails()) {
+                is NetworkResult.Success -> _customerDetails.value = result.data
+                else -> {}
+            }
+        }
+    }
+
+    fun updateProfile(firstName: String, lastName: String, email: String, dob: String) {
+        val id = _customerDetails.value?.id ?: return
+        _updateProfileState.value = UiState.Loading
+        viewModelScope.launch {
+            when (val result = authRepository.updateProfile(id, email, firstName, lastName, dob)) {
+                is NetworkResult.Success -> {
+                    _customerDetails.value = result.data
+                    _updateProfileState.value = UiState.Success(true)
+                }
+                is NetworkResult.Error -> _updateProfileState.value = UiState.Error(result.message ?: "Update failed")
+                is NetworkResult.Loading -> {}
+            }
+        }
+    }
+
+    fun resetUpdateProfileState() {
+        _updateProfileState.value = UiState.Idle
     }
 
     /**

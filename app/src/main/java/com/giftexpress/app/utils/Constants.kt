@@ -5,7 +5,7 @@ package com.giftexpress.app.utils
  */
 object Constants {
     // API
-    const val BASE_URL = "https://e03a53d91a.nxcli.io/rest/V1/"
+    const val BASE_URL = "https://magento-1620955-6409883.cloudwaysapps.com/rest/V1/"
     const val CONNECT_TIMEOUT = 30L
     const val READ_TIMEOUT = 30L
     const val WRITE_TIMEOUT = 30L
@@ -17,6 +17,8 @@ object Constants {
     const val KEY_USER_EMAIL = "user_email"
     const val KEY_USER_ID = "user_id"
     const val KEY_AUTH_TOKEN = "auth_token"
+    const val KEY_REFRESH_TOKEN = "refresh_token"
+    const val KEY_TOKEN_SAVED_TIME = "token_saved_time"
     const val KEY_REMEMBER_ME = "remember_me"
     const val KEY_SAVED_EMAIL = "saved_email"
     const val KEY_SAVED_PASSWORD = "saved_password"

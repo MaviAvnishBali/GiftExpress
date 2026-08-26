@@ -1,0 +1,158 @@
+[
+  200,
+  "Success",
+  {
+    "ProductDeatils": [
+      {
+        "product_id": 22600,
+        "sku": "GXP-16229",
+        "category": "Unisex Fragrances",
+        "name": "Perfume Divine Discovery 4-Piece Gift Set by Al Absar (Unisex)",
+        "manufacturer": "Al Absar",
+        "qty": 40,
+        "is_in_stock": true,
+        "price": 35,
+        "discount_price": 19.95,
+        "currency": "USD",
+        "attributes": {
+          "sku": "GXP-16229",
+          "type": "Eau De Parfum",
+          "size": "Standard",
+          "Gender": "Unisex",
+          "upc": "~5055810059125",
+          "Tester": "Tester products are 100% genuine, authentic, they've never been used and they come directly from the manufacturer.\n            A tester is a version of a fragrance that comes without the fancy, retail packaging. Tester versions come in the same bottle as the retail version and include the same amount and quality of the fragrance. In most cases, a tester fragrance will come in a plain white or cardboard box. Because there is no decorative packaging, we purchase these items for less and pass the savings on to you.",
+          "free_shipping_text": "<div class=\"freeshipping\"><strong> Free U.S. Shipping <\/strong>on orders over $59.95.<\/div>"
+        },
+        "size": "Standard",
+        "details": {
+          "description": "Experience elegance in every drop with the Divine Discovery Set by Al Absar. This beautifully presented collection features four refined 10ml Eau de Parfum fragrances, each crafted to showcase a unique expression of femininity, warmth, and modern luxury. Perfect for discovering your signature scent or enjoying a variety of moods and occasions, this set offers a captivating journey through fruity, floral, and softly sensual compositions. Each fragrance unfolds with carefully balanced notes designed to leave a memorable impression.",
+          "sku": "GXP-16229",
+          "perfume_type": "Eau De Parfum",
+          "size": "Standard",
+          "Gender": "Unisex",
+          "upc": "~5055810059125",
+          "manufacturer": "Al Absar"
+        },
+        "shippingInformation": {
+          "details": "<div class=\"container\">\r\n<div class=\"static-pages shipping-info-page\">\r\n<h1 class=\"main-static-hd\">SHIPPING INFORMATION<\/h1>\r\n<p>Any orders placed on the weekend will ship the following business day.<\/p>\r\n<p><strong>FREE U.S. Shipping on orders with product total of $59.95 or more (excluding shipping and other charges). Otherwise, shipping is $7.95.<\/strong><\/p>\r\n<p>Orders shipped through Ground Shipping take 5-7 business days (Excluding Weekends and Holidays) to arrive. Orders are shipped via USPS, FedEx and UPS.<\/p>\r\n<h2 class=\"static-hd\">Express Shipping Rates Are Below:<\/h2>\r\n<ul class=\"dots\">\r\n<li>2nd Day Delivery (Excluding Weekends and Holidays) &gt; <strong>$24.95<\/strong><\/li>\r\n<li>Next Day Delivery (Excluding Weekends and Holidays) &gt; <strong>$39.95<\/strong><\/li>\r\n<li>3 Days Delivery (Excluding Weekends and Holidays) &gt; <strong>$14.95 (Up to 8 quantity)<\/strong><\/li>\r\n<\/ul>\r\n<p><strong>Please note we do not provide Express Shipping to APO,Hawaii, and Puerto Rico.<\/strong><\/p>\r\n<p><strong>For Puerto Rico, Alaska, and Hawaii, delivery may take 7 to 14 business days.<\/strong><\/p>\r\n<!-- <h2 class=\"static-hd\">We Provide Shipping to Canada, The shipping charges are as below:<\/h2>\r\n<ul class=\"dots\">\r\n<li>For Single Quantity USD $17.95 (Includes Customs Duty)<\/li>\r\n<li>For every additional quantity, $10 USD will be added to $17.95.<\/li>\r\n<\/ul> -->\r\n<p><strong>Orders are shipped through Ground Shipping and it takes 5-7 business days for final delivery. (Excluding Weekends and Holidays). <\/strong><\/p>\r\n<p><strong>Please note: There will be a one-day handling time for all orders shipped via Ground Shipping. <\/strong><\/p>\r\n<p><a class=\"links\" href=\"{{store url=''}}\">GiftExpress.com<\/a> will ship all orders based on the customer's requirements but we cannot guarantee a carrier will deliver on a specified date since they are a third-party service.<\/p>\r\n<\/div>\r\n<\/div>"
+        },
+        "images": [
+          "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-16229.jpg"
+        ],
+        "as_low_as": false
+      }
+    ],
+    "MoreProductList": [
+      {
+        "product_id": 9032,
+        "name": "Hirfah by Al Absar (Unisex)",
+        "price": 29.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-14438.jpg",
+        "sku": "GXP-14438",
+        "perfume_type": "Eau De Parfum",
+        "qty": 41,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9033,
+        "name": "Hiyam by Al Absar (Unisex)",
+        "price": 29.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-14439.jpg",
+        "sku": "GXP-14439",
+        "perfume_type": "Eau De Parfum",
+        "qty": 27,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9036,
+        "name": "Saher by Al Absar (Unisex)",
+        "price": 29.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-14442.jpg",
+        "sku": "GXP-14442",
+        "perfume_type": "Eau De Parfum",
+        "qty": 14,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9037,
+        "name": "SAQAR by Al Absar (Unisex)",
+        "price": 29.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-14443.jpg",
+        "sku": "GXP-14443",
+        "perfume_type": "Eau De Parfum",
+        "qty": 5,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9038,
+        "name": "Mudiyah by Al Absar for Women",
+        "price": 29.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-14444.jpg",
+        "sku": "GXP-14444",
+        "perfume_type": "Eau De Parfum",
+        "qty": 14,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9042,
+        "name": "Oud Al Samaawat by Al Absar (Unisex)",
+        "price": 29.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-14448.jpg",
+        "sku": "GXP-14448",
+        "perfume_type": "Eau De Parfum",
+        "qty": 4,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9043,
+        "name": "SHAHOOR ELIXIR by Al Absar for Women",
+        "price": 29.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-14449_1_1.jpg",
+        "sku": "GXP-14449",
+        "perfume_type": "Eau De Parfum",
+        "qty": 12,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9114,
+        "name": "Shahoor Intense by Al Absar (Unisex)",
+        "price": 29.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/g\/x\/gxp-14521.jpg",
+        "sku": "GXP-14521",
+        "perfume_type": "Eau De Parfum",
+        "qty": 35,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9255,
+        "name": "Muhit by Al Absar (Unisex)",
+        "price": 39.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/m\/u\/muhit.jpg",
+        "sku": "GXP-14662",
+        "perfume_type": "Eau De Parfum",
+        "qty": 113,
+        "is_in_stock": true,
+        "as_low_as": false
+      },
+      {
+        "product_id": 9259,
+        "name": "Hasaa by Al Absar (Unisex)",
+        "price": 49.95,
+        "image": "https:\/\/www.giftexpress.com\/media\/catalog\/product\/h\/a\/hasaa_1.jpg",
+        "sku": "GXP-14667",
+        "perfume_type": "Eau De Parfum",
+        "qty": 133,
+        "is_in_stock": true,
+        "as_low_as": false
+      }
+    ]
+  }
+]

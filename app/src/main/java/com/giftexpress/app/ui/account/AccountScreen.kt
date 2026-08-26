@@ -34,7 +34,9 @@ fun AccountScreen(
     onNavigateToAboutUs: () -> Unit,
     onNavigateToShippingInfo: () -> Unit,
     onNavigateToPrivacyPolicy: () -> Unit,
-    onNavigateToTermsConditions: () -> Unit
+    onNavigateToTermsConditions: () -> Unit,
+    onNavigateToContactUs: () -> Unit = {},
+    onNavigateToPerfumeEnquiry: () -> Unit = {}
 ) {
     val logoutState by viewModel.logoutState.collectAsState()
 
@@ -148,9 +150,8 @@ fun AccountScreen(
                 CustomerServiceItem(text = "Shipping Information", onClick = onNavigateToShippingInfo)
                 CustomerServiceItem(text = "Privacy Policy", onClick = onNavigateToPrivacyPolicy)
                 CustomerServiceItem(text = "Terms & Condition", onClick = onNavigateToTermsConditions)
-                CustomerServiceItem(text = "Return Policy", onClick = { /* TODO */ })
-                CustomerServiceItem(text = "Damage Or Defective Product Policy", onClick = { /* TODO */ })
-                CustomerServiceItem(text = "Reward Points Policy", onClick = { /* TODO */ })
+                CustomerServiceItem(text = "Contact Us", onClick = onNavigateToContactUs)
+                CustomerServiceItem(text = "Perfume Enquiry", onClick = onNavigateToPerfumeEnquiry)
             }
             
             item {

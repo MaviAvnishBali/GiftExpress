@@ -25,12 +25,29 @@ class BrandRepository @Inject constructor(
     suspend fun getBrandProducts(
         brandId: Int,
         pageSize: Int,
-        currentPage: Int
+        currentPage: Int,
+        sortBy: String? = null,
+        sortOrder: String? = null,
+        manufacturer: Int? = null,
+        filters: Map<String, String> = emptyMap()
     ): NetworkResult<ProductListResponse> {
         return try {
-            val response = apiService.getBrandProducts(brandId, pageSize, currentPage)
+            val response = apiService.getBrandProducts(brandId, pageSize, currentPage, sortBy, sortOrder, manufacturer, filters)
             if (response.isSuccessful && response.body() != null) {
                 NetworkResult.Success(response.body()!!)
+            } else if (response.code() == 404) {
+                NetworkResult.Success(
+                    ProductListResponse(
+                        statusCode = 200,
+                        message = "Empty list",
+                        items = emptyList(),
+                        totalCount = 0,
+                        pageSize = 20,
+                        currentPage = 1,
+                        totalPages = 0,
+                        filters = emptyList()
+                    )
+                )
             } else {
                 NetworkResult.Error("Failed to fetch brand products: ${response.message()}")
             }

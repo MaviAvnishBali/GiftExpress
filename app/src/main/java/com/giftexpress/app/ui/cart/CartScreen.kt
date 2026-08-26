@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
@@ -30,11 +31,18 @@ import com.giftexpress.app.ui.theme.Gilroy
 @Composable
 fun CartScreen(
     viewModel: CartViewModel,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onCheckout: (() -> Unit)? = null,
+    onProductClick: (String) -> Unit = {},
+    onContinueShopping: (() -> Unit)? = null
 ) {
     val cartItems by viewModel.cartItems.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val subtotal by viewModel.subtotal.collectAsState()
+    val shipping by viewModel.shipping.collectAsState()
+    val tax by viewModel.tax.collectAsState()
+    val total by viewModel.total.collectAsState()
 
     Scaffold(
         topBar = {
@@ -42,6 +50,29 @@ fun CartScreen(
                 cartCount = cartItems.sumOf { it.quantity },
                 onBackClick = onBackClick
             )
+        },
+        bottomBar = {
+            if (cartItems.isNotEmpty() && onCheckout != null) {
+                Surface(shadowElevation = 8.dp, color = Color.White) {
+                    Button(
+                        onClick = onCheckout,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333)),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text(
+                            text = "PROCEED TO CHECKOUT",
+                            fontFamily = Gilroy,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
         },
         containerColor = Color.White
     ) { paddingValues ->
@@ -76,7 +107,8 @@ fun CartScreen(
                     CartItemRow(
                         item = item,
                         onQuantityChange = { newQty -> viewModel.updateQuantity(item.id, newQty) },
-                        onRemove = { viewModel.removeItem(item.id) }
+                        onRemove = { viewModel.removeItem(item.id) },
+                        onProductClick = { if (item.sku.isNotBlank()) onProductClick(item.sku) }
                     )
                     Divider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 1.dp)
                 }
@@ -84,10 +116,10 @@ fun CartScreen(
                 if (cartItems.isNotEmpty()) {
                     item {
                         CartSummary(
-                            subtotal = viewModel.subtotal,
-                            shipping = viewModel.shipping,
-                            tax = viewModel.tax,
-                            total = viewModel.total
+                            subtotal = subtotal,
+                            shipping = shipping,
+                            tax = tax,
+                            total = total
                         )
                     }
                 } else if (!isLoading && error == null) {
@@ -98,12 +130,33 @@ fun CartScreen(
                                 .padding(top = 100.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = "Your cart is empty",
-                                fontFamily = Gilroy,
-                                fontSize = 18.sp,
-                                color = Color.Gray
-                            )
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "Your cart is empty",
+                                    fontFamily = Gilroy,
+                                    fontSize = 18.sp,
+                                    color = Color.Gray
+                                )
+                                Spacer(modifier = Modifier.height(24.dp))
+                                if (onContinueShopping != null) {
+                                    Button(
+                                        onClick = onContinueShopping,
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.6f)
+                                            .height(48.dp),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFCA444A)),
+                                        shape = RoundedCornerShape(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "Continue Shopping",
+                                            fontFamily = Gilroy,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -129,10 +182,17 @@ fun CartTopBar(cartCount: Int, onBackClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        IconButton(onClick = onBackClick) {
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black
+            )
+        }
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "Shopping Cart",
             fontFamily = Gilroy,
@@ -140,32 +200,6 @@ fun CartTopBar(cartCount: Int, onBackClick: () -> Unit) {
             fontSize = 20.sp,
             color = Color.Black
         )
-
-        Box {
-            Icon(
-                imageVector = Icons.Outlined.ShoppingCart,
-                contentDescription = "Cart",
-                tint = Color.Black,
-                modifier = Modifier.size(28.dp)
-            )
-            if (cartCount > 0) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = 8.dp, y = (-8).dp)
-                        .size(18.dp)
-                        .background(Color.Red, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = cartCount.toString(),
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -173,7 +207,8 @@ fun CartTopBar(cartCount: Int, onBackClick: () -> Unit) {
 fun CartItemRow(
     item: CartItem,
     onQuantityChange: (Int) -> Unit,
-    onRemove: () -> Unit
+    onRemove: () -> Unit,
+    onProductClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -186,7 +221,8 @@ fun CartItemRow(
             contentDescription = item.name,
             modifier = Modifier
                 .size(100.dp)
-                .clip(RoundedCornerShape(4.dp)),
+                .clip(RoundedCornerShape(4.dp))
+                .clickable { onProductClick() },
             contentScale = ContentScale.Fit
         )
 
@@ -198,23 +234,14 @@ fun CartItemRow(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = item.name,
-                        fontFamily = Gilroy,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color.Black
-                    )
-                    Text(
-                        text = "$${item.price}",
-                        fontFamily = Gilroy,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = Color.Red,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
+                Text(
+                    text = item.name,
+                    fontFamily = Gilroy,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color.Black,
+                    modifier = Modifier.weight(1f)
+                )
                 IconButton(onClick = onRemove, modifier = Modifier.size(24.dp)) {
                     Icon(
                         imageVector = Icons.Default.Delete,
@@ -224,47 +251,64 @@ fun CartItemRow(
                 }
             }
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "$${String.format("%.2f", item.price)}",
+                    fontFamily = Gilroy,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.Red
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "-",
+                        fontSize = 24.sp,
+                        color = Color.Red,
+                        modifier = Modifier
+                            .clickable { if (item.quantity > 1) onQuantityChange(item.quantity - 1) }
+                            .padding(horizontal = 8.dp)
+                    )
+                    Text(
+                        text = item.quantity.toString(),
+                        fontFamily = Gilroy,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    )
+                    Text(
+                        text = "+",
+                        fontSize = 24.sp,
+                        color = Color.Red,
+                        modifier = Modifier
+                            .clickable { onQuantityChange(item.quantity + 1) }
+                            .padding(horizontal = 8.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             Text(
                 text = "Sku: ${item.sku}",
                 fontFamily = Gilroy,
                 fontSize = 14.sp,
-                color = Color.Black
+                color = Color.Gray
             )
             Text(
                 text = "Size: ${item.size}",
                 fontFamily = Gilroy,
                 fontSize = 14.sp,
-                color = Color.Black
+                color = Color.Gray
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .border(1.dp, Color.LightGray.copy(alpha = 0.5f), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { if (item.quantity > 1) onQuantityChange(item.quantity - 1) },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Text("-", fontSize = 20.sp, color = Color.Red)
-                }
-                Text(
-                    text = item.quantity.toString(),
-                    fontFamily = Gilroy,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 12.dp)
-                )
-                IconButton(
-                    onClick = { onQuantityChange(item.quantity + 1) },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Text("+", fontSize = 20.sp, color = Color.Red)
-                }
-            }
         }
     }
 }
@@ -280,64 +324,41 @@ fun CartSummary(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFE0F7FA)),
-        shape = RoundedCornerShape(4.dp)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFD4F2EB)),
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            SummaryRow("Subtotal", "$${String.format("%.2f", subtotal)}")
-            SummaryRow("Shipping & Handling\n(Ground Shipping (5-7\nDays))", "$${String.format("%.2f", shipping)}")
-            SummaryRow("Tax", "$${String.format("%.2f", tax)}")
+        Column(modifier = Modifier.padding(20.dp)) {
+            SummaryRow("Subtotal", "$${String.format("%.2f", subtotal)}", isBold = false)
             
-            Divider(
-                modifier = Modifier.padding(vertical = 12.dp),
-                color = Color.LightGray.copy(alpha = 0.5f)
-            )
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Order Total",
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = Color.Black
-                )
-                Text(
-                    text = "$${String.format("%.2f", total)}",
-                    fontFamily = Gilroy,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    color = Color.Black
-                )
-            }
+            SummaryRow("Order Total", "$${String.format("%.2f", total)}", isBold = true)
         }
     }
 }
 
 @Composable
-fun SummaryRow(label: String, value: String) {
+fun SummaryRow(label: String, value: String, isBold: Boolean) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             fontFamily = Gilroy,
-            fontSize = 14.sp,
-            color = Color.Gray,
+            fontSize = if (isBold) 18.sp else 16.sp,
+            fontWeight = if (isBold) FontWeight.Bold else FontWeight.Normal,
+            color = Color.Black,
             modifier = Modifier.weight(1f)
         )
         Text(
             text = value,
             fontFamily = Gilroy,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = if (isBold) 18.sp else 16.sp,
+            fontWeight = if (isBold) FontWeight.Bold else FontWeight.Medium,
             color = Color.Black
         )
     }

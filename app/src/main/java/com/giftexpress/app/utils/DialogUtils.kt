@@ -39,11 +39,17 @@ fun Context.findActivity(): ComponentActivity? {
     return null
 }
 
-fun showLoginRequiredDialog(context: Context, message: String = "Please login to continue.", onLogin: () -> Unit) {
+fun showLoginRequiredDialog(
+    context: Context,
+    message: String = "Please login to continue.",
+    onCancel: () -> Unit = {},
+    onLogin: () -> Unit
+) {
     val dialog = Dialog(context)
     dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
     dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
     dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+    dialog.setOnCancelListener { onCancel() }
     
     val composeView = ComposeView(context).apply {
         setContent {
@@ -93,7 +99,10 @@ fun showLoginRequiredDialog(context: Context, message: String = "Please login to
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         OutlinedButton(
-                            onClick = { dialog.dismiss() },
+                            onClick = { 
+                                dialog.dismiss()
+                                onCancel()
+                            },
                             modifier = Modifier.weight(1f).height(48.dp),
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.outlinedButtonColors(

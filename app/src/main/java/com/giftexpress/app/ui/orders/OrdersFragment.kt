@@ -25,6 +25,11 @@ class OrdersFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        if (!viewModel.isLoggedIn()) {
+            com.giftexpress.app.utils.showLoginRequiredDialog(requireContext(), "Please login to view your orders.") {
+                findNavController().navigate(com.giftexpress.app.R.id.loginFragment)
+            }
+        }
         viewModel.loadOrders()
     }
 

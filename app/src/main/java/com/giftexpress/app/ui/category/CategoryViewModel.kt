@@ -75,8 +75,15 @@ class CategoryViewModel @Inject constructor(
         fetchProducts(categoryId, reset = true)
     }
 
+    private var lastCategoryId: Int = 0
+
     fun fetchProducts(categoryId: Int, reset: Boolean = false) {
         if (reset) {
+            if (lastCategoryId != categoryId) {
+                _apiFiltersState.value = null
+                _selectedFilters.value = emptyMap()
+            }
+            lastCategoryId = categoryId
             currentPage = 1
             allProducts.clear()
             _productsState.value = UiState.Loading

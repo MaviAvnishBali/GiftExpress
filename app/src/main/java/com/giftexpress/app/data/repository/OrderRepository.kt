@@ -10,8 +10,17 @@ class OrderRepository @Inject constructor(
 ) {
     private fun errorText(response: retrofit2.Response<*>): String {
         val body = try { response.errorBody()?.string() } catch (e: Exception) { null }
-        val base = "HTTP ${response.code()} ${response.message()}".trim()
-        return if (!body.isNullOrBlank()) "$base — $body" else base
+        val base = "HTTP ${response.code()}"
+        if (!body.isNullOrBlank()) {
+            try {
+                val json = org.json.JSONObject(body)
+                val msg = json.optString("message", "")
+                if (msg.isNotBlank()) return "$base: $msg"
+            } catch (e: Exception) {
+                // Not JSON or parsing failed, do not show raw body
+            }
+        }
+        return base
     }
 
     suspend fun getOrders(): NetworkResult<List<OrderApiResponse>> {

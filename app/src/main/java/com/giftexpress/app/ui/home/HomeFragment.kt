@@ -16,7 +16,6 @@ import androidx.navigation.fragment.findNavController
 import com.giftexpress.app.R
 import com.giftexpress.app.data.model.SliderBanner
 import com.giftexpress.app.data.model.SliderOffer
-import com.giftexpress.app.data.model.SliderProduct
 import com.giftexpress.app.ui.cart.CartViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -273,7 +272,17 @@ class HomeFragment : Fragment() {
 
         when (resolvedType) {
             "product" -> if (resolvedUrlApi.isNotBlank()) navigateToProduct(resolvedUrlApi)
-            "category" -> navigateToCategory(resolvedUrlApi.toIntOrNull() ?: 0, title)
+            "category" -> {
+                val categoryId = resolvedUrlApi.toIntOrNull() ?: 0
+                val fallbackTitle = if (title.isBlank()) {
+                    when (categoryId) {
+                        CATEGORY_WOMEN -> "Women's Fragrances"
+                        CATEGORY_MEN -> "Men's Fragrances"
+                        else -> title
+                    }
+                } else title
+                navigateToCategory(categoryId, fallbackTitle)
+            }
             "brand" -> navigateToBrandProducts(resolvedUrlApi.toIntOrNull() ?: 0, title)
             else -> android.util.Log.i("HomeBanner", "Banner has no action, type='$resolvedType', url_api='$resolvedUrlApi', full_banner=$banner")
         }
@@ -289,7 +298,12 @@ class HomeFragment : Fragment() {
         val type = offer.type.trim().lowercase()
         if (type == "category") {
             val categoryId = urlApi.toIntOrNull() ?: return
-            navigateToCategory(categoryId, "")
+            val title = when (categoryId) {
+                CATEGORY_WOMEN -> "Women's Fragrances"
+                CATEGORY_MEN -> "Men's Fragrances"
+                else -> "" // Leave empty if unknown, though ideally backend provides it
+            }
+            navigateToCategory(categoryId, title)
         } else {
             navigateToProduct(urlApi)
         }

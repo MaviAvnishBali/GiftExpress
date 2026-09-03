@@ -178,26 +178,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Guard auth-required bottom nav tabs on user click
         binding.bottomNav.setOnItemSelectedListener { item ->
             if (item.itemId == navController.currentDestination?.id) {
                 // Already on this destination — do nothing (avoid duplicate back-stack entries)
                 return@setOnItemSelectedListener true
             }
-            val authRequired = item.itemId in listOf(R.id.ordersFragment, R.id.accountFragment)
-            if (authRequired) {
-                lifecycleScope.launch {
-                    if (!authRepository.isLoggedIn()) {
-                        navController.navigate(R.id.loginFragment)
-                    } else {
-                        navController.navigate(item.itemId)
-                    }
-                }
-                true
-            } else {
-                navController.navigate(item.itemId)
-                true
-            }
+            navController.navigate(item.itemId)
+            true
         }
         binding.navView.setupWithNavController(navController)
 

@@ -45,6 +45,24 @@ class ProductDetailsFragment : Fragment() {
                 val navController = findNavController()
                 val addedSkus by cartViewModel.addedSkus.collectAsState(initial = emptySet())
                 val cartCount by cartCountManager.count.collectAsState(initial = 0)
+
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    cartViewModel.cartEvents.collect { event ->
+                        when (event) {
+                            is com.giftexpress.app.ui.cart.CartEvent.ItemAdded -> {
+                                android.widget.Toast.makeText(requireContext(), "Added to cart", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+
+                val cartError by cartViewModel.error.collectAsState()
+                androidx.compose.runtime.LaunchedEffect(cartError) {
+                    cartError?.let {
+                        android.widget.Toast.makeText(requireContext(), it, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+
                 androidx.compose.material3.MaterialTheme(typography = com.giftexpress.app.ui.theme.GiftExpressTypography) {
                         ProductDetailsScreen(
                             sku = args.sku,
@@ -57,6 +75,9 @@ class ProductDetailsFragment : Fragment() {
                             },
                             onCartClick = {
                                 navController.navigate(R.id.cartFragment)
+                            },
+                            onSearchClick = {
+                                navController.navigate(R.id.searchFragment)
                             },
                             onMainAddToCart = { sku, qty ->
                                 if (cartViewModel.isLoggedIn()) {

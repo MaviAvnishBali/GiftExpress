@@ -95,6 +95,7 @@ fun ProductDetailsScreen(
     addedSkus: Set<String>,
     onBackClick: () -> Unit,
     onCartClick: () -> Unit,
+    onSearchClick: () -> Unit,
     onMainAddToCart: (String, Int) -> Unit,
     onProductCardAddToCart: (String) -> Unit,
     onProductCardGoToCart: () -> Unit,
@@ -132,6 +133,7 @@ fun ProductDetailsScreen(
             ProductTopBar(
                 onBackClick = onBackClick,
                 onCartClick = onCartClick,
+                onSearchClick = onSearchClick,
                 cartCount = cartCount,
                 onWishlistClick = {
                     val currentSku = (uiState as? UiState.Success)
@@ -206,8 +208,7 @@ fun ProductDetailsScreen(
 }
 
 @Composable
-fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit, onWishlistClick: () -> Unit = {}, cartCount: Int = 0) {
-    var searchText by remember { mutableStateOf("") }
+fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit, onSearchClick: () -> Unit, onWishlistClick: () -> Unit = {}, cartCount: Int = 0) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -229,6 +230,8 @@ fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit, onWishlistCl
                 .weight(1f)
                 .height(40.dp)
                 .background(Color(0xFFF5F5F5), RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onSearchClick() }
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -240,27 +243,11 @@ fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit, onWishlistCl
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                androidx.compose.foundation.text.BasicTextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    textStyle = androidx.compose.ui.text.TextStyle(
-                        fontFamily = Gilroy,
-                        fontSize = 14.sp,
-                        color = Color.Black
-                    ),
-                    decorationBox = { innerTextField ->
-                        if (searchText.isEmpty()) {
-                            Text(
-                                text = "Search...",
-                                fontFamily = Gilroy,
-                                fontSize = 14.sp,
-                                color = Color.Gray
-                            )
-                        }
-                        innerTextField()
-                    }
+                Text(
+                    text = "Search...",
+                    fontFamily = Gilroy,
+                    fontSize = 14.sp,
+                    color = Color.Gray
                 )
             }
         }

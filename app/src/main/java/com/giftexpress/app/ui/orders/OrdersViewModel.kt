@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.giftexpress.app.data.model.OrderApiResponse
 import com.giftexpress.app.data.repository.OrderRepository
+import com.giftexpress.app.data.repository.AuthRepository
 import com.giftexpress.app.utils.NetworkResult
 import com.giftexpress.app.utils.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +15,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class OrdersViewModel @Inject constructor(
-    private val orderRepository: OrderRepository
+    private val orderRepository: OrderRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _ordersState = MutableStateFlow<UiState<List<OrderApiResponse>>>(UiState.Loading)
@@ -24,7 +26,14 @@ class OrdersViewModel @Inject constructor(
         loadOrders()
     }
 
+    fun isLoggedIn(): Boolean = authRepository.isLoggedInSync()
+
     fun loadOrders() {
+        if (!isLoggedIn()) {
+            _ordersState.value = UiState.Success(emptyList())
+            return
+        }
+        
         _ordersState.value = UiState.Loading
         viewModelScope.launch {
             when (val result = orderRepository.getOrders()) {

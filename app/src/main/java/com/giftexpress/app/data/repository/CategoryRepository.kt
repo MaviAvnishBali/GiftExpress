@@ -33,7 +33,28 @@ class CategoryRepository @Inject constructor(
         filters: Map<String, String> = emptyMap()
     ): NetworkResult<CategoryProductsResponse> {
         return try {
-            val response = apiService.getCategoryProducts(categoryId, pageSize, currentPage, manufacturer, sortBy, sortOrder, specialFlag, filters)
+            val response = if (categoryId == 15) {
+                apiService.getSpecialProducts(
+                    specialFlag = 15,
+                    pageSize = pageSize,
+                    currentPage = currentPage,
+                    sortBy = sortBy,
+                    sortOrder = sortOrder,
+                    manufacturer = manufacturer,
+                    filters = filters
+                )
+            } else {
+                apiService.getCategoryProducts(
+                    categoryId,
+                    pageSize,
+                    currentPage,
+                    manufacturer,
+                    sortBy,
+                    sortOrder,
+                    specialFlag,
+                    filters
+                )
+            }
             if (response.isSuccessful && response.body() != null) {
                 NetworkResult.Success(response.body()!!)
             } else if (response.code() == 404) {

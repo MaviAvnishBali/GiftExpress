@@ -22,20 +22,40 @@ data class OrderApiResponse(
     @SerializedName("billing_address") val billingAddress: OrderApiAddress? = null,
     @SerializedName("payment") val payment: OrderApiPayment? = null,
     @SerializedName("extension_attributes") val extensionAttributes: OrderApiExtension? = null,
+    @SerializedName("payment_additional_info") val paymentAdditionalInfo: List<PaymentInfoEntry>? = null,
     @SerializedName("shipping_description") val shippingDescription: String? = null
 ) {
     fun getPaymentTitle(): String {
+        // Match iOS logic
+        // 1. Check root payment_additional_info for method_title
+        paymentAdditionalInfo
+            ?.firstOrNull { it.key == "method_title" }
+            ?.value
+            ?.takeIf { it.isNotBlank() }
+            ?.let { return it }
+            
+        // 2. Check extension_attributes as fallback (in case API returns it there)
         extensionAttributes?.paymentAdditionalInfo
             ?.firstOrNull { it.key == "method_title" }
             ?.value
             ?.takeIf { it.isNotBlank() }
             ?.let { return it }
 
-        // Fallback for some payment methods
-        payment?.additionalInformation?.find { it.contains("Credit Card", ignoreCase = true) || it.contains("PayPal", ignoreCase = true) }
-            ?.takeIf { it.isNotBlank() }
-            ?.let { return it }
+        // 3. Fallback to array-based data in payment?.additionalInformation
+        payment?.additionalInformation?.let { arr ->
+            // In Stripe orders, arr[2] is sometimes "1" (mobile_api_order flag). 
+            // The title is usually at index 5 or index 2 depending on the method.
+            val titleCandidate = arr.find { it.contains("card", ignoreCase = true) || it.contains("paypal", ignoreCase = true) || it.contains("amazon", ignoreCase = true) || it.contains("klarna", ignoreCase = true) || it.contains("afterpay", ignoreCase = true) }
+            if (!titleCandidate.isNullOrBlank()) {
+                return titleCandidate
+            }
+            
+            if (arr.size > 2 && arr[2].isNotBlank() && arr[2] != "1" && arr[2] != "0") {
+                return arr[2]
+            }
+        }
 
+        // 4. Final fallback
         return payment?.method ?: "N/A"
     }
 
@@ -81,7 +101,9 @@ data class OrderApiAddress(
 data class OrderApiPayment(
     @SerializedName("method") val method: String? = null,
     @SerializedName("amount_paid") val amountPaid: Double? = null,
-    @SerializedName("additional_information") val additionalInformation: List<String>? = null
+    @SerializedName("additional_information") val additionalInformation: List<String>? = null,
+    @SerializedName("cc_last4") val ccLast4: String? = null,
+    @SerializedName("cc_type") val ccType: String? = null
 )
 
 data class OrderApiExtension(

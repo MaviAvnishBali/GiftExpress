@@ -39,7 +39,13 @@ fun SearchListingScreen(
     val products by viewModel.products.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val apiFilters by viewModel.apiFiltersState.collectAsState()
+    val selectedFilters by viewModel.selectedFilters.collectAsState()
+    val currentSort by viewModel.currentSort.collectAsState()
     val gridState = rememberLazyGridState()
+    
+    var showFilter by remember { mutableStateOf(false) }
+    var showSort by remember { mutableStateOf(false) }
 
     LaunchedEffect(searchString) {
         viewModel.searchProducts(searchString)
@@ -113,44 +119,89 @@ fun SearchListingScreen(
                     )
                 }
             } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    state = gridState,
-                    contentPadding = PaddingValues(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    items(products) { product ->
-                        val sku = product.firstSku
-                        val isAdded = sku?.let { addedSkus.contains(it) } == true
-                        com.giftexpress.app.ui.home.ProductCard(
-                            product = product.toSliderProduct(),
-                            onProductClick = {
-                                if (!sku.isNullOrBlank()) onProductClick(sku, product.mainImage)
-                            },
-                            onAddToCart = { sku?.let(onAddToCart) },
-                            onGoToCart = onGoToCart,
-                            isAdded = isAdded,
-                            onAddToWishlist = { sku?.let(onAddToWishlist) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+                Column(modifier = Modifier.fillMaxSize()) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        state = gridState,
+                        contentPadding = PaddingValues(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.weight(1f).fillMaxWidth()
+                    ) {
+                        items(products) { product ->
+                            val sku = product.firstSku
+                            val isAdded = sku?.let { addedSkus.contains(it) } == true
+                            com.giftexpress.app.ui.home.ProductCard(
+                                product = product.toSliderProduct(),
+                                onProductClick = {
+                                    if (!sku.isNullOrBlank()) onProductClick(sku, product.mainImage)
+                                },
+                                onAddToCart = { sku?.let(onAddToCart) },
+                                onGoToCart = onGoToCart,
+                                isAdded = isAdded,
+                                onAddToWishlist = { sku?.let(onAddToWishlist) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
 
-                    if (isLoading) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(color = Color.Red, modifier = Modifier.size(32.dp))
+                        if (isLoading) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = Color.Red, modifier = Modifier.size(32.dp))
+                                }
                             }
                         }
                     }
+
+                    com.giftexpress.app.ui.category.CategoryBottomActions(
+                        onFilterClick = { showFilter = true },
+                        onSortClick = { showSort = true },
+                        sortLabel = currentSort?.label,
+                        filterLabel = if (selectedFilters.isNotEmpty()) "FILTERED" else null
+                    )
                 }
             }
+        }
+    }
+
+    if (showFilter) {
+        com.giftexpress.app.ui.category.FilterFullScreen(
+            filters = apiFilters,
+            initialSelectedFilters = selectedFilters,
+            onApply = { filters ->
+                showFilter = false
+                viewModel.applyFilters(filters)
+            },
+            onBackClick = { showFilter = false },
+            onClearFilter = {
+                showFilter = false
+                viewModel.clearFilter()
+            }
+        )
+    }
+
+    if (showSort) {
+        @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+        androidx.compose.material3.ModalBottomSheet(
+            onDismissRequest = { showSort = false },
+            containerColor = Color.White
+        ) {
+            com.giftexpress.app.ui.category.SortBottomSheetContent(
+                currentSort = currentSort,
+                onSortSelected = { option ->
+                    showSort = false
+                    viewModel.applySort(option)
+                },
+                onClearSort = {
+                    showSort = false
+                    viewModel.applySort(null)
+                }
+            )
         }
     }
 }

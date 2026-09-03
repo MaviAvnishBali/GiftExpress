@@ -35,6 +35,7 @@ class WishlistFragment : Fragment() {
             setContent {
                 MaterialTheme(typography = GiftExpressTypography) {
                     val addToWishlistState by viewModel.addToWishlistState.collectAsState()
+                    val removeState by viewModel.removeState.collectAsState()
 
                     LaunchedEffect(addToWishlistState) {
                         when (addToWishlistState) {
@@ -45,6 +46,24 @@ class WishlistFragment : Fragment() {
                                     Toast.LENGTH_SHORT
                                 ).show()
                                 viewModel.resetAddState()
+                            }
+                            else -> {}
+                        }
+                    }
+                    
+                    LaunchedEffect(removeState) {
+                        when (removeState) {
+                            is UiState.Success -> {
+                                Toast.makeText(requireContext(), "Removed from wishlist", Toast.LENGTH_SHORT).show()
+                                viewModel.resetRemoveState()
+                            }
+                            is UiState.Error -> {
+                                Toast.makeText(
+                                    requireContext(),
+                                    (removeState as UiState.Error).message,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                viewModel.resetRemoveState()
                             }
                             else -> {}
                         }

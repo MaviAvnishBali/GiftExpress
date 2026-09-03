@@ -33,45 +33,34 @@ class AccountFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 androidx.compose.material3.MaterialTheme() {
-                        AccountScreen(
-                            viewModel = viewModel,
-                            onNavigateToOrders = {
-                                findNavController().navigate(R.id.ordersFragment)
-                            },
-                            onNavigateToWishlist = {
-                                findNavController().navigate(R.id.action_accountFragment_to_wishlistFragment)
-                            },
-                            onNavigateToAddressBook = {
-                                findNavController().navigate(R.id.addressBookFragment)
-                            },
-                            onNavigateToAccountInfo = {
-                                findNavController().navigate(R.id.accountInfoFragment)
-                            },
-                            onNavigateToRewardPoints = {
-                                findNavController().navigate(R.id.rewardsFragment)
-                            },
-                            onNavigateToRewardHistory = {
-                                findNavController().navigate(R.id.rewardsHistoryFragment)
-                            },
-                            onNavigateToAboutUs = {
-                                findNavController().navigate(R.id.aboutUsFragment)
-                            },
-                            onNavigateToShippingInfo = {
-                                findNavController().navigate(R.id.shippingInfoFragment)
-                            },
-                            onNavigateToPrivacyPolicy = {
-                                findNavController().navigate(R.id.privacyPolicyFragment)
-                            },
-                            onNavigateToTermsConditions = {
-                                findNavController().navigate(R.id.termsConditionsFragment)
-                            },
-                            onNavigateToContactUs = {
-                                findNavController().navigate(R.id.contactUsFragment)
-                            },
-                            onNavigateToPerfumeEnquiry = {
-                                findNavController().navigate(R.id.perfumeEnquiryFragment)
+                            val handleRestrictedAction: (() -> Unit) -> Unit = { action ->
+                                if (viewModel.isLoggedIn()) {
+                                    action()
+                                } else {
+                                    com.giftexpress.app.utils.showLoginRequiredDialog(
+                                        context = requireContext(),
+                                        message = "Please login to access this feature.",
+                                        onLogin = { findNavController().navigate(R.id.loginFragment) }
+                                    )
+                                }
                             }
-                        )
+
+                            AccountScreen(
+                                viewModel = viewModel,
+                                onNavigateToLogin = { findNavController().navigate(R.id.loginFragment) },
+                                onNavigateToOrders = { handleRestrictedAction { findNavController().navigate(R.id.ordersFragment) } },
+                                onNavigateToWishlist = { handleRestrictedAction { findNavController().navigate(R.id.action_accountFragment_to_wishlistFragment) } },
+                                onNavigateToAddressBook = { handleRestrictedAction { findNavController().navigate(R.id.addressBookFragment) } },
+                                onNavigateToAccountInfo = { handleRestrictedAction { findNavController().navigate(R.id.accountInfoFragment) } },
+                                onNavigateToRewardPoints = { handleRestrictedAction { findNavController().navigate(R.id.rewardsFragment) } },
+                                onNavigateToRewardHistory = { handleRestrictedAction { findNavController().navigate(R.id.rewardsHistoryFragment) } },
+                                onNavigateToAboutUs = { findNavController().navigate(R.id.aboutUsFragment) },
+                                onNavigateToShippingInfo = { findNavController().navigate(R.id.shippingInfoFragment) },
+                                onNavigateToPrivacyPolicy = { findNavController().navigate(R.id.privacyPolicyFragment) },
+                                onNavigateToTermsConditions = { findNavController().navigate(R.id.termsConditionsFragment) },
+                                onNavigateToContactUs = { findNavController().navigate(R.id.contactUsFragment) },
+                                onNavigateToPerfumeEnquiry = { findNavController().navigate(R.id.perfumeEnquiryFragment) }
+                            )
                 }
             }
         }

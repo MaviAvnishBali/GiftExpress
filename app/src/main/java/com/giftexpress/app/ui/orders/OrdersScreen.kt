@@ -205,7 +205,7 @@ private fun OrdersShimmer() {
 @Composable
 private fun EmptyOrdersState() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 32.dp)) {
             Icon(
                 painter = painterResource(R.drawable.ic_box),
                 contentDescription = null,
@@ -214,10 +214,11 @@ private fun EmptyOrdersState() {
             )
             Spacer(Modifier.height(16.dp))
             Text(
-                text = "No orders yet",
-                fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-                fontSize = 18.sp,
-                color = Color.Gray
+                text = "Please continue shopping or log in to your account to view your previous orders.",
+                fontFamily = FontFamily(Font(R.font.gilroy_medium)),
+                fontSize = 16.sp,
+                color = Color.Gray,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         }
     }

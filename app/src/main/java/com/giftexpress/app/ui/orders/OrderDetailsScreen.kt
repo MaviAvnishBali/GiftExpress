@@ -226,6 +226,9 @@ private fun OrderDetailsContent(order: OrderApiResponse) {
                         valueColor = Color(0xFF2E7D32)
                     )
                 }
+                if ((order.extensionAttributes?.amextrafeeFeeAmount ?: 0.0) > 0.0) {
+                    LabelValue("Shipping Protection", "$${String.format("%.2f", order.extensionAttributes?.amextrafeeFeeAmount)}")
+                }
                 Divider(modifier = Modifier.padding(vertical = 8.dp), color = Color.LightGray.copy(0.5f))
                 LabelValue(
                     label = "Total",
@@ -241,12 +244,14 @@ private fun OrderDetailsContent(order: OrderApiResponse) {
             SectionCard {
                 LabelValue("PAYMENT METHOD", order.getPaymentTitle())
                 // Show card last 4 digits if available (Stripe/credit card payments)
-                val cardNumber = order.payment?.additionalInformation?.getOrNull(1)
-                    ?.takeIf { it.isNotBlank() && it != order.getPaymentTitle() }
-                    ?: order.extensionAttributes?.paymentAdditionalInfo?.firstOrNull { it.key == "last_trans_id" || it.key == "card_number" }?.value
-                if (!cardNumber.isNullOrBlank()) {
+                val cardNumber = order.payment?.ccLast4
+                    ?: order.paymentAdditionalInfo?.firstOrNull { it.key == "card_number" || it.key == "cc_last_4" }?.value
+                    ?: order.extensionAttributes?.paymentAdditionalInfo?.firstOrNull { it.key == "card_number" || it.key == "cc_last_4" }?.value
+                
+                val cardDisplay = cardNumber?.let { if (it.length <= 4) "**** $it" else it }
+                if (!cardDisplay.isNullOrBlank()) {
                     Spacer(Modifier.height(4.dp))
-                    LabelValue("Card", cardNumber)
+                    LabelValue("Card", cardDisplay)
                 }
             }
         }

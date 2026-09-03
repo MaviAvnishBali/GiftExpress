@@ -30,6 +30,7 @@ data class SearchListingProduct(
     @SerializedName("description") val description: String?,
     @SerializedName("discount") val discount: Double?,
     @SerializedName("discountPercentage") val discountPercentage: Double?,
+    @SerializedName("gender") val gender: String?,
     @SerializedName("attributes") val attributes: List<SearchListingAttribute>? = null
 ) {
     val displayPrice: Double get() = sellingPrice ?: finalPrice ?: price ?: 0.0

@@ -43,9 +43,12 @@ data class ProductListResponse(
 )
 
 data class ProductItem(
+    @SerializedName("product_id") val productId: Int?,
     @SerializedName("name") val name: String?,
     @SerializedName("price") val price: Double?,
     @SerializedName("image") val image: String?,
     @SerializedName("sku") val sku: String?,
-    @SerializedName("attributes") val attributes: List<String>?
+    @SerializedName("attributes") val attributes: List<String>?,
+    @SerializedName("perfume_type") val perfumeType: String?,
+    @SerializedName("as_low_as") val asLowAs: Boolean?
 )

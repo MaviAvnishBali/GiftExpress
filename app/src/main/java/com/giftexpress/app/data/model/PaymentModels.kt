@@ -15,7 +15,8 @@ data class StripePaymentIntentRequest(
 )
 
 data class StripePlaceOrderRequest(
-    @SerializedName("payment_intent_id") val paymentIntentId: String
+    @SerializedName("payment_intent_id") val paymentIntentId: String,
+    @SerializedName("payment_method") val paymentMethod: String? = null
 )
 
 data class PlaceOrderResponse(
@@ -92,7 +93,8 @@ data class WebCheckoutSessionResponse(
 )
 
 data class WebCheckoutPlaceOrderRequest(
-    @SerializedName("reference_id") val referenceId: String
+    @SerializedName("reference_id") val referenceId: String,
+    @SerializedName("payment_method") val paymentMethod: String? = null
 )
 
 data class PlaceOrderRequest(

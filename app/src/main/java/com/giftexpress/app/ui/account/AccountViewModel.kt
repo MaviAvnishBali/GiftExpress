@@ -42,6 +42,8 @@ class AccountViewModel @Inject constructor(
         loadCustomerDetails()
     }
 
+    fun isLoggedIn(): Boolean = authRepository.isLoggedInSync()
+
     /**
      * Load user profile from DataStore
      */

@@ -145,7 +145,7 @@ class PaymentViewModel @Inject constructor(
     fun confirmOrder(paymentIntentId: String) {
         viewModelScope.launch {
             _placeOrderState.value = UiState.Loading
-            when (val result = repository.stripePlaceOrder(paymentIntentId)) {
+            when (val result = repository.stripePlaceOrder(paymentIntentId, "Stripe")) {
                 is NetworkResult.Success -> result.data?.let {
                     cartRepository.clearQuoteId()
                     cartCountManager.reset()
@@ -295,8 +295,8 @@ class PaymentViewModel @Inject constructor(
         viewModelScope.launch {
             _placeOrderState.value = UiState.Loading
             val result = when (provider) {
-                RedirectProvider.AMAZON_PAY -> repository.amazonPayPlaceOrder(reference)
-                RedirectProvider.AFTERPAY -> repository.afterpayPlaceOrder(reference)
+                RedirectProvider.AMAZON_PAY -> repository.amazonPayPlaceOrder(reference, "Amazon Pay")
+                RedirectProvider.AFTERPAY -> repository.afterpayPlaceOrder(reference, "Afterpay")
             }
             when (result) {
                 is NetworkResult.Success -> result.data?.let {

@@ -35,6 +35,24 @@ class SearchListingFragment : Fragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 val addedSkus by cartViewModel.addedSkus.collectAsState(initial = emptySet())
+                
+                androidx.compose.runtime.LaunchedEffect(Unit) {
+                    cartViewModel.cartEvents.collect { event ->
+                        when (event) {
+                            is com.giftexpress.app.ui.cart.CartEvent.ItemAdded -> {
+                                android.widget.Toast.makeText(requireContext(), "Added to cart", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+
+                val cartError by cartViewModel.error.collectAsState()
+                androidx.compose.runtime.LaunchedEffect(cartError) {
+                    cartError?.let {
+                        android.widget.Toast.makeText(requireContext(), it, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+
                 MaterialTheme(typography = GiftExpressTypography) {
                     SearchListingScreen(
                         searchString = searchString,

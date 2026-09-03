@@ -17,6 +17,7 @@ class CmsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _pages = MutableStateFlow<List<CmsPage>>(emptyList())
+    val pages: StateFlow<List<CmsPage>> = _pages
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 

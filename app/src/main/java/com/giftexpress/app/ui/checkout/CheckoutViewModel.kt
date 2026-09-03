@@ -11,6 +11,7 @@ import com.giftexpress.app.data.model.PaymentMethodsResponse
 import com.giftexpress.app.data.model.ShippingEstimateAddress
 import com.giftexpress.app.data.model.ShippingInformationRequest
 import com.giftexpress.app.data.model.ShippingMethod
+import com.giftexpress.app.data.model.WalletSummary
 import com.giftexpress.app.data.repository.AddressRepository
 import com.giftexpress.app.data.repository.CartRepository
 import com.giftexpress.app.data.repository.CheckoutRepository
@@ -41,6 +42,9 @@ class CheckoutViewModel @Inject constructor(
 
     private val _rewardsState = MutableStateFlow<UiState<Boolean>>(UiState.Idle)
     val rewardsState: StateFlow<UiState<Boolean>> = _rewardsState.asStateFlow()
+
+    private val _walletSummary = MutableStateFlow<WalletSummary?>(null)
+    val walletSummary: StateFlow<WalletSummary?> = _walletSummary.asStateFlow()
 
     private val _selectedShippingMethod = MutableStateFlow<ShippingMethod?>(null)
     val selectedShippingMethod: StateFlow<ShippingMethod?> = _selectedShippingMethod.asStateFlow()
@@ -96,6 +100,12 @@ class CheckoutViewModel @Inject constructor(
                     }
                 }
                 is NetworkResult.Error -> { /* show no address state */ }
+                else -> {}
+            }
+        }
+        viewModelScope.launch {
+            when (val result = repository.getRewardPoints()) {
+                is NetworkResult.Success -> _walletSummary.value = result.data
                 else -> {}
             }
         }
@@ -281,7 +291,16 @@ class CheckoutViewModel @Inject constructor(
 
     fun updateRewardsInput(value: String) {
         // digits only — points are integers
-        _rewardsInput.value = value.filter { it.isDigit() }
+        val digits = value.filter { it.isDigit() }
+        _rewardsInput.value = digits
+        
+        val points = digits.toIntOrNull() ?: 0
+        val balance = _walletSummary.value?.balance ?: 0
+        if (points > balance) {
+            _rewardsState.value = UiState.Error("You only have $balance points available.")
+        } else if (_rewardsState.value is UiState.Error) {
+            _rewardsState.value = UiState.Idle
+        }
     }
 
     fun applyCoupon() {
@@ -318,6 +337,15 @@ class CheckoutViewModel @Inject constructor(
     }
 
     fun applyRewards(points: Int) {
+        val balance = _walletSummary.value?.balance ?: 0
+        if (points > balance) {
+            _rewardsState.value = UiState.Error("You only have $balance points available.")
+            return
+        }
+        if (points <= 0) {
+            _rewardsState.value = UiState.Error("Please enter a valid amount.")
+            return
+        }
         viewModelScope.launch {
             _rewardsState.value = UiState.Loading
             when (val result = repository.applyRewardPoints(points)) {

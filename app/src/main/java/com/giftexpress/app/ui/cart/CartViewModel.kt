@@ -175,9 +175,27 @@ class CartViewModel @Inject constructor(
     }
 
     fun clearCart() {
-        _cartItems.value = emptyList()
-        _addedSkus.value = emptySet()
-        cartCountManager.setCount(0)
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            
+            val currentItems = _cartItems.value.toList()
+            var successCount = 0
+            
+            // Iteratively call the remove API for each item since Magento lacks a native 'clear all' endpoint
+            for (item in currentItems) {
+                when (cartRepository.removeCartItem(item.id.toInt())) {
+                    is NetworkResult.Success -> successCount++
+                    else -> { } // Handle individual failure silently and refresh at the end
+                }
+            }
+            
+            if (successCount > 0) {
+                fetchCart() // Sync with server to get the updated, completely empty cart
+            } else {
+                _isLoading.value = false
+            }
+        }
     }
 
     private val _subtotal = MutableStateFlow(0.0)
@@ -196,20 +214,16 @@ class CartViewModel @Inject constructor(
     val total: StateFlow<Double> = _total.asStateFlow()
 
     fun fetchCartTotals() {
-        viewModelScope.launch {
-            when (val result = cartRepository.getCartTotals()) {
-                is NetworkResult.Success -> {
-                    result.data?.let { totals ->
-                        _subtotal.value = totals.subtotal ?: 0.0
-                        _shipping.value = totals.shippingAmount ?: 0.0
-                        _tax.value = totals.taxAmount ?: 0.0
-                        _discount.value = totals.discountAmount ?: 0.0
-                        _total.value = totals.grandTotal ?: 0.0
-                    }
-                }
-                else -> {}
-            }
-        }
+        val localSubtotal = _cartItems.value.sumOf { it.price * it.quantity }
+        val localShipping = 0.0
+        val localTax = localSubtotal * 0.00
+        val localTotal = localSubtotal + localShipping + localTax
+        
+        _subtotal.value = localSubtotal
+        _shipping.value = localShipping
+        _tax.value = localTax
+        _total.value = localTotal
+        _discount.value = 0.0
     }
         
     fun isLoggedIn(): Boolean = authRepository.isLoggedInSync()

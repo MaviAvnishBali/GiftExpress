@@ -535,8 +535,13 @@ fun ProductCard(
                         interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
                         indication = null // Removes the default circular ripple
                     ) {
-                        isWishlistedLocal = !isWishlistedLocal
-                        onAddToWishlist.invoke()
+                        if (isWishlistedInitial) {
+                            isWishlistedLocal = false
+                            onAddToWishlist.invoke()
+                        } else if (!isWishlistedLocal) {
+                            isWishlistedLocal = true
+                            onAddToWishlist.invoke()
+                        }
                     }
             )
         }
@@ -869,7 +874,7 @@ fun OffersSection(
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(180.dp),
+                    .aspectRatio(2.8f),
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 pageSpacing = 8.dp
             ) { page ->
@@ -889,7 +894,7 @@ fun OffersSection(
                                 }
                             else Modifier
                         ),
-                    contentScale = ContentScale.Fit,
+                    contentScale = ContentScale.Crop,
                     loading = {
                         Box(modifier = Modifier.fillMaxSize().shimmerEffect())
                     }

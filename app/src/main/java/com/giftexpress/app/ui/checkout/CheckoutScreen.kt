@@ -29,6 +29,7 @@ import com.giftexpress.app.data.model.CartItemDetail
 import com.giftexpress.app.data.model.CustomerAddressModel
 import com.giftexpress.app.data.model.OrderTotals
 import com.giftexpress.app.data.model.ShippingMethod
+import com.giftexpress.app.data.model.WalletSummary
 import com.giftexpress.app.ui.theme.Gilroy
 import com.giftexpress.app.utils.UiState
 
@@ -59,6 +60,7 @@ fun CheckoutScreen(
     val rewardsApplied by viewModel.rewardsApplied.collectAsState()
     val rewardsState by viewModel.rewardsState.collectAsState()
     val rewardsInput by viewModel.rewardsInput.collectAsState()
+    val walletSummary by viewModel.walletSummary.collectAsState()
     val cartItems by viewModel.cartItems.collectAsState()
     val cartItemUpdating by viewModel.cartItemUpdating.collectAsState()
     val isProtectionSelected by viewModel.isProtectionSelected.collectAsState()
@@ -272,6 +274,7 @@ fun CheckoutScreen(
                     rewardsInput = rewardsInput,
                     rewardsApplied = rewardsApplied,
                     rewardsState = rewardsState,
+                    walletSummary = walletSummary,
                     onInputChange = { viewModel.updateRewardsInput(it) },
                     onApply = { rewardsInput.toIntOrNull()?.let { viewModel.applyRewards(it) } },
                     onRemove = { viewModel.removeRewards() }
@@ -568,35 +571,11 @@ private fun TotalsCard(
             }
             is UiState.Success -> {
                 val totals = totalsState.data
-                TotalsRow("Subtotal", totals.subtotal ?: 0.0)
-                Spacer(Modifier.height(10.dp))
-                Column {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        val shippingLabel = if (shippingMethodTitle != null) "Shipping & Handling ($shippingMethodTitle)" else "Shipping & Handling"
-                        Text(shippingLabel, fontFamily = Gilroy, fontSize = 14.sp, color = Color.Black, modifier = Modifier.weight(1f))
-                        Text(
-                            "$${String.format("%.2f", totals.shippingAmount ?: 0.0)}",
-                            fontFamily = Gilroy,
-                            fontSize = 14.sp,
-                            color = Color.Black
-                        )
-                    }
-                }
-                if ((totals.taxAmount ?: 0.0) != 0.0) {
-                    Spacer(Modifier.height(10.dp))
-                    TotalsRow("Tax", totals.taxAmount ?: 0.0)
-                }
-                if ((totals.discountAmount ?: 0.0) != 0.0) {
-                    Spacer(Modifier.height(10.dp))
-                    TotalsRow("Discount", -(Math.abs(totals.discountAmount ?: 0.0)))
-                }
                 
-                val amastySegment = totals.totalSegments?.find { it.code == "amasty_extrafee" }
-                val protectionFee = amastySegment?.extensionAttributes?.taxAmastyExtrafeeDetails?.valueInclTax
-                    ?: amastySegment?.value ?: 0.0
-                if (protectionFee > 0.0) {
+                totals.totalSegments?.filter { it.code != "grand_total" }?.forEach { segment ->
+                    val label = if (segment.code == "amasty_extrafee") "Shipping Protection" else segment.title ?: ""
+                    TotalsRow(label, segment.value ?: 0.0)
                     Spacer(Modifier.height(10.dp))
-                    TotalsRow("Shipping Protection", protectionFee)
                 }
                 
                 Divider(
@@ -711,6 +690,7 @@ private fun RewardsSection(
     rewardsInput: String,
     rewardsApplied: Boolean,
     rewardsState: UiState<Boolean>,
+    walletSummary: WalletSummary?,
     onInputChange: (String) -> Unit,
     onApply: () -> Unit,
     onRemove: () -> Unit
@@ -719,6 +699,9 @@ private fun RewardsSection(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Text("🏆", fontSize = 18.sp)
             Text("Apply Rewards", fontFamily = GilroyBold, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
+        }
+        if (walletSummary != null) {
+            Text("You have ${walletSummary.balance} points left. 20 for every 1 USD", fontFamily = Gilroy, fontSize = 13.sp, color = Color.Gray)
         }
         if (rewardsApplied) {
             Row(
@@ -744,7 +727,7 @@ private fun RewardsSection(
                 trailingIcon = {
                     TextButton(
                         onClick = onApply,
-                        enabled = rewardsInput.isNotBlank() && rewardsState !is UiState.Loading
+                        enabled = rewardsInput.isNotBlank() && rewardsState !is UiState.Loading && rewardsState !is UiState.Error
                     ) {
                         if (rewardsState is UiState.Loading) {
                             CircularProgressIndicator(color = AccentOrange, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -757,6 +740,13 @@ private fun RewardsSection(
             if (rewardsState is UiState.Error) {
                 Text(rewardsState.message, color = AccentRed, fontFamily = Gilroy, fontSize = 12.sp)
             }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Note: You need at least 100 points to pay for the order with reward points.",
+                fontFamily = Gilroy,
+                fontSize = 12.sp,
+                color = AccentRed
+            )
         }
     }
 }

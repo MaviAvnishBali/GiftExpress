@@ -48,7 +48,9 @@ fun CartScreen(
         topBar = {
             CartTopBar(
                 cartCount = cartItems.sumOf { it.quantity },
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                onClearClick = { viewModel.clearCart() },
+                showClearAll = cartItems.isNotEmpty()
             )
         },
         bottomBar = {
@@ -178,7 +180,7 @@ fun CartScreen(
 }
 
 @Composable
-fun CartTopBar(cartCount: Int, onBackClick: () -> Unit) {
+fun CartTopBar(cartCount: Int, showClearAll: Boolean = false, onClearClick: () -> Unit = {}, onBackClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -198,8 +200,21 @@ fun CartTopBar(cartCount: Int, onBackClick: () -> Unit) {
             fontFamily = Gilroy,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp,
-            color = Color.Black
+            color = Color.Black,
+            modifier = Modifier.weight(1f)
         )
+        if (showClearAll) {
+            Text(
+                text = "Clear All",
+                fontFamily = Gilroy,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                color = Color.Red,
+                modifier = Modifier
+                    .clickable { onClearClick() }
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
     }
 }
 

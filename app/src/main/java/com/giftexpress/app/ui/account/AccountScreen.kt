@@ -36,31 +36,34 @@ fun AccountScreen(
     onNavigateToPrivacyPolicy: () -> Unit,
     onNavigateToTermsConditions: () -> Unit,
     onNavigateToContactUs: () -> Unit = {},
-    onNavigateToPerfumeEnquiry: () -> Unit = {}
+    onNavigateToPerfumeEnquiry: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {}
 ) {
     val logoutState by viewModel.logoutState.collectAsState()
+    val user by viewModel.user.collectAsState()
+    val isLoggedIn = user != null
 
     Scaffold(
         bottomBar = {
             Button(
-                onClick = { viewModel.logout() },
+                onClick = { if (isLoggedIn) viewModel.logout() else onNavigateToLogin() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colorResource(id = R.color.error)
+                    containerColor = if (isLoggedIn) colorResource(id = R.color.error) else Color(0xFF333333)
                 ),
                 shape = RoundedCornerShape(0.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_power),
-                    contentDescription = "Logout",
+                    painter = painterResource(id = if (isLoggedIn) R.drawable.ic_power else R.drawable.ic_profile),
+                    contentDescription = if (isLoggedIn) "Logout" else "Login",
                     tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "LOGOUT",
+                    text = if (isLoggedIn) "LOGOUT" else "LOGIN",
                     fontFamily = FontFamily(Font(R.font.gilroy_bold)),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,

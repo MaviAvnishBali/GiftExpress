@@ -42,7 +42,7 @@ android {
             // Production uses LIVE Stripe key
             buildConfigField "String", "STRIPE_PUBLISHABLE_KEY", "\"pk_live_duGJaQa7hYil2RbDtsg3gFJL\""
             // PayPal LIVE client ID — pending: merchant account profile incomplete / merchant ID not issued yet
-            buildConfigField "String", "PAYPAL_CLIENT_ID", "\"REPLACE_WITH_LIVE_CLIENT_ID\""
+            buildConfigField "String", "PAYPAL_CLIENT_ID", "\"AS3A1X9lK12pJpDBaSCRA25BrdQYkj1EfK5KJtPAmPIYEzC0GwLDQ3YHfYui156Rd7-ewsDDq-2kK2wp\""
             buildConfigField "String", "PAYPAL_ENVIRONMENT", "\"live\""
         }
     }
@@ -147,6 +147,9 @@ dependencies {
 
     // Coil (Image Loading for Compose)
     implementation "io.coil-kt:coil-compose:2.5.0"
+
+    // Compose HTML Text
+    implementation "de.charlex.compose:html-text:1.6.0"
 
     // Lottie (Animations)
     implementation 'com.airbnb.android:lottie-compose:6.4.1'

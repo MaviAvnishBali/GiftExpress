@@ -53,6 +53,10 @@ class SpecialProductsViewModel @Inject constructor(
 
     fun loadProducts(specialFlag: Int, categoryId: Int = 0, brandId: Int = 0, reset: Boolean = false) {
         if (reset) {
+            if (lastSpecialFlag != specialFlag || lastCategoryId != categoryId || lastBrandId != brandId) {
+                _apiFiltersState.value = null
+                _selectedFilters.value = emptyMap()
+            }
             lastSpecialFlag = specialFlag
             lastCategoryId = categoryId
             lastBrandId = brandId
@@ -155,11 +159,13 @@ class SpecialProductsViewModel @Inject constructor(
     }
 
     private fun ProductItem.toSliderProduct(): SliderProduct = SliderProduct(
+        productId = productId,
         name = name,
         price = price,
         image = image,
         sku = sku,
         attributes = attributes,
-        perfumeType = attributes?.firstOrNull()
+        perfumeType = perfumeType ?: attributes?.firstOrNull(),
+        asLowAs = asLowAs
     )
 }

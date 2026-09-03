@@ -72,4 +72,8 @@ class WishlistViewModel @Inject constructor(
     fun resetAddState() {
         _addToWishlistState.value = UiState.Idle
     }
+
+    fun resetRemoveState() {
+        _removeState.value = UiState.Idle
+    }
 }

@@ -60,6 +60,16 @@ class CheckoutRepository @Inject constructor(
         }
     }
 
+    suspend fun getRewardPoints(): NetworkResult<WalletSummary> {
+        return try {
+            val response = apiService.getRewardPoints()
+            if (response.isSuccessful && response.body() != null) NetworkResult.Success(response.body()!!)
+            else NetworkResult.Error("Failed to get reward points: ${response.message()}")
+        } catch (e: Exception) {
+            NetworkResult.Error("Error: ${e.localizedMessage}")
+        }
+    }
+
     suspend fun removeRewardPoints(): NetworkResult<Boolean> {
         return try {
             val response = apiService.removeRewardPoints()
@@ -125,9 +135,9 @@ class CheckoutRepository @Inject constructor(
     }
 
     // Stripe: matches iOS PaymentViewModel.getOrderDetails (place-order after payment)
-    suspend fun stripePlaceOrder(paymentIntentId: String): NetworkResult<PlaceOrderResponse> {
+    suspend fun stripePlaceOrder(paymentIntentId: String, paymentMethod: String? = null): NetworkResult<PlaceOrderResponse> {
         return try {
-            val response = apiService.stripePlaceOrder(StripePlaceOrderRequest(paymentIntentId))
+            val response = apiService.stripePlaceOrder(StripePlaceOrderRequest(paymentIntentId, paymentMethod))
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.status == false) {
@@ -205,9 +215,9 @@ class CheckoutRepository @Inject constructor(
     }
 
     // Amazon Pay: complete the approved session and place the Magento order
-    suspend fun amazonPayPlaceOrder(referenceId: String): NetworkResult<PlaceOrderResponse> {
+    suspend fun amazonPayPlaceOrder(referenceId: String, paymentMethod: String? = null): NetworkResult<PlaceOrderResponse> {
         return try {
-            val response = apiService.amazonPayPlaceOrder(WebCheckoutPlaceOrderRequest(referenceId))
+            val response = apiService.amazonPayPlaceOrder(WebCheckoutPlaceOrderRequest(referenceId, paymentMethod))
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.status == false) {
@@ -240,9 +250,9 @@ class CheckoutRepository @Inject constructor(
     }
 
     // Afterpay: complete the approved session and place the Magento order
-    suspend fun afterpayPlaceOrder(referenceId: String): NetworkResult<PlaceOrderResponse> {
+    suspend fun afterpayPlaceOrder(referenceId: String, paymentMethod: String? = null): NetworkResult<PlaceOrderResponse> {
         return try {
-            val response = apiService.afterpayPlaceOrder(WebCheckoutPlaceOrderRequest(referenceId))
+            val response = apiService.afterpayPlaceOrder(WebCheckoutPlaceOrderRequest(referenceId, paymentMethod))
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 if (body.status == false) {

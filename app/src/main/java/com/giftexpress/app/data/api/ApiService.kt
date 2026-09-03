@@ -29,9 +29,9 @@ interface ApiService {
     @GET("giftexpress/categoryofferandBanner/{categoryId}")
     suspend fun getCategoryOfferAndBanner(@Path("categoryId") categoryId: Int): Response<CategoryOfferAndBannerResponse>
 
-    @GET("giftexpress/products/{categoryId}")
+    @GET("giftexpress/all-products")
     suspend fun getCategoryProducts(
-        @Path("categoryId") categoryId: Int,
+        @Query("category_id") categoryId: Int,
         @Query("pageSize") pageSize: Int,
         @Query("currentPage") currentPage: Int,
         @Query("manufacturer") manufacturer: Int? = null,

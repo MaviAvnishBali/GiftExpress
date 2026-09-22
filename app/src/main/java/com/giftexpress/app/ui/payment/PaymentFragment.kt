@@ -127,12 +127,7 @@ class PaymentFragment : Fragment() {
                         onPayClick = {
                             when (viewModel.selectedMethod.value) {
                                 PaymentMethodOption.PAYPAL -> viewModel.startPayPalCheckout(total)
-                                // Google Pay, Klarna, Afterpay, Amazon Pay, & cards are all presented through the Stripe sheet
-                                PaymentMethodOption.GOOGLE_PAY,
-                                PaymentMethodOption.KLARNA,
-                                PaymentMethodOption.AFTERPAY,
-                                PaymentMethodOption.AMAZON_PAY,
-                                PaymentMethodOption.CARD -> viewModel.fetchPaymentIntent()
+                                PaymentMethodOption.OTHER -> viewModel.fetchPaymentIntent()
                             }
                         }
                     )
@@ -154,7 +149,8 @@ class PaymentFragment : Fragment() {
      * Present Stripe's native PaymentSheet — matches iOS paymentSheet?.present(from: self)
      */
     private fun presentStripeSheet(clientSecret: String) {
-        val googlePayEnvironment = if (BuildConfig.PAYPAL_ENVIRONMENT == "live") {
+        val isLive = BuildConfig.STRIPE_PUBLISHABLE_KEY.startsWith("pk_live")
+        val googlePayEnvironment = if (isLive) {
             PaymentSheet.GooglePayConfiguration.Environment.Production
         } else {
             PaymentSheet.GooglePayConfiguration.Environment.Test
@@ -166,6 +162,12 @@ class PaymentFragment : Fragment() {
         )
         val config = PaymentSheet.Configuration.Builder("GiftExpress")
             .googlePay(googlePayConfig)
+            .allowsDelayedPaymentMethods(true)
+            .defaultBillingDetails(
+                PaymentSheet.BillingDetails(
+                    address = PaymentSheet.Address(country = "US")
+                )
+            )
             .build()
         paymentSheet.presentWithPaymentIntent(clientSecret, config)
     }

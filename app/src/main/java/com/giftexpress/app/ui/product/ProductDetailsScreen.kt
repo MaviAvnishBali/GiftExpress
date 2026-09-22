@@ -1,5 +1,8 @@
 package com.giftexpress.app.ui.product
 
+import android.content.Intent
+import android.net.Uri
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -41,7 +44,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -110,9 +113,9 @@ fun ProductDetailsScreen(
     var selectedProduct by remember { mutableStateOf<ProductDetail?>(null) }
     val context = LocalContext.current
 
-    LaunchedEffect(sku) {
+    LaunchedEffect(sku, addedSkus) {
         viewModel.getProductDetails(sku)
-        isAddedToCart = false
+        isAddedToCart = addedSkus.contains(sku)
     }
 
     LaunchedEffect(cartState) {
@@ -265,7 +268,7 @@ fun ProductTopBar(onBackClick: () -> Unit, onCartClick: () -> Unit, onSearchClic
         Box {
             IconButton(onClick = onCartClick) {
                 Icon(
-                    imageVector = Icons.Outlined.ShoppingCart,
+                    painter = painterResource(id = R.drawable.ic_cart_black),
                     contentDescription = "Cart",
                     tint = Color.Black,
                     modifier = Modifier.size(24.dp)
@@ -889,7 +892,12 @@ fun HtmlText(html: String, modifier: Modifier = Modifier) {
     // Rendered in a WebView: TextView + Html.fromHtml collapses <ul>/<li>/<h*> and
     // ignores CSS, which left the Shipping Information tab unformatted. Magento template
     // directives like {{store url='...'}} are stripped so they don't leak into the output.
-    val cleaned = html.replace(Regex("\\{\\{.*?\\}\\}"), "")
+    val cleaned = html
+        .replace(Regex("""\{\{store\s+url=\\?["'](.*?)\\?["']\}\}"""), "https://www.giftexpress.com/$1")
+        .replace(Regex("""\{\{media\s+url=\\?["'](.*?)\\?["']\}\}"""), "https://magento-1620955-6409883.cloudwaysapps.com/media/$1")
+        .replace(Regex("""\{\{view\s+url=\\?["'](.*?)\\?["']\}\}"""), "https://www.giftexpress.com/$1")
+        .replace(Regex("""\{\{.*?\}\}"""), "")
+        .replace(Regex("""href=["']["']"""), "href=\"https://www.giftexpress.com/\"")
     val styledHtml = """
         <html><head>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -900,7 +908,7 @@ fun HtmlText(html: String, modifier: Modifier = Modifier) {
         p { margin: 0 0 10px; }
         ul { padding-left: 20px; margin: 0 0 10px; }
         li { margin-bottom: 4px; }
-        a { color: #1976D2; }
+        a { color: #1976D2; text-decoration: underline; font-weight: 600; cursor: pointer; }
         img { max-width: 100%; height: auto; }
         </style></head><body>$cleaned</body></html>
     """.trimIndent()
@@ -908,13 +916,38 @@ fun HtmlText(html: String, modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxWidth().heightIn(min = 80.dp),
         factory = { context ->
             WebView(context).apply {
-                webViewClient = WebViewClient()
+                webViewClient = object : WebViewClient() {
+                    override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                        val uri = request?.url ?: return false
+                        return launchUri(uri)
+                    }
+
+                    @Deprecated("Deprecated in Java")
+                    override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                        val uri = Uri.parse(url ?: return false)
+                        return launchUri(uri)
+                    }
+
+                    private fun launchUri(uri: Uri): Boolean {
+                        val urlStr = uri.toString()
+                        if (urlStr.isBlank() || urlStr == "about:blank") return false
+                        return try {
+                            val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(intent)
+                            true
+                        } catch (e: Exception) {
+                            true
+                        }
+                    }
+                }
                 settings.javaScriptEnabled = false
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
             }
         },
         update = { webView ->
-            webView.loadDataWithBaseURL(null, styledHtml, "text/html", "UTF-8", null)
+            webView.loadDataWithBaseURL("https://www.giftexpress.com/", styledHtml, "text/html", "UTF-8", null)
         }
     )
 }

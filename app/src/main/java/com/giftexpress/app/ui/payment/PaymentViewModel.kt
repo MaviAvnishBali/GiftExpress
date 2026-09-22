@@ -54,8 +54,8 @@ sealed class RedirectPaymentState {
     data class Error(val message: String) : RedirectPaymentState()
 }
 
-/** Payment methods shown on the payment screen (mockup 43/51 + Amazon Pay / Afterpay). */
-enum class PaymentMethodOption { PAYPAL, GOOGLE_PAY, AMAZON_PAY, AFTERPAY, KLARNA, CARD }
+/** Payment methods shown on the payment screen (matches iOS: PayPal and Other Payment Methods). */
+enum class PaymentMethodOption { PAYPAL, OTHER }
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
@@ -78,7 +78,7 @@ class PaymentViewModel @Inject constructor(
     private val _placeOrderState = MutableStateFlow<UiState<PlaceOrderResponse>>(UiState.Idle)
     val placeOrderState: StateFlow<UiState<PlaceOrderResponse>> = _placeOrderState.asStateFlow()
 
-    private val _selectedMethod = MutableStateFlow(PaymentMethodOption.CARD)
+    private val _selectedMethod = MutableStateFlow(PaymentMethodOption.PAYPAL)
     val selectedMethod: StateFlow<PaymentMethodOption> = _selectedMethod.asStateFlow()
 
     /**
@@ -108,7 +108,8 @@ class PaymentViewModel @Inject constructor(
 
     /**
      * Step 1 — Get Stripe payment intent.
-     * Matches iOS: PaymentViewModel.getPaymentIntent(parameters: ["quoteId": X, "customerId": Y])
+     * Matches iOS: PaymentViewModel.getPaymentIntent(parameters: ["quoteId": quoteId])
+     * Note: customerId is omitted to match iOS and prevent backend from attaching setup_future_usage: off_session
      */
     fun fetchPaymentIntent() {
         viewModelScope.launch {
@@ -117,11 +118,7 @@ class PaymentViewModel @Inject constructor(
                 _stripeState.value = StripePaymentState.Error("Could not get cart ID")
                 return@launch
             }
-            val customerId = authRepository.getCustomerId() ?: run {
-                _stripeState.value = StripePaymentState.Error("Could not get customer ID")
-                return@launch
-            }
-            when (val result = repository.getStripePaymentIntent(quoteId, customerId)) {
+            when (val result = repository.getStripePaymentIntent(quoteId)) {
                 is NetworkResult.Success -> {
                     val data = result.data!!
                     val secret = data.clientSecret

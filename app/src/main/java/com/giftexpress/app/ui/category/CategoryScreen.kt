@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -109,10 +108,22 @@ fun CategoryScreen(
         }
     }
 
+    val fallbackTitle = when (categoryId) {
+        4 -> "Women's Fragrances"
+        3 -> "Men's Fragrances"
+        16 -> "Unisex Fragrances"
+        else -> ""
+    }
+    val bannerTitle = (categoryDataState as? UiState.Success)?.data
+        ?.firstOrNull { it.type == "banner" }?.banners?.firstOrNull()?.title
+    val resolvedCategoryTitle = categoryName.ifBlank {
+        bannerTitle?.takeIf { it.isNotBlank() } ?: fallbackTitle.ifBlank { "Category" }
+    }
+
     Scaffold(
         topBar = {
             CategoryTopBar(
-                title = categoryName,
+                title = resolvedCategoryTitle,
                 onBackClick = onBackClick,
                 onCartClick = onCartClick,
                 onSearchClick = onSearchClick,
@@ -124,10 +135,11 @@ fun CategoryScreen(
             CategoryBottomActions(
                 onFilterClick = { showFilterSheet = true },
                 onSortClick = { showSortSheet = true },
-                sortLabel = currentSort?.label,
+                sortLabel = if (currentSort != null && currentSort != CategoryViewModel.SortOption.IN_STOCK) currentSort?.label else null,
                 filterLabel = if (currentSelectedFilters.isNotEmpty()) "Filtered" else null
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             LazyVerticalGrid(
@@ -147,8 +159,8 @@ fun CategoryScreen(
                                         item(span = { GridItemSpan(2) }) {
                                             HeroBanner(
                                                 banners = validBanners,
-                                                cornerRadius = 0.dp,
-                                                contentPadding = PaddingValues(0.dp)
+                                                cornerRadius = 20.dp,
+                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                                             )
                                         }
                                     }
@@ -212,8 +224,8 @@ fun CategoryScreen(
                                         item(span = { GridItemSpan(2) }) {
                                             HeroBanner(
                                                 banners = validBanners,
-                                                cornerRadius = 0.dp,
-                                                contentPadding = PaddingValues(0.dp)
+                                                cornerRadius = 20.dp,
+                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                                             )
                                         }
                                     }
@@ -320,7 +332,6 @@ fun CategoryTopBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
                 .padding(horizontal = 4.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -340,8 +351,9 @@ fun CategoryTopBar(
             Box {
                 IconButton(onClick = onCartClick) {
                     Icon(
-                        imageVector = Icons.Outlined.ShoppingCart,
-                        contentDescription = "Cart"
+                        painter = painterResource(id = R.drawable.ic_cart_black),
+                        contentDescription = "Cart",
+                        modifier = Modifier.size(24.dp)
                     )
                 }
                 if (cartCount > 0) {
@@ -659,9 +671,9 @@ fun SortBottomSheetContent(
                 fontSize = 16.sp,
                 color = Color.Gray
             )
-            if (currentSort != null) {
+            if (currentSort != null && currentSort != CategoryViewModel.SortOption.IN_STOCK) {
                 Text(
-                    text = "Clear",
+                    text = "Reset",
                     fontFamily = FontFamily(Font(R.font.gilroy_medium)),
                     fontSize = 14.sp,
                     color = Color(0xFFE53935),

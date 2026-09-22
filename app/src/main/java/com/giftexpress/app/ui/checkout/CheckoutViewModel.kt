@@ -13,6 +13,7 @@ import com.giftexpress.app.data.model.ShippingInformationRequest
 import com.giftexpress.app.data.model.ShippingMethod
 import com.giftexpress.app.data.model.WalletSummary
 import com.giftexpress.app.data.repository.AddressRepository
+import com.giftexpress.app.data.repository.CartCountManager
 import com.giftexpress.app.data.repository.CartRepository
 import com.giftexpress.app.data.repository.CheckoutRepository
 import com.giftexpress.app.utils.NetworkResult
@@ -28,7 +29,8 @@ import javax.inject.Inject
 class CheckoutViewModel @Inject constructor(
     private val repository: CheckoutRepository,
     private val addressRepository: AddressRepository,
-    private val cartRepository: CartRepository
+    private val cartRepository: CartRepository,
+    private val cartCountManager: CartCountManager
 ) : ViewModel() {
 
     private val _shippingMethods = MutableStateFlow<UiState<List<ShippingMethod>>>(UiState.Idle)
@@ -131,9 +133,16 @@ class CheckoutViewModel @Inject constructor(
                 is NetworkResult.Success -> {
                     val available = result.data?.filter { it.available == true } ?: emptyList()
                     _shippingMethods.value = UiState.Success(available)
-                    // Matches iOS: auto-select first method
+                    
                     if (available.isNotEmpty()) {
-                        available.firstOrNull()?.let { selectShippingMethod(it) }
+                        val currentSelectedCode = _selectedShippingMethod.value?.methodCode
+                        val stillAvailableMethod = available.find { it.methodCode == currentSelectedCode }
+                        
+                        if (stillAvailableMethod != null) {
+                            selectShippingMethod(stillAvailableMethod)
+                        } else {
+                            selectShippingMethod(available.first())
+                        }
                     } else {
                         getCartTotals()
                     }
@@ -248,7 +257,11 @@ class CheckoutViewModel @Inject constructor(
     private fun loadCartItems() {
         viewModelScope.launch {
             when (val result = cartRepository.getCart()) {
-                is NetworkResult.Success -> _cartItems.value = result.data ?: emptyList()
+                is NetworkResult.Success -> {
+                    val items = result.data ?: emptyList()
+                    _cartItems.value = items
+                    cartCountManager.setCount(com.giftexpress.app.ui.cart.CartViewModel.distinctCartCount(items))
+                }
                 else -> {}
             }
         }
@@ -377,8 +390,7 @@ class CheckoutViewModel @Inject constructor(
 
     private fun refreshTotals() {
         val address = _selectedAddress.value ?: return
-        val method = _selectedShippingMethod.value ?: return
-        saveShippingInfo(address, method)
+        estimateShipping(address)
     }
 
     fun resetCouponState() { _couponState.value = UiState.Idle }

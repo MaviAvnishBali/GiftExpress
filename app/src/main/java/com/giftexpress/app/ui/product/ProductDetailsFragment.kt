@@ -81,7 +81,9 @@ class ProductDetailsFragment : Fragment() {
                             },
                             onMainAddToCart = { sku, qty ->
                                 if (cartViewModel.isLoggedIn()) {
-                                    viewModel.addToCart(sku, qty)
+                                    val isNew = !addedSkus.any { it.trim().equals(sku.trim(), ignoreCase = true) }
+                                    viewModel.addToCart(sku, qty, isNew)
+                                    cartViewModel.notifyItemAdded(sku)
                                 } else {
                                     com.giftexpress.app.utils.showLoginRequiredDialog(requireContext(), "Please login to add items to your cart.") {
                                         cartViewModel.setPendingCartSku(sku)

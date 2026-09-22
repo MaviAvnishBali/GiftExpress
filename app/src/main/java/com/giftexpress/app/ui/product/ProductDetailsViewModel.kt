@@ -97,16 +97,18 @@ class ProductDetailsViewModel @Inject constructor(
         _submitReviewState.value = UiState.Idle
     }
 
-    fun addToCart(sku: String, qty: Int) {
+    fun addToCart(sku: String, qty: Int, isNewItem: Boolean = true) {
         viewModelScope.launch {
             _cartState.value = UiState.Loading
             when (val result = cartRepository.addItemToCart(sku, qty)) {
                 is NetworkResult.Success -> {
-                    cartCountManager.increment(qty)   // instant optimistic bump
+                    if (isNewItem) {
+                        cartCountManager.increment(1)   // instant optimistic bump only for new unique item
+                    }
                     _cartState.value = UiState.Success(Unit)
-                    // Reconcile the badge to the real server cart (sum of item quantities).
+                    // Reconcile the badge to the real server cart (distinct items count).
                     (cartRepository.getCart() as? NetworkResult.Success)?.data?.let { items ->
-                        cartCountManager.setCount(items.sumOf { it.qty ?: 0 })
+                        cartCountManager.setCount(com.giftexpress.app.ui.cart.CartViewModel.distinctCartCount(items))
                     }
                 }
                 is NetworkResult.Error -> {

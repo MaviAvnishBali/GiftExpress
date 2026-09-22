@@ -23,7 +23,7 @@ class CartCountManager @Inject constructor() {
     private val _count = MutableStateFlow(0)
     val count: StateFlow<Int> = _count.asStateFlow()
 
-    /** Authoritative count from the server cart (sum of item quantities). */
+    /** Authoritative count from the server cart (number of distinct items in cart). */
     fun setCount(count: Int) {
         _count.value = count.coerceAtLeast(0)
     }

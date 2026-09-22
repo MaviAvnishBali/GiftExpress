@@ -143,7 +143,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
-                android:hint="csr@giftexpress.com"
+                android:hint="Email Address"
                 android:textColor="@color/primary"
                 android:textColorHint="@color/login_text_secondary" />
 

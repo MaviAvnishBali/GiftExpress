@@ -97,6 +97,17 @@ fun SearchListingScreen(
                 }
             }
         },
+        bottomBar = {
+            if (products.isNotEmpty()) {
+                com.giftexpress.app.ui.category.CategoryBottomActions(
+                    onFilterClick = { showFilter = true },
+                    onSortClick = { showSort = true },
+                    sortLabel = if (currentSort != null && currentSort != com.giftexpress.app.ui.category.CategoryViewModel.SortOption.IN_STOCK) currentSort?.label else null,
+                    filterLabel = if (selectedFilters.isNotEmpty()) "FILTERED" else null
+                )
+            }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = Color.White
     ) { paddingValues ->
         Box(
@@ -119,51 +130,42 @@ fun SearchListingScreen(
                     )
                 }
             } else {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
-                        state = gridState,
-                        contentPadding = PaddingValues(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.weight(1f).fillMaxWidth()
-                    ) {
-                        items(products) { product ->
-                            val sku = product.firstSku
-                            val isAdded = sku?.let { addedSkus.contains(it) } == true
-                            com.giftexpress.app.ui.home.ProductCard(
-                                product = product.toSliderProduct(),
-                                onProductClick = {
-                                    if (!sku.isNullOrBlank()) onProductClick(sku, product.mainImage)
-                                },
-                                onAddToCart = { sku?.let(onAddToCart) },
-                                onGoToCart = onGoToCart,
-                                isAdded = isAdded,
-                                onAddToWishlist = { sku?.let(onAddToWishlist) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    state = gridState,
+                    contentPadding = PaddingValues(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(products) { product ->
+                        val sku = product.firstSku
+                        val isAdded = sku?.let { addedSkus.contains(it) } == true
+                        com.giftexpress.app.ui.home.ProductCard(
+                            product = product.toSliderProduct(),
+                            onProductClick = {
+                                if (!sku.isNullOrBlank()) onProductClick(sku, product.mainImage)
+                            },
+                            onAddToCart = { sku?.let(onAddToCart) },
+                            onGoToCart = onGoToCart,
+                            isAdded = isAdded,
+                            onAddToWishlist = { sku?.let(onAddToWishlist) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
-                        if (isLoading) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    CircularProgressIndicator(color = Color.Red, modifier = Modifier.size(32.dp))
-                                }
+                    if (isLoading) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = Color.Red, modifier = Modifier.size(32.dp))
                             }
                         }
                     }
-
-                    com.giftexpress.app.ui.category.CategoryBottomActions(
-                        onFilterClick = { showFilter = true },
-                        onSortClick = { showSort = true },
-                        sortLabel = currentSort?.label,
-                        filterLabel = if (selectedFilters.isNotEmpty()) "FILTERED" else null
-                    )
                 }
             }
         }

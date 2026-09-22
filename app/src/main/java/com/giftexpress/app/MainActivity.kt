@@ -6,6 +6,10 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -25,6 +29,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import com.giftexpress.app.utils.NetworkObserver
 import com.giftexpress.app.ui.components.NoInternetScreen
+import com.giftexpress.app.data.update.FlexibleUpdateManager
+import com.giftexpress.app.data.update.FlexibleUpdateStatus
+import com.google.android.material.snackbar.Snackbar
 import javax.inject.Inject
 
 /**
@@ -42,8 +49,12 @@ class MainActivity : AppCompatActivity() {
     
     @Inject
     lateinit var authRepository: AuthRepository
+
+    @Inject
+    lateinit var flexibleUpdateManager: FlexibleUpdateManager
     
     private lateinit var googleSignInClient: GoogleSignInClient
+    private var updateSnackbar: Snackbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install Android 12+ Splash Screen
@@ -54,6 +65,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
+        setupWindowInsets()
+
         // Initialize Google Sign-In Client
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -69,6 +82,7 @@ class MainActivity : AppCompatActivity() {
         observeMenu()
         setupNetworkObserver()
         startTokenRefresh()
+        setupFlexibleUpdate()
 
         onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
@@ -144,11 +158,27 @@ class MainActivity : AppCompatActivity() {
         binding.navView.setNavigationItemSelectedListener { menuItem ->
             val item = menuItems.find { it.id == menuItem.itemId }
             item?.let {
-                val bundle = Bundle().apply {
-                    putInt("categoryId", it.categoryId ?: it.id)
-                    putString("categoryName", it.title)
+                when {
+                    it.title.contains("Best Sellers", ignoreCase = true) || it.url?.contains("all-products", ignoreCase = true) == true -> {
+                        val bundle = Bundle().apply {
+                            putInt("specialFlag", 15)
+                            putString("title", "Best Sellers")
+                            putInt("categoryId", 0)
+                            putInt("brandId", 0)
+                        }
+                        navController.navigate(R.id.specialProductsFragment, bundle)
+                    }
+                    it.categoryId != null -> {
+                        val bundle = Bundle().apply {
+                            putInt("categoryId", it.categoryId)
+                            putString("categoryName", it.title)
+                        }
+                        navController.navigate(R.id.categoryFragment, bundle)
+                    }
+                    else -> {
+                        navController.navigate(R.id.perfumeEnquiryFragment)
+                    }
                 }
-                navController.navigate(R.id.categoryFragment, bundle)
                 binding.drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
                 true
             } ?: false
@@ -189,21 +219,18 @@ class MainActivity : AppCompatActivity() {
         binding.navView.setupWithNavController(navController)
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.splashFragment, R.id.loginFragment, R.id.signupFragment, R.id.changePasswordFragment, R.id.forgotPasswordFragment, R.id.categoryFragment, R.id.productDetailsFragment, R.id.specialProductsFragment -> {
-                    binding.bottomNav.visibility = View.GONE
-                    binding.bottomNavShadow.visibility = View.GONE
-                    binding.drawerLayout.setDrawerLockMode(
-                        androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_LOCKED_CLOSED
-                    )
-                }
-                else -> {
-                    binding.bottomNav.visibility = View.VISIBLE
-                    binding.bottomNavShadow.visibility = View.VISIBLE
-                    binding.drawerLayout.setDrawerLockMode(
-                        androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNLOCKED
-                    )
-                }
+            if (destination.id in bottomNavIds) {
+                binding.bottomNav.visibility = View.VISIBLE
+                binding.bottomNavShadow.visibility = View.VISIBLE
+                binding.drawerLayout.setDrawerLockMode(
+                    androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_UNLOCKED
+                )
+            } else {
+                binding.bottomNav.visibility = View.GONE
+                binding.bottomNavShadow.visibility = View.GONE
+                binding.drawerLayout.setDrawerLockMode(
+                    androidx.drawerlayout.widget.DrawerLayout.LOCK_MODE_LOCKED_CLOSED
+                )
             }
         }
     }
@@ -260,23 +287,139 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Token refresh: the server issues 60-minute access tokens, so we refresh on every
-     * app foreground AND every 45 minutes — comfortably ahead of expiry. (The previous
-     * 90-minute interval was longer than the token's own lifetime, guaranteeing a window
-     * where every authenticated call — e.g. the cart — failed with a 401.)
+     * Proactive token refresh matching iOS:
+     * iOS checks AppPreference.isSessionExpired() (30-minute threshold) on every screen appearance.
+     * We check when the app enters STARTED state, and periodically every 15 minutes while running.
+     * OkHttp's TokenAuthenticator also transparently handles reactive 401 recovery.
      */
     private fun startTokenRefresh() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                if (authRepository.isLoggedIn()) {
+                if (authRepository.isLoggedIn() && authRepository.isSessionExpired()) {
                     authRepository.refreshToken()
                 }
                 while (true) {
-                    kotlinx.coroutines.delay(45 * 60 * 1000L) // 45 minutes (< 60-min token life)
-                    if (authRepository.isLoggedIn()) {
+                    kotlinx.coroutines.delay(15 * 60 * 1000L) // Check every 15 minutes
+                    if (authRepository.isLoggedIn() && authRepository.isSessionExpired()) {
                         authRepository.refreshToken()
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * Set up Google Play Flexible Update flow and observe download states
+     */
+    private fun setupFlexibleUpdate() {
+        flexibleUpdateManager.registerListener()
+        flexibleUpdateManager.checkForUpdate(this)
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                flexibleUpdateManager.updateStatus.collect { status ->
+                    when (status) {
+                        is FlexibleUpdateStatus.Downloaded -> {
+                            showUpdateDownloadedSnackbar()
+                        }
+                        else -> {
+                            // Other statuses (Checking, Available, Downloading, etc.) handled internally
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Handles edge-to-edge window insets for Android 15+ (API 35+ / API 36).
+     * Binds the status bar height to statusBarSpacer and navigation bar height to navBarSpacer.
+     */
+    private fun setupWindowInsets() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        // Primary header background is black, so status bar icons should be light/white
+        insetsController.isAppearanceLightStatusBars = false
+        // Bottom navigation spacer background is white, so system nav buttons should be dark
+        insetsController.isAppearanceLightNavigationBars = true
+
+        // Prevent BottomNavigationView from consuming window insets and adding extra bottom padding
+        // because navBarSpacer handles the bottom system window insets.
+        ViewCompat.setOnApplyWindowInsetsListener(binding.bottomNav) { _, insets ->
+            insets
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, windowInsets ->
+            val statusBars = windowInsets.getInsets(
+                WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+            )
+            val navigationBars = windowInsets.getInsets(
+                WindowInsetsCompat.Type.navigationBars()
+            )
+
+            binding.statusBarSpacer.updateLayoutParams {
+                height = statusBars.top
+            }
+            binding.navBarSpacer.updateLayoutParams {
+                height = navigationBars.bottom
+            }
+
+            // Drawer status bar spacer ensures status bar area remains black with white icons
+            binding.drawerStatusBarSpacer.updateLayoutParams {
+                height = statusBars.top
+            }
+            // Ensure drawer menu items don't overlap the bottom navigation bar
+            binding.navView.setPadding(0, 0, 0, navigationBars.bottom)
+
+            windowInsets
+        }
+
+        ViewCompat.requestApplyInsets(binding.root)
+    }
+
+    /**
+     * Displays a persistent Snackbar informing user that the flexible update is downloaded,
+     * with a RESTART action to install and restart immediately.
+     */
+    private fun showUpdateDownloadedSnackbar() {
+        if (updateSnackbar?.isShown == true) return
+
+        val snackbar = Snackbar.make(
+            binding.root,
+            "An update has just been downloaded.",
+            Snackbar.LENGTH_INDEFINITE
+        ).setAction("RESTART") {
+            flexibleUpdateManager.completeUpdate()
+        }
+
+        // Anchor above bottom navigation bar when visible so it doesn't overlap navigation icons
+        if (binding.bottomNav.visibility == View.VISIBLE) {
+            snackbar.anchorView = binding.bottomNav
+        } else {
+            snackbar.anchorView = binding.navBarSpacer
+        }
+
+        updateSnackbar = snackbar
+        snackbar.show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Check if an update finished downloading while app was in background
+        flexibleUpdateManager.onResume()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        flexibleUpdateManager.unregisterListener()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == FlexibleUpdateManager.REQUEST_CODE_FLEXIBLE_UPDATE) {
+            if (resultCode != RESULT_OK) {
+                android.util.Log.d("MainActivity", "Flexible update canceled or failed by user: $resultCode")
             }
         }
     }
@@ -297,3 +440,4 @@ class MainActivity : AppCompatActivity() {
         if (intent != null) setIntent(intent)
     }
 }
+

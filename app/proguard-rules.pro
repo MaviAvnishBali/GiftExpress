@@ -17,7 +17,6 @@
 
 # === Kotlin ===
 -keepattributes *Annotation*,Signature,Exception
--keep class kotlin.** { *; }
 -keep class kotlin.Metadata { *; }
 -dontwarn kotlin.**
 -keepclassmembers class **$WhenMappings {
@@ -30,7 +29,7 @@
     static void checkParameterIsNotNull(java.lang.Object, java.lang.String);
 }
 
-# === Kotlin Coroutines ===
+# === Kotlin Coroutines & Flow ===
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
 -keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
 -keepclassmembernames class kotlinx.** {
@@ -69,8 +68,6 @@
 # === OkHttp ===
 -keepattributes Signature
 -keepattributes *Annotation*
--keep class okhttp3.** { *; }
--keep interface okhttp3.** { *; }
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -keep class okio.** { *; }
@@ -79,18 +76,16 @@
 -keepattributes Signature
 -keepattributes *Annotation*
 -dontwarn sun.misc.**
--keep class com.google.gson.** { *; }
 -keep class * implements com.google.gson.TypeAdapterFactory
 -keep class * implements com.google.gson.JsonSerializer
 -keep class * implements com.google.gson.JsonDeserializer
-# Keep fields annotated with @SerializedName (survives R8 field obfuscation)
--keepclassmembers,allowobfuscation class * {
+-keepclassmembers class * {
     @com.google.gson.annotations.SerializedName <fields>;
+    @com.google.gson.annotations.Expose <fields>;
 }
 
-# Keep all data model classes
+# === App Data Models ===
 -keep class com.giftexpress.app.data.model.** { *; }
--keep class com.giftexpress.app.data.api.** { *; }
 
 # === Hilt (Dagger) ===
 -keep class dagger.** { *; }
@@ -102,27 +97,12 @@
 -dontwarn com.google.errorprone.annotations.**
 
 # === Firebase & Google Play Services ===
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
 -dontwarn com.google.android.gms.**
 -dontwarn com.google.firebase.**
 
-# === Jetpack Compose ===
--keep class androidx.compose.** { *; }
--keep class androidx.compose.runtime.** { *; }
--keep class androidx.compose.ui.** { *; }
--keep class androidx.compose.foundation.** { *; }
--keep class androidx.compose.material.** { *; }
--keep class androidx.compose.material3.** { *; }
--keepclassmembers class androidx.compose.** { *; }
--dontwarn androidx.compose.**
-
-# Keep composable functions
--keep @androidx.compose.runtime.Composable class * { *; }
--keep @androidx.compose.runtime.Composable interface * { *; }
--keepclassmembers class * {
-    @androidx.compose.runtime.Composable *;
-}
+# === Google Pay & Play Services Wallet ===
+-keep class com.google.android.gms.wallet.** { *; }
+-keep interface com.google.android.gms.wallet.** { *; }
 
 # === DataStore ===
 -keep class androidx.datastore.*.** { *; }
@@ -137,9 +117,6 @@
 -keepclassmembers class * extends androidx.navigation.fragment.NavHostFragment {
     *;
 }
-
-# Keep all UI Fragments (prevents FragmentInstantiationException with Navigation & Hilt)
--keep class com.giftexpress.app.ui.** { *; }
 
 # === Glide ===
 -keep public class * implements com.bumptech.glide.module.GlideModule
@@ -156,8 +133,6 @@
 -dontwarn com.bumptech.glide.**
 
 # === Coil (Image Loading for Compose) ===
--keep class coil.** { *; }
--keep interface coil.** { *; }
 -dontwarn coil.**
 
 # === Lifecycle Components ===
@@ -199,14 +174,26 @@
 }
 
 # === Stripe Payment SDK ===
--keep class com.stripe.android.** { *; }
--keep interface com.stripe.android.** { *; }
--keep class com.stripe.android.model.** { *; }
--keep class com.stripe.android.pushProvisioning.** { *; }
--dontwarn com.stripe.android.**
-# Stripe references some optional 3DS classes reflectively
--dontwarn com.stripe.android.pushProvisioning.**
+-dontwarn com.stripe.**
 
-# === Lottie ===
--keep class com.airbnb.lottie.** { *; }
+# === PayPal Web Payments SDK ===
+-dontwarn com.paypal.android.**
+
+# === AndroidX Browser (Chrome Custom Tabs) ===
+-dontwarn androidx.browser.**
+
+# === Compose HtmlText ===
+-dontwarn de.charlex.compose.**
+
+# === Lottie (Animations) ===
 -dontwarn com.airbnb.lottie.**
+
+# === WebKit / WebView ===
+-keepclassmembers class * extends android.webkit.WebViewClient {
+    public void *(android.webkit.WebView, java.lang.String);
+    public void *(android.webkit.WebView, java.lang.String, android.graphics.Bitmap);
+    public boolean *(android.webkit.WebView, java.lang.String);
+}
+-keepclassmembers class * extends android.webkit.WebChromeClient {
+    public void *(android.webkit.WebView, java.lang.String);
+}

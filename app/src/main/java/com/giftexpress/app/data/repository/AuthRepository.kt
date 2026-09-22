@@ -12,6 +12,7 @@ import com.giftexpress.app.data.model.CustomerDetailsResponse
 import com.giftexpress.app.data.model.ExtensionAttributes
 import com.giftexpress.app.data.model.GoogleLoginRequest
 import com.giftexpress.app.data.model.ChangePasswordRequest
+import com.giftexpress.app.data.model.DeleteAccountRequest
 import com.giftexpress.app.data.model.CreateCustomerRequest
 import com.giftexpress.app.data.model.CustomerData
 import com.giftexpress.app.data.model.CustomerTokenRequest
@@ -249,6 +250,28 @@ class AuthRepository @Inject constructor(
     }
 
     /**
+     * Delete customer account
+     * POST giftexpress/customer/delete
+     * Permanently deletes account and clears local session on success
+     */
+    suspend fun deleteAccount(password: String? = null): NetworkResult<Boolean> {
+        return try {
+            val response = apiService.deleteAccount(DeleteAccountRequest(password))
+            if (response.isSuccessful && response.body() == true) {
+                logout()
+                NetworkResult.Success(true)
+            } else {
+                val errorMsg = response.errorBody()?.string()
+                    ?.let { parseErrorMessage(it, "Failed to delete account") }
+                    ?: response.message().ifBlank { "Failed to delete account" }
+                NetworkResult.Error(errorMsg)
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error("Delete account failed: ${e.localizedMessage ?: "Unknown error"}")
+        }
+    }
+
+    /**
      * Save user session to DataStore
      */
     private suspend fun saveUserSession(user: User) {
@@ -261,20 +284,26 @@ class AuthRepository @Inject constructor(
     }
 
     /**
-     * Check if user is logged in — also restores token into TokenProvider on app restart
+     * Check if user is logged in — verifies both loggedIn flag and valid token
      */
     suspend fun isLoggedIn(): Boolean {
         val prefs = dataStore.data.first()
         val loggedIn = prefs[keyIsLoggedIn] ?: false
-        if (loggedIn) {
-            // Restore tokens into memory so the interceptor + authenticator work after app restart
-            tokenManager.getAccessToken()
-        }
-        return loggedIn
+        val token = tokenManager.getAccessToken()
+        return loggedIn && !token.isNullOrBlank()
     }
 
     fun isLoggedInSync(): Boolean {
-        return tokenManager.getAccessTokenSync() != null
+        val token = tokenManager.getAccessTokenSync()
+        return !token.isNullOrBlank()
+    }
+
+    suspend fun isSessionExpired(): Boolean {
+        return tokenManager.isSessionExpired()
+    }
+
+    fun isSessionExpiredSync(): Boolean {
+        return tokenManager.isSessionExpiredSync()
     }
 
     /**
@@ -354,15 +383,15 @@ class AuthRepository @Inject constructor(
      * Extract a human-readable message from a JSON error body.
      * Handles {"message":"..."} and {"error":"..."} formats.
      */
-    private fun parseErrorMessage(errorBody: String): String {
+    private fun parseErrorMessage(errorBody: String, defaultMsg: String = "Login failed"): String {
         return try {
             val element = com.google.gson.Gson().fromJson(errorBody, com.google.gson.JsonObject::class.java)
             element?.get("message")?.asString
                 ?: element?.get("error")?.asString
                 ?: element?.get("error_description")?.asString
-                ?: "Login failed"
+                ?: defaultMsg
         } catch (e: Exception) {
-            "Login failed"
+            defaultMsg
         }
     }
 

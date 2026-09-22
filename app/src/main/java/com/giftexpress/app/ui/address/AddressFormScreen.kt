@@ -53,7 +53,6 @@ fun AddressFormScreen(
     var firstName by remember(existingAddress) { mutableStateOf(existingAddress?.firstname ?: "") }
     var lastName by remember(existingAddress) { mutableStateOf(existingAddress?.lastname ?: "") }
     var phone by remember(existingAddress) { mutableStateOf(existingAddress?.telephone ?: "") }
-    var company by remember(existingAddress) { mutableStateOf("") } // Company optional field
     var streetLine1 by remember(existingAddress) { mutableStateOf(existingAddress?.street?.getOrNull(0) ?: "") }
     var streetLine2 by remember(existingAddress) { mutableStateOf(existingAddress?.street?.getOrNull(1) ?: "") }
     var streetLine3 by remember(existingAddress) { mutableStateOf(existingAddress?.street?.getOrNull(2) ?: "") }
@@ -372,11 +371,7 @@ fun AddressFormScreen(
                 }
             }
 
-            // 8. Company (Optional - matches iOS line 274)
-            item { FormFieldLabel("Company") }
-            item { FormTextField(value = company, onValueChange = { company = it }, placeholder = "Company Name") }
-
-            // 9. Phone Number* (matches iOS line 277)
+            // 8. Phone Number* (matches iOS line 277)
             item { FormFieldLabel("Phone Number*") }
             item {
                 FormTextField(

@@ -25,8 +25,17 @@ class SpecialProductsViewModel @Inject constructor(
     private val _productsState = MutableStateFlow<UiState<List<SliderProduct>>>(UiState.Loading)
     val productsState: StateFlow<UiState<List<SliderProduct>>> = _productsState
 
+    private val _screenTitle = MutableStateFlow<String>("")
+    val screenTitle: StateFlow<String> = _screenTitle
+
+    fun setInitialTitle(title: String) {
+        if (_screenTitle.value.isBlank() && title.isNotBlank()) {
+            _screenTitle.value = title
+        }
+    }
+
     // Sort / filter — reuse CategoryViewModel.SortOption so the same bottom-sheet UI is shared.
-    private val _currentSort = MutableStateFlow<CategoryViewModel.SortOption?>(null)
+    private val _currentSort = MutableStateFlow<CategoryViewModel.SortOption?>(CategoryViewModel.SortOption.IN_STOCK)
     val currentSort: StateFlow<CategoryViewModel.SortOption?> = _currentSort
 
     private val _apiFiltersState = MutableStateFlow<List<com.giftexpress.app.data.model.ProductFilter>?>(null)
@@ -56,6 +65,7 @@ class SpecialProductsViewModel @Inject constructor(
             if (lastSpecialFlag != specialFlag || lastCategoryId != categoryId || lastBrandId != brandId) {
                 _apiFiltersState.value = null
                 _selectedFilters.value = emptyMap()
+                _currentSort.value = CategoryViewModel.SortOption.IN_STOCK
             }
             lastSpecialFlag = specialFlag
             lastCategoryId = categoryId
@@ -84,6 +94,27 @@ class SpecialProductsViewModel @Inject constructor(
                     is NetworkResult.Success -> {
                         newItems = r.data?.items?.map { it.toSliderProduct() } ?: emptyList()
                         responseFilters = r.data?.filters
+                        if (_screenTitle.value.isBlank()) {
+                            val brandFromFilter = responseFilters?.find {
+                                it.requestVar.equals("manufacturer", ignoreCase = true) || it.name.equals("Brand", ignoreCase = true)
+                            }?.options?.find { it.value == brandId.toString() }?.label
+                            if (!brandFromFilter.isNullOrBlank()) {
+                                _screenTitle.value = brandFromFilter
+                            } else {
+                                viewModelScope.launch {
+                                    when (val br = brandRepository.getBrands()) {
+                                        is NetworkResult.Success -> {
+                                            val b = br.data?.find { it.id == brandId }
+                                            val name = b?.name
+                                            if (!name.isNullOrBlank() && _screenTitle.value.isBlank()) {
+                                                _screenTitle.value = name
+                                            }
+                                        }
+                                        else -> {}
+                                    }
+                                }
+                            }
+                        }
                     }
                     is NetworkResult.Error -> errorMsg = r.message
                     else -> {}
@@ -94,6 +125,14 @@ class SpecialProductsViewModel @Inject constructor(
                     is NetworkResult.Success -> {
                         newItems = r.data?.items ?: emptyList()
                         responseFilters = r.data?.filters
+                        if (_screenTitle.value.isBlank()) {
+                            _screenTitle.value = when (categoryId) {
+                                4 -> "Women's Fragrances"
+                                3 -> "Men's Fragrances"
+                                16 -> "Unisex Fragrances"
+                                else -> "Fragrances"
+                            }
+                        }
                     }
                     is NetworkResult.Error -> errorMsg = r.message
                     else -> {}
@@ -104,6 +143,14 @@ class SpecialProductsViewModel @Inject constructor(
                     is NetworkResult.Success -> {
                         newItems = r.data?.items ?: emptyList()
                         responseFilters = r.data?.filters
+                        if (_screenTitle.value.isBlank()) {
+                            _screenTitle.value = when (specialFlag) {
+                                15 -> "Top Sellers"
+                                17 -> "New Arrivals"
+                                14 -> "Featured Products"
+                                else -> "Special Products"
+                            }
+                        }
                     }
                     is NetworkResult.Error -> errorMsg = r.message
                     else -> {}
@@ -134,7 +181,7 @@ class SpecialProductsViewModel @Inject constructor(
     }
 
     fun clearSort() {
-        _currentSort.value = null
+        _currentSort.value = CategoryViewModel.SortOption.IN_STOCK
         reload()
     }
 

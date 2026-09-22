@@ -78,7 +78,6 @@ fun CheckoutScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .statusBarsPadding()
                             .padding(horizontal = 4.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {

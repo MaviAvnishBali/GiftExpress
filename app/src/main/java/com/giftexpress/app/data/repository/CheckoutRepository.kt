@@ -118,7 +118,7 @@ class CheckoutRepository @Inject constructor(
     }
 
     // Stripe: matches iOS PaymentViewModel.getPaymentIntent
-    suspend fun getStripePaymentIntent(quoteId: Int, customerId: Int): NetworkResult<PaymentIntentResponse> {
+    suspend fun getStripePaymentIntent(quoteId: Int, customerId: Int? = null): NetworkResult<PaymentIntentResponse> {
         return try {
             val response = apiService.getStripePaymentIntent(StripePaymentIntentRequest(quoteId, customerId))
             if (response.isSuccessful && response.body() != null) {

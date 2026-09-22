@@ -116,12 +116,13 @@ class CartRepository @Inject constructor(
 
     suspend fun updateCartItem(itemId: Int, qty: Int): NetworkResult<CartItemDetail> {
         return try {
+            val quoteId = getQuoteId()?.toString()
             val response = apiService.updateCartItem(
                 itemId,
-                UpdateCartItemRequest(cartItem = UpdateCartItem(itemId = itemId, qty = qty))
+                UpdateCartItemRequest(cartItem = UpdateCartItem(itemId = itemId, qty = qty, quoteId = quoteId))
             )
             if (response.isSuccessful && response.body() != null) NetworkResult.Success(response.body()!!)
-            else NetworkResult.Error("Failed to update item: ${response.message()}")
+            else NetworkResult.Error("Failed to update item: ${errorText(response)}")
         } catch (e: Exception) {
             NetworkResult.Error("Error: ${e.localizedMessage}")
         }

@@ -71,9 +71,9 @@ class CartViewModel @Inject constructor(
                             image = detail.image ?: ""     // extension_attributes.product_image
                         )
                     }
-                    _addedSkus.value = items.mapNotNull { it.sku }.toSet()
-                    // Authoritative sync of the header cart badge with the real cart.
-                    cartCountManager.setCount(items.sumOf { it.qty ?: 0 })
+                    _addedSkus.value = items.mapNotNull { it.sku?.trim() }.toSet()
+                    // Authoritative sync of the header cart badge with the real cart (distinct items count).
+                    cartCountManager.setCount(distinctCartCount(items))
                     fetchCartTotals()
                 }
                 is NetworkResult.Error -> {
@@ -106,8 +106,8 @@ class CartViewModel @Inject constructor(
             when (val result = cartRepository.getCart()) {
                 is NetworkResult.Success -> {
                     val items = result.data ?: emptyList()
-                    val serverSkus = items.mapNotNull { it.sku }.toSet()
-                    cartCountManager.setCount(items.sumOf { it.qty ?: 0 })
+                    val serverSkus = items.mapNotNull { it.sku?.trim() }.toSet()
+                    cartCountManager.setCount(distinctCartCount(items))
                     _addedSkus.update { current -> current + serverSkus }
                 }
                 else -> { /* silent — never surface cart errors on the Home screen */ }
@@ -152,8 +152,12 @@ class CartViewModel @Inject constructor(
         viewModelScope.launch {
             when (val result = cartRepository.addItemToCart(sku, qty)) {
                 is NetworkResult.Success -> {
-                    _addedSkus.update { it + sku }
-                    cartCountManager.increment(qty)   // instant optimistic bump
+                    val normalizedSku = sku.trim()
+                    val isNewItem = !_addedSkus.value.any { it.trim().equals(normalizedSku, ignoreCase = true) }
+                    _addedSkus.update { it + normalizedSku }
+                    if (isNewItem) {
+                        cartCountManager.increment(1)   // instant optimistic bump only for new unique item
+                    }
                     _cartEvents.emit(CartEvent.ItemAdded(sku))
                     syncCartCount()                   // then reconcile to the real server count
                 }
@@ -170,7 +174,7 @@ class CartViewModel @Inject constructor(
 
     fun notifyItemAdded(sku: String) {
         if (sku.isNotBlank()) {
-            _addedSkus.update { it + sku }
+            _addedSkus.update { it + sku.trim() }
         }
     }
 
@@ -229,6 +233,18 @@ class CartViewModel @Inject constructor(
     fun isLoggedIn(): Boolean = authRepository.isLoggedInSync()
     fun setPendingCartSku(sku: String) { authRepository.pendingCartSku = sku }
     fun setPendingWishlistSku(sku: String) { authRepository.pendingWishlistSku = sku }
+
+    companion object {
+        fun distinctCartCount(items: List<CartItemDetail>): Int {
+            return items.filter { (it.qty ?: 0) > 0 }
+                .distinctBy {
+                    it.sku?.trim()?.lowercase()?.ifBlank { null }
+                        ?: it.name?.trim()?.lowercase()?.ifBlank { null }
+                        ?: it.itemId
+                }
+                .size
+        }
+    }
 }
 
 sealed class CartEvent {

@@ -59,7 +59,8 @@ class AccountFragment : Fragment() {
                                 onNavigateToPrivacyPolicy = { findNavController().navigate(R.id.privacyPolicyFragment) },
                                 onNavigateToTermsConditions = { findNavController().navigate(R.id.termsConditionsFragment) },
                                 onNavigateToContactUs = { findNavController().navigate(R.id.contactUsFragment) },
-                                onNavigateToPerfumeEnquiry = { findNavController().navigate(R.id.perfumeEnquiryFragment) }
+                                onNavigateToPerfumeEnquiry = { findNavController().navigate(R.id.perfumeEnquiryFragment) },
+                                onRequireLogin = { handleRestrictedAction { } }
                             )
                 }
             }
@@ -69,6 +70,7 @@ class AccountFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         observeLogoutState()
+        observeDeleteAccountState()
     }
 
     private fun observeLogoutState() {
@@ -77,6 +79,20 @@ class AccountFragment : Fragment() {
                 viewModel.logoutState.collect { isLoggedOut ->
                     if (isLoggedOut) {
                         showToast("Logged out successfully")
+                        findNavController().navigate(R.id.action_accountFragment_to_loginFragment)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun observeDeleteAccountState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.deleteAccountState.collect { state ->
+                    if (state is com.giftexpress.app.utils.UiState.Success) {
+                        showToast("Account deleted successfully")
+                        viewModel.resetDeleteAccountState()
                         findNavController().navigate(R.id.action_accountFragment_to_loginFragment)
                     }
                 }

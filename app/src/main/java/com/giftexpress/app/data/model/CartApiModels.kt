@@ -24,7 +24,8 @@ data class UpdateCartItemRequest(
 
 data class UpdateCartItem(
     @SerializedName("item_id") val itemId: Int,
-    @SerializedName("qty") val qty: Int
+    @SerializedName("qty") val qty: Int,
+    @SerializedName("quote_id") val quoteId: String? = null
 )
 
 /**

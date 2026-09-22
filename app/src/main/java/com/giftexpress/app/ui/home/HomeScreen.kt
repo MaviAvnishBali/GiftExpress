@@ -1,5 +1,6 @@
 package com.giftexpress.app.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -80,6 +82,8 @@ fun HomeScreen(
                 cartCount = cartCount
             )
 
+            val topBannerSlider = sliders.firstOrNull { it.type == "banner" }
+
             // 2. Dynamic Sections based on Sequence (Scrollable)
             LazyColumn(
                 state = listState,
@@ -93,15 +97,16 @@ fun HomeScreen(
                             slider.banners?.let { banners ->
                                 HeroBanner(
                                     banners = banners,
-                                    cornerRadius = 0.dp,
-                                    contentPadding = PaddingValues(0.dp),
+                                    cornerRadius = 20.dp,
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                                    isTopBanner = (slider == topBannerSlider),
                                     onBannerClick = onBannerClick
                                 )
                             }
                         }
 
                         "category" -> {
-                            slider.products?.let { products ->
+                            (slider.products ?: slider.categories)?.let { products ->
                                 CategorySlider(
                                     title = slider.title ?: "Shop By Category",
                                     categories = products,
@@ -209,14 +214,24 @@ fun HomeShimmerLoading() {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
-            // Category Shimmer
+            // Top Banner Shimmer
             item {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(180.dp)
-                        .shimmerEffect()
-                )
+                        .background(Color.Black)
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(190.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .shimmerEffect()
+                    )
+                }
+            }
+            item {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     Box(
                         modifier = Modifier

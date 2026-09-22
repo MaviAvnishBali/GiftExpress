@@ -37,6 +37,9 @@ class AccountViewModel @Inject constructor(
     private val _logoutState = MutableStateFlow(false)
     val logoutState: StateFlow<Boolean> = _logoutState
 
+    private val _deleteAccountState = MutableStateFlow<UiState<Boolean>>(UiState.Idle)
+    val deleteAccountState: StateFlow<UiState<Boolean>> = _deleteAccountState
+
     init {
         loadUserProfile()
         loadCustomerDetails()
@@ -123,5 +126,29 @@ class AccountViewModel @Inject constructor(
             authRepository.logout()
             _logoutState.value = true
         }
+    }
+
+    /**
+     * Permanently delete user account
+     */
+    fun deleteAccount(password: String? = null) {
+        _deleteAccountState.value = UiState.Loading
+        viewModelScope.launch {
+            when (val result = authRepository.deleteAccount(password)) {
+                is NetworkResult.Success -> {
+                    _user.value = null
+                    _customerDetails.value = null
+                    _deleteAccountState.value = UiState.Success(result.data ?: true)
+                }
+                is NetworkResult.Error -> {
+                    _deleteAccountState.value = UiState.Error(result.message ?: "Failed to delete account")
+                }
+                is NetworkResult.Loading -> {}
+            }
+        }
+    }
+
+    fun resetDeleteAccountState() {
+        _deleteAccountState.value = UiState.Idle
     }
 }

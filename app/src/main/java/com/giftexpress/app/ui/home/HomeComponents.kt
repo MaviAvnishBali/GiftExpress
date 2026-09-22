@@ -84,7 +84,7 @@ fun HomeHeader(
         label = "headerPadding"
     )
     val bottomSpacerHeight by androidx.compose.animation.core.animateDpAsState(
-        targetValue = if (isScrolled) 8.dp else 20.dp,
+        targetValue = if (isScrolled) 4.dp else 10.dp,
         label = "bottomSpacer"
     )
     val logoHeight by androidx.compose.animation.core.animateDpAsState(
@@ -237,8 +237,8 @@ fun HomeHeader(
         if (!banners.isNullOrEmpty()) {
             HeroBanner(
                 banners = banners,
-                cornerRadius = 0.dp,
-                contentPadding = PaddingValues(0.dp)
+                cornerRadius = 20.dp,
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             )
         }
     }
@@ -249,8 +249,9 @@ fun HomeHeader(
 fun HeroBanner(
     banners: List<SliderBanner>,
     modifier: Modifier = Modifier,
-    cornerRadius: androidx.compose.ui.unit.Dp = 12.dp,
-    contentPadding: PaddingValues = PaddingValues(12.dp),
+    cornerRadius: androidx.compose.ui.unit.Dp = 20.dp,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+    isTopBanner: Boolean = false,
     onBannerClick: ((SliderBanner) -> Unit)? = null
 ) {
     if (banners.isEmpty()) return
@@ -268,69 +269,134 @@ fun HeroBanner(
         }
     }
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(contentPadding)
-    ) {
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier
+    if (isTopBanner) {
+        // Top Slider Banner with black background matching iOS design
+        Column(
+            modifier = modifier
                 .fillMaxWidth()
-                .height(200.dp)
-        ) { page ->
-            val banner = banners[page]
-            SubcomposeAsyncImage(
-                model = banner.mobImage,
-                contentDescription = "Banner",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(RoundedCornerShape(cornerRadius))
-                    .then(
-                        // Match iOS: every banner is tappable; the handler decides what (if
-                        // anything) to do based on type (product/category/brand). Use
-                        // detectTapGestures rather than Modifier.clickable — a plain clickable
-                        // inside a HorizontalPager competes with the pager's horizontal drag
-                        // detector and frequently loses, so taps never fire (this was the B-01
-                        // "banner tap does not redirect" bug). pointerInput + detectTapGestures
-                        // coexists with the drag gesture and reliably delivers the tap.
-                        if (onBannerClick != null)
-                            Modifier.pointerInput(banner) {
-                                detectTapGestures { onBannerClick(banner) }
-                            }
-                        else Modifier
-                    ),
-                contentScale = ContentScale.Fit,
-                loading = {
-                    Box(modifier = Modifier.fillMaxSize().shimmerEffect())
-                }
-            )
-        }
-
-        // Pager Indicators
-        Row(
-            Modifier
-                .height(20.dp)
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 8.dp),
-            horizontalArrangement = Arrangement.Center
+                .background(Color.Black)
+                .padding(bottom = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            repeat(banners.size) { iteration ->
-                val width by androidx.compose.animation.core.animateDpAsState(
-                    targetValue = if (pagerState.currentPage == iteration) 24.dp else 8.dp,
-                    label = "indicator"
-                )
-                val color =
-                    if (pagerState.currentPage == iteration) Color.Green else Color.White.copy(alpha = 0.5f)
-                Box(
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                pageSpacing = 12.dp
+            ) { page ->
+                val banner = banners[page]
+                SubcomposeAsyncImage(
+                    model = banner.mobImage,
+                    contentDescription = "Banner",
                     modifier = Modifier
-                        .padding(2.dp)
-                        .clip(CircleShape)
-                        .background(color)
-                        .height(8.dp)
-                        .width(width)
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(cornerRadius))
+                        .then(
+                            if (onBannerClick != null)
+                                Modifier.pointerInput(banner) {
+                                    detectTapGestures { onBannerClick(banner) }
+                                }
+                            else Modifier
+                        ),
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                    }
                 )
+            }
+
+            if (banners.size > 1) {
+                Spacer(modifier = Modifier.height(10.dp))
+                // White pill container for indicators (matches iOS AdvancedPageControl)
+                Surface(
+                    color = Color.White,
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        repeat(banners.size) { iteration ->
+                            val isCurrent = pagerState.currentPage == iteration
+                            val width by androidx.compose.animation.core.animateDpAsState(
+                                targetValue = if (isCurrent) 20.dp else 6.dp,
+                                label = "topIndicatorWidth"
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(6.dp)
+                                    .width(width)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isCurrent) Color(0xFF34C759) else Color(0xFFD1D1D6)
+                                    )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(contentPadding)
+        ) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) { page ->
+                val banner = banners[page]
+                SubcomposeAsyncImage(
+                    model = banner.mobImage,
+                    contentDescription = "Banner",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(cornerRadius))
+                        .then(
+                            if (onBannerClick != null)
+                                Modifier.pointerInput(banner) {
+                                    detectTapGestures { onBannerClick(banner) }
+                                }
+                            else Modifier
+                        ),
+                    contentScale = ContentScale.Crop,
+                    loading = {
+                        Box(modifier = Modifier.fillMaxSize().shimmerEffect())
+                    }
+                )
+            }
+
+            // Pager Indicators
+            Row(
+                Modifier
+                    .height(20.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                repeat(banners.size) { iteration ->
+                    val width by androidx.compose.animation.core.animateDpAsState(
+                        targetValue = if (pagerState.currentPage == iteration) 24.dp else 8.dp,
+                        label = "indicator"
+                    )
+                    val color =
+                        if (pagerState.currentPage == iteration) Color.Green else Color.White.copy(alpha = 0.5f)
+                    Box(
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .height(8.dp)
+                            .width(width)
+                    )
+                }
             }
         }
     }
@@ -393,14 +459,13 @@ fun CategorySliderItem(
             .height(108.dp)
             .clickable { onCategoryClick(category) }
     ) {
-        // Image: 70x70, scaleAspectFit, centered horizontally, at top
+        // Image: 70x70, scaleAspectFit, centered horizontally, at top (matches iOS CategoryCollectionViewCell)
         SubcomposeAsyncImage(
             model = category.image,
             contentDescription = category.name,
             modifier = Modifier
-                .size(70.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop,
+                .size(70.dp),
+            contentScale = ContentScale.Fit,
             loading = {
                 Box(modifier = Modifier.fillMaxSize().shimmerEffect())
             }
@@ -594,12 +659,14 @@ fun ProductCard(
 
         // PRICE
         Row(verticalAlignment = Alignment.Bottom) {
-            Text(
-                text = "As Low As ",
-                fontSize = 11.sp,
-                color = Color.Black,
-                fontFamily = FontFamily(Font(R.font.gilroy_regular)),
-            )
+            if (product.asLowAs == true) {
+                Text(
+                    text = "As Low As ",
+                    fontSize = 11.sp,
+                    color = Color.Black,
+                    fontFamily = FontFamily(Font(R.font.gilroy_regular)),
+                )
+            }
             Text(
                 text = "$${String.format(java.util.Locale.US, "%.2f", product.price ?: 0.0)}",
                 fontSize = 16.sp,
@@ -832,7 +899,7 @@ fun OffersSection(
     title: String,
     offers: List<SliderOffer>,
     modifier: Modifier = Modifier,
-    onOfferClick: ((SliderOffer) -> Unit)? = null   // iOS: offer.type based navigation
+    onOfferClick: ((SliderOffer) -> Unit)? = null
 ) {
     if (offers.isEmpty()) return
 
@@ -869,12 +936,12 @@ fun OffersSection(
             }
         }
 
+        var imageAspectRatio by remember { mutableStateOf(1200f / 630f) }
+
         Box(modifier = Modifier.fillMaxWidth()) {
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(2.8f),
+                modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 pageSpacing = 8.dp
             ) { page ->
@@ -883,18 +950,25 @@ fun OffersSection(
                     model = offer.image,
                     contentDescription = "Offer",
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxWidth()
+                        .aspectRatio(imageAspectRatio)
                         .clip(RoundedCornerShape(12.dp))
                         .then(
                             // Same as HeroBanner: use detectTapGestures so the tap isn't
                             // swallowed by the pager's horizontal drag detector.
-                            if (onOfferClick != null && offer.urlApi.isNotBlank())
+                            if (onOfferClick != null && !offer.urlApi.isNullOrBlank())
                                 Modifier.pointerInput(offer) {
                                     detectTapGestures { onOfferClick(offer) }
                                 }
                             else Modifier
                         ),
-                    contentScale = ContentScale.Crop,
+                    contentScale = ContentScale.FillWidth,
+                    onSuccess = { state ->
+                        val size = state.painter.intrinsicSize
+                        if (size.width > 0 && size.height > 0) {
+                            imageAspectRatio = size.width / size.height
+                        }
+                    },
                     loading = {
                         Box(modifier = Modifier.fillMaxSize().shimmerEffect())
                     }

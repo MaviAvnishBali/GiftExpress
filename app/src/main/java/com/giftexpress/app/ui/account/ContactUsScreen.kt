@@ -68,13 +68,25 @@ fun ContactUsScreen(
                 is UiState.Success -> ContactUsContent(
                     page = state.data,
                     onPhoneClick = { phone ->
-                        val clean = phone.replace(" ", "").replace("-", "")
-                        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$clean"))
-                        context.startActivity(intent)
+                        try {
+                            val clean = phone.replace(" ", "").replace("-", "")
+                            val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$clean")).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            android.widget.Toast.makeText(context, "Cannot open dialer", android.widget.Toast.LENGTH_SHORT).show()
+                        }
                     },
                     onEmailClick = { email ->
-                        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email"))
-                        context.startActivity(intent)
+                        try {
+                            val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$email")).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            android.widget.Toast.makeText(context, "Cannot open email client", android.widget.Toast.LENGTH_SHORT).show()
+                        }
                     }
                 )
                 else -> {}

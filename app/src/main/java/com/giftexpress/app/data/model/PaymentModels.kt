@@ -11,7 +11,7 @@ data class PaymentIntentResponse(
 
 data class StripePaymentIntentRequest(
     @SerializedName("quoteId") val quoteId: Int,
-    @SerializedName("customerId") val customerId: Int
+    @SerializedName("customerId") val customerId: Int? = null
 )
 
 data class StripePlaceOrderRequest(

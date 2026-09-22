@@ -97,9 +97,18 @@ class SearchListingViewModel @Inject constructor(
                         _currentSort.value?.let { sortOpt ->
                             val sortArr = com.google.gson.JsonArray()
                             val sortItem = com.google.gson.JsonObject()
-                            val field = if (sortOpt.sortBy == "price") "sellingPrice" else sortOpt.sortBy
+                            val field = when (sortOpt) {
+                                com.giftexpress.app.ui.category.CategoryViewModel.SortOption.IN_STOCK -> "name"
+                                com.giftexpress.app.ui.category.CategoryViewModel.SortOption.PRICE_ASC,
+                                com.giftexpress.app.ui.category.CategoryViewModel.SortOption.PRICE_DESC -> "sellingPrice"
+                                else -> sortOpt.sortBy
+                            }
+                            val order = when (sortOpt) {
+                                com.giftexpress.app.ui.category.CategoryViewModel.SortOption.IN_STOCK -> "asc"
+                                else -> sortOpt.sortOrder.lowercase()
+                            }
                             sortItem.addProperty("field", field)
-                            sortItem.addProperty("order", sortOpt.sortOrder.lowercase())
+                            sortItem.addProperty("order", order)
                             sortArr.add(sortItem)
                             filterObj.add("sort", sortArr)
                         }
@@ -164,6 +173,7 @@ class SearchListingViewModel @Inject constructor(
                         append("&productsCount=20")
                         append("&currency=USD")
                         append("&inStock=[true]")
+                        append("&showOOSProductsInOrder=false")
                     }
                 }
 

@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.giftexpress.app.R
 import com.giftexpress.app.ui.category.CategoryBottomActions
+import com.giftexpress.app.ui.category.CategoryViewModel
 import com.giftexpress.app.ui.category.FilterFullScreen
 import com.giftexpress.app.ui.category.SortBottomSheetContent
 import com.giftexpress.app.ui.home.ProductCard
@@ -100,13 +101,15 @@ fun SpecialProductsScreen(
         }
     }
 
+    val dynamicTitle by viewModel.screenTitle.collectAsState()
+    val displayTitle = dynamicTitle.ifBlank { title.ifBlank { "Products" } }
+
     Scaffold(
         topBar = {
             Surface(color = colorResource(id = R.color.primary), contentColor = Color.White) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .statusBarsPadding()
                         .padding(horizontal = 4.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -114,7 +117,7 @@ fun SpecialProductsScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                     Text(
-                        text = title,
+                        text = displayTitle,
                         modifier = Modifier.weight(1f),
                         fontSize = 18.sp,
                         fontFamily = FontFamily(Font(R.font.gilroy_bold))
@@ -125,7 +128,11 @@ fun SpecialProductsScreen(
                     }
                     Box {
                         IconButton(onClick = onCartClick) {
-                            Icon(Icons.Outlined.ShoppingCart, contentDescription = "Cart")
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_cart_black),
+                                contentDescription = "Cart",
+                                modifier = Modifier.size(24.dp)
+                            )
                         }
                         if (cartCount > 0) {
                             Box(
@@ -155,10 +162,11 @@ fun SpecialProductsScreen(
             CategoryBottomActions(
                 onFilterClick = { showFilterSheet = true },
                 onSortClick = { showSortSheet = true },
-                sortLabel = currentSort?.label,
+                sortLabel = if (currentSort != null && currentSort != CategoryViewModel.SortOption.IN_STOCK) currentSort?.label else null,
                 filterLabel = if (currentSelectedFilters.isNotEmpty()) "Filtered" else null
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (val state = productsState) {

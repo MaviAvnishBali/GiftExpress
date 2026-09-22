@@ -41,7 +41,6 @@ fun OrdersScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .statusBarsPadding()
                         .padding(horizontal = 4.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

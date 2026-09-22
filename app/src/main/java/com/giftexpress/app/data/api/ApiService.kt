@@ -14,7 +14,7 @@ interface ApiService {
 
     // ─── Public (no auth required) ───────────────────────────────────────────
 
-    @GET("giftexpress/menu/hyva-topmenu-mobile")
+    @GET("giftexpress/menu/app_menu")
     suspend fun getHamburgerMenu(): Response<List<MenuItem>>
 
     @GET("giftexpress/sliders/")
@@ -29,9 +29,9 @@ interface ApiService {
     @GET("giftexpress/categoryofferandBanner/{categoryId}")
     suspend fun getCategoryOfferAndBanner(@Path("categoryId") categoryId: Int): Response<CategoryOfferAndBannerResponse>
 
-    @GET("giftexpress/all-products")
+    @GET("giftexpress/products/{category_id}")
     suspend fun getCategoryProducts(
-        @Query("category_id") categoryId: Int,
+        @Path("category_id") categoryId: Int,
         @Query("pageSize") pageSize: Int,
         @Query("currentPage") currentPage: Int,
         @Query("manufacturer") manufacturer: Int? = null,
@@ -178,6 +178,10 @@ interface ApiService {
 
     @PUT("customers/me/password")
     suspend fun changePassword(@Body request: ChangePasswordRequest): Response<Boolean>
+
+    // Permanently deletes customer account: POST rest/V1/giftexpress/customer/delete
+    @POST("giftexpress/customer/delete")
+    suspend fun deleteAccount(@Body request: DeleteAccountRequest = DeleteAccountRequest()): Response<Boolean>
 
     // Matches iOS: POST rest//V1/carts/mine → returns Int (quoteId)
     @POST("carts/mine")

@@ -6,21 +6,25 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.giftexpress.app.R
+import com.giftexpress.app.utils.UiState
 
 @Composable
 fun AccountScreen(
@@ -37,11 +41,20 @@ fun AccountScreen(
     onNavigateToTermsConditions: () -> Unit,
     onNavigateToContactUs: () -> Unit = {},
     onNavigateToPerfumeEnquiry: () -> Unit = {},
-    onNavigateToLogin: () -> Unit = {}
+    onNavigateToLogin: () -> Unit = {},
+    onRequireLogin: () -> Unit = onNavigateToLogin
 ) {
-    val logoutState by viewModel.logoutState.collectAsState()
+    val deleteAccountState by viewModel.deleteAccountState.collectAsState()
     val user by viewModel.user.collectAsState()
     val isLoggedIn = user != null
+
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(deleteAccountState) {
+        if (deleteAccountState is UiState.Success) {
+            showDeleteAccountDialog = false
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -134,6 +147,21 @@ fun AccountScreen(
                     text = "Reward Points History",
                     onClick = onNavigateToRewardHistory
                 )
+                AccountSettingItem(
+                    iconVector = Icons.Default.Delete,
+                    iconTint = Color(0xFFD32F2F),
+                    textColor = Color(0xFFD32F2F),
+                    trailingIconTint = Color(0xFFD32F2F),
+                    text = "Delete Account",
+                    onClick = {
+                        if (isLoggedIn) {
+                            viewModel.resetDeleteAccountState()
+                            showDeleteAccountDialog = true
+                        } else {
+                            onRequireLogin()
+                        }
+                    }
+                )
             }
 
             item {
@@ -161,6 +189,99 @@ fun AccountScreen(
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
+    }
+
+    if (showDeleteAccountDialog) {
+        val isLoading = deleteAccountState is UiState.Loading
+        val apiErrorMessage = (deleteAccountState as? UiState.Error)?.message
+
+        AlertDialog(
+            onDismissRequest = {
+                if (!isLoading) {
+                    showDeleteAccountDialog = false
+                    viewModel.resetDeleteAccountState()
+                }
+            },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = Color(0xFFD32F2F),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Delete Account",
+                        fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+                        fontSize = 18.sp,
+                        color = Color.Black
+                    )
+                }
+            },
+            text = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Are you sure you want to delete your account? This action is permanent and cannot be undone. All your personal data, orders history, and reward points will be permanently deleted.",
+                        fontFamily = FontFamily(Font(R.font.gilroy_medium)),
+                        fontSize = 14.sp,
+                        color = Color.DarkGray,
+                        lineHeight = 20.sp
+                    )
+                    if (apiErrorMessage != null) {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = apiErrorMessage,
+                            fontFamily = FontFamily(Font(R.font.gilroy_medium)),
+                            fontSize = 12.sp,
+                            color = Color(0xFFD32F2F)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.deleteAccount()
+                    },
+                    enabled = !isLoading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFD32F2F),
+                        disabledContainerColor = Color(0xFFD32F2F).copy(alpha = 0.5f)
+                    ),
+                    shape = RoundedCornerShape(4.dp)
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(
+                        text = "DELETE",
+                        fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+                        color = Color.White
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteAccountDialog = false
+                        viewModel.resetDeleteAccountState()
+                    },
+                    enabled = !isLoading
+                ) {
+                    Text(
+                        text = "CANCEL",
+                        fontFamily = FontFamily(Font(R.font.gilroy_medium)),
+                        color = Color.Gray
+                    )
+                }
+            }
+        )
     }
 }
 
@@ -203,9 +324,13 @@ fun AccountOptionCard(
 
 @Composable
 fun AccountSettingItem(
-    iconRes: Int,
+    iconRes: Int? = null,
     text: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    iconVector: ImageVector? = null,
+    iconTint: Color = Color(0xFF1976D2),
+    textColor: Color = Color.Black,
+    trailingIconTint: Color = Color.Black
 ) {
     Row(
         modifier = Modifier
@@ -214,25 +339,34 @@ fun AccountSettingItem(
             .padding(vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = Color(0xFF1976D2) // Blue color from image
-        )
+        if (iconVector != null) {
+            Icon(
+                imageVector = iconVector,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = iconTint
+            )
+        } else if (iconRes != null) {
+            Icon(
+                painter = painterResource(id = iconRes),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = iconTint
+            )
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = text,
             fontFamily = FontFamily(Font(R.font.gilroy_medium)),
             fontSize = 16.sp,
-            color = Color.Black,
+            color = textColor,
             modifier = Modifier.weight(1f)
         )
         Icon(
             painter = painterResource(id = R.drawable.ic_arrow_right),
             contentDescription = null,
             modifier = Modifier.size(16.dp),
-            tint = Color.Black
+            tint = trailingIconTint
         )
     }
     Divider(color = Color.LightGray.copy(alpha = 0.3f), thickness = 0.5.dp)

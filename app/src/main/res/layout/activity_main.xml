@@ -12,6 +12,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <!-- Status Bar Spacer (Fills Status Bar with primary color and insets content) -->
+        <View
+            android:id="@+id/statusBarSpacer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/primary"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
         <!-- Navigation Host Fragment -->
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/nav_host_fragment"
@@ -20,7 +30,7 @@
             android:layout_height="0dp"
             app:defaultNavHost="true"
             app:navGraph="@navigation/nav_graph"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/statusBarSpacer"
             app:layout_constraintBottom_toTopOf="@id/bottomNavShadow" />
 
         <!-- TOP SHADOW -->
@@ -48,6 +58,20 @@
             app:itemPaddingTop="8dp"
             app:itemPaddingBottom="6dp"
             app:itemIconSize="22dp"
+            app:paddingBottomSystemWindowInsets="false"
+            app:paddingTopSystemWindowInsets="false"
+            app:paddingLeftSystemWindowInsets="false"
+            app:paddingRightSystemWindowInsets="false"
+            app:layout_constraintBottom_toTopOf="@id/navBarSpacer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Navigation Bar Spacer (Fills Navigation Bar with white and raises bottom content) -->
+        <View
+            android:id="@+id/navBarSpacer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@android:color/white"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -56,11 +80,11 @@
         <androidx.compose.ui.platform.ComposeView
             android:id="@+id/noInternetComposeView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:visibility="gone"
             android:background="@color/white"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/statusBarSpacer"
+            app:layout_constraintBottom_toTopOf="@id/navBarSpacer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -69,11 +93,21 @@
     <!-- Navigation Drawer -->
     <!-- Navigation Drawer Container -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/drawer_container"
         android:layout_width="300dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/white"
-        android:fitsSystemWindows="true">
+        android:background="@color/white">
+
+        <!-- Drawer Status Bar Spacer (Keeps status bar background black when drawer is open) -->
+        <View
+            android:id="@+id/drawerStatusBarSpacer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/primary"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <TextView
             android:id="@+id/tvDrawerHeading"
@@ -84,7 +118,7 @@
             android:textStyle="bold"
             android:textColor="@android:color/black"
             android:padding="16dp"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/drawerStatusBarSpacer"
             app:layout_constraintStart_toStartOf="parent"/>
 
         <com.google.android.material.navigation.NavigationView

@@ -33,7 +33,7 @@ class CategoryViewModel @Inject constructor(
     private var isFetchingNextPage = false
     private val allProducts = mutableListOf<SliderProduct>()
 
-    private val _currentSort = MutableStateFlow<SortOption?>(null)
+    private val _currentSort = MutableStateFlow<SortOption?>(SortOption.IN_STOCK)
     val currentSort: StateFlow<SortOption?> = _currentSort
 
     private val _apiFiltersState = MutableStateFlow<List<com.giftexpress.app.data.model.ProductFilter>?>(null)
@@ -49,6 +49,7 @@ class CategoryViewModel @Inject constructor(
     val brandsState: StateFlow<List<BrandResponse>> = _brandsState
 
     enum class SortOption(val label: String, val sortBy: String, val sortOrder: String) {
+        IN_STOCK("Shop by In Stock", "shop_by_stock", "asc"),
         NAME_ASC("Product Name A-Z", "name", "asc"),
         NAME_DESC("Product Name Z-A", "name", "desc"),
         PRICE_ASC("Price - Low to High", "price", "asc"),
@@ -82,6 +83,7 @@ class CategoryViewModel @Inject constructor(
             if (lastCategoryId != categoryId) {
                 _apiFiltersState.value = null
                 _selectedFilters.value = emptyMap()
+                _currentSort.value = SortOption.IN_STOCK
             }
             lastCategoryId = categoryId
             currentPage = 1
@@ -135,7 +137,7 @@ class CategoryViewModel @Inject constructor(
     }
 
     fun clearSort(categoryId: Int) {
-        _currentSort.value = null
+        _currentSort.value = SortOption.IN_STOCK
         fetchProducts(categoryId, reset = true)
     }
 

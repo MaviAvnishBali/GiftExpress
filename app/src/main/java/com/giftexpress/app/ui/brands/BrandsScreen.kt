@@ -1,14 +1,19 @@
 package com.giftexpress.app.ui.brands
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -175,7 +180,6 @@ private fun BrandProductsInline(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .statusBarsPadding()
                         .padding(horizontal = 4.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -192,6 +196,33 @@ private fun BrandProductsInline(
                     IconButton(onClick = onSearchClick) {
                         Icon(androidx.compose.material.icons.Icons.Default.Search, contentDescription = "Search", tint = Color.White)
                     }
+                    Box {
+                        IconButton(onClick = onCartClick) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_cart_black),
+                                contentDescription = "Cart",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        if (cartCount > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(18.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Red),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (cartCount > 99) "99+" else cartCount.toString(),
+                                    color = Color.White,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
                 }
             }
         },
@@ -203,7 +234,8 @@ private fun BrandProductsInline(
                 sortLabel = currentSort?.label,
                 filterLabel = if (currentSelectedFilters.isNotEmpty()) "Filtered" else null
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
 

@@ -11,9 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,10 +29,6 @@ import com.giftexpress.app.utils.UiState
 
 private val AccentRed = Color(0xFFE53935)
 private val MintBackground = Color(0xFFB2EAE3)
-private val PayPalYellow = Color(0xFFFFC439)
-private val AmazonOrange = Color(0xFFFF9900)
-private val AfterpayMint = Color(0xFFB2FCE4)
-private val AfterpayBlack = Color(0xFF000000)
 
 @Composable
 fun PaymentScreen(
@@ -62,7 +55,6 @@ fun PaymentScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .statusBarsPadding()
                         .padding(horizontal = 4.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -94,84 +86,61 @@ fun PaymentScreen(
             ) {
                 Spacer(Modifier.height(4.dp))
 
-                // Total Amount bar (mint, like the mockup)
+                // Total Amount bar (matches iOS amountContainerView)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(MintBackground, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                        .background(MintBackground, RoundedCornerShape(12.dp))
+                        .padding(horizontal = 20.dp, vertical = 20.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Total Payable Amount",
+                        text = "Total Amount",
                         fontFamily = FontFamily(Font(R.font.gilroy_bold)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp,
-                        color = Color(0xFF333333)
+                        fontSize = 18.sp,
+                        color = Color(0xFF1E293B)
                     )
                     Text(
                         text = "$${String.format("%.2f", total)}",
                         fontFamily = FontFamily(Font(R.font.gilroy_bold)),
                         fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = Color(0xFF333333)
+                        fontSize = 22.sp,
+                        color = Color(0xFF1E293B)
                     )
                 }
 
                 Spacer(Modifier.height(4.dp))
 
-                // PayPal Express Checkout
-                PaymentMethodRow(
+                // Option 1: PayPal (matches iOS paypalView)
+                PaymentOptionRow(
                     selected = selectedMethod == PaymentMethodOption.PAYPAL,
-                    selectedBorderColor = PayPalYellow,
                     onClick = { onMethodSelected(PaymentMethodOption.PAYPAL) },
-                    logo = { PayPalLogo() },
-                    label = "PayPal Express Checkout"
+                    icon = {
+                        Image(
+                            painter = painterResource(id = R.drawable.paypal_logo),
+                            contentDescription = "PayPal",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    },
+                    title = "PayPal"
                 )
 
-                // Google Pay (presented through the Stripe sheet)
-                PaymentMethodRow(
-                    selected = selectedMethod == PaymentMethodOption.GOOGLE_PAY,
-                    selectedBorderColor = AccentRed,
-                    onClick = { onMethodSelected(PaymentMethodOption.GOOGLE_PAY) },
-                    logo = { GPayLogo() },
-                    label = "Google Pay"
-                )
-
-                // Amazon Pay (hosted-page checkout)
-                PaymentMethodRow(
-                    selected = selectedMethod == PaymentMethodOption.AMAZON_PAY,
-                    selectedBorderColor = AmazonOrange,
-                    onClick = { onMethodSelected(PaymentMethodOption.AMAZON_PAY) },
-                    logo = { AmazonPayLogo() },
-                    label = "Amazon Pay"
-                )
-
-                // Afterpay (hosted-page checkout)
-                PaymentMethodRow(
-                    selected = selectedMethod == PaymentMethodOption.AFTERPAY,
-                    selectedBorderColor = AfterpayMint,
-                    onClick = { onMethodSelected(PaymentMethodOption.AFTERPAY) },
-                    logo = { AfterpayLogo() },
-                    label = "Afterpay"
-                )
-
-                // Klarna (via Stripe)
-                PaymentMethodRow(
-                    selected = selectedMethod == PaymentMethodOption.KLARNA,
-                    selectedBorderColor = Color(0xFFFFB3C7), // Klarna Pink
-                    onClick = { onMethodSelected(PaymentMethodOption.KLARNA) },
-                    logo = { KlarnaLogo() },
-                    label = "Klarna"
-                )
-
-                Divider(color = Color(0xFFE0E0E0), modifier = Modifier.padding(vertical = 4.dp))
-
-                // Credit / Debit card (Stripe PaymentSheet)
-                CardMethodSection(
-                    selected = selectedMethod == PaymentMethodOption.CARD,
-                    onClick = { onMethodSelected(PaymentMethodOption.CARD) }
+                // Option 2: Other Payment Methods (matches iOS stripeView)
+                PaymentOptionRow(
+                    selected = selectedMethod == PaymentMethodOption.OTHER,
+                    onClick = { onMethodSelected(PaymentMethodOption.OTHER) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_credit_card),
+                            contentDescription = "Other Payment Methods",
+                            tint = Color(0xFF333333),
+                            modifier = Modifier.size(28.dp)
+                        )
+                    },
+                    title = "Other Payment Methods",
+                    subtitle = "Card, AfterPay, Klarna, AmazonPay, Google Pay"
                 )
 
                 // Error messages
@@ -179,7 +148,7 @@ fun PaymentScreen(
                     stripeState is StripePaymentState.Error -> stripeState.message
                     payPalState is PayPalPaymentState.Error -> payPalState.message
                     redirectState is RedirectPaymentState.Error -> redirectState.message
-                    placeOrderState is UiState.Error -> (placeOrderState as UiState.Error).message
+                    placeOrderState is UiState.Error -> placeOrderState.message
                     else -> null
                 }
                 if (errorMessage != null) {
@@ -201,7 +170,7 @@ fun PaymentScreen(
                 Spacer(Modifier.height(8.dp))
             }
 
-            // Pay button (red, like the mockup)
+            // Pay button (matches iOS payButton: red, cornerRadius 12, "Pay $XX.XX")
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -210,9 +179,11 @@ fun PaymentScreen(
             ) {
                 Button(
                     onClick = onPayClick,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = AccentRed),
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(12.dp),
                     enabled = !isLoading
                 ) {
                     if (isLoading) {
@@ -222,41 +193,18 @@ fun PaymentScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Lock, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Text(
-                                    text = "Pay",
-                                    fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 17.sp,
-                                    color = Color.White
-                                )
-                            }
-                            Text(
-                                text = "$${String.format("%.2f", total)}",
-                                fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 17.sp,
-                                color = Color.White
-                            )
-                        }
+                        Text(
+                            text = "Pay $${String.format("%.2f", total)}",
+                            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
                     }
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    text = when (selectedMethod) {
-                        PaymentMethodOption.PAYPAL -> "Powered by PayPal"
-                        PaymentMethodOption.AMAZON_PAY -> "Powered by Amazon Pay"
-                        PaymentMethodOption.AFTERPAY -> "Powered by Afterpay"
-                        PaymentMethodOption.KLARNA -> "Powered by Klarna"
-                        else -> "Powered by Stripe"
-                    },
+                    text = if (selectedMethod == PaymentMethodOption.PAYPAL) "Powered by PayPal" else "Powered by Stripe",
                     fontFamily = Gilroy,
                     fontSize = 12.sp,
                     color = Color.LightGray
@@ -267,127 +215,99 @@ fun PaymentScreen(
 }
 
 @Composable
-private fun PaymentMethodRow(
+private fun PaymentOptionRow(
     selected: Boolean,
-    selectedBorderColor: Color,
     onClick: () -> Unit,
-    logo: @Composable () -> Unit,
-    label: String
+    icon: @Composable () -> Unit,
+    title: String,
+    subtitle: String? = null
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(
             width = if (selected) 1.5.dp else 1.dp,
-            color = if (selected) selectedBorderColor else Color(0xFFE0E0E0)
+            color = if (selected) Color(0xFFFF9800) else Color(0xFFE0E0E0)
         ),
         elevation = CardDefaults.cardElevation(0.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 20.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            logo()
-            Spacer(Modifier.width(10.dp))
-            Text(
-                text = label,
-                fontFamily = Gilroy,
-                fontSize = 14.sp,
-                color = Color(0xFF333333),
-                modifier = Modifier.weight(1f)
-            )
-            SelectionIndicator(selected = selected, color = selectedBorderColor)
-        }
-    }
-}
-
-@Composable
-private fun CardMethodSection(
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(
-            width = if (selected) 1.5.dp else 1.dp,
-            color = if (selected) AccentRed else Color(0xFFE0E0E0)
-        ),
-        elevation = CardDefaults.cardElevation(0.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 20.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Box(
+                modifier = Modifier.size(32.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = null,
-                    modifier = Modifier.size(28.dp),
-                    tint = Color.Gray
-                )
-                Spacer(Modifier.width(10.dp))
+                icon()
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
                 Text(
-                    text = "Credit Card / Debit Card",
+                    text = title,
                     fontFamily = FontFamily(Font(R.font.gilroy_bold)),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = Color(0xFF333333),
-                    modifier = Modifier.weight(1f)
+                    fontSize = 16.sp,
+                    color = Color(0xFF1E293B)
                 )
-                SelectionIndicator(selected = selected, color = AccentRed)
-            }
-            if (selected) {
-                Spacer(Modifier.height(12.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = null,
-                        tint = Color(0xFF4CAF50),
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(Modifier.width(8.dp))
+                if (!subtitle.isNullOrBlank()) {
+                    Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "Card details are entered on the secure Stripe payment sheet.",
+                        text = subtitle,
                         fontFamily = Gilroy,
                         fontSize = 12.sp,
-                        color = Color.Gray,
-                        lineHeight = 16.sp
+                        color = Color.Gray
                     )
                 }
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    PaymentBadge("VISA")
-                    PaymentBadge("MC")
-                    PaymentBadge("AMEX")
-                }
             }
+            Spacer(Modifier.width(12.dp))
+            SelectionIndicator(selected = selected, color = Color(0xFFFF9800))
         }
     }
 }
 
 @Composable
-private fun SelectionIndicator(selected: Boolean, color: Color) {
+private fun SelectionIndicator(selected: Boolean, color: Color = Color(0xFFFF9800)) {
     if (selected) {
         Box(
-            modifier = Modifier.size(22.dp).background(color, CircleShape),
+            modifier = Modifier
+                .size(24.dp)
+                .background(Color.Transparent, CircleShape)
+                .padding(2.dp),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Check,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(14.dp)
-            )
+            Surface(
+                shape = CircleShape,
+                color = Color.White,
+                border = BorderStroke(2.dp, color),
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color, CircleShape)
+                    )
+                }
+            }
         }
     } else {
         Box(
             modifier = Modifier
-                .size(22.dp)
-                .background(Color.White, CircleShape)
-                .padding(1.dp)
+                .size(24.dp)
+                .background(Color.Transparent, CircleShape)
+                .padding(2.dp)
         ) {
             Surface(
                 shape = CircleShape,
@@ -396,85 +316,5 @@ private fun SelectionIndicator(selected: Boolean, color: Color) {
                 modifier = Modifier.fillMaxSize()
             ) {}
         }
-    }
-}
-
-@Composable
-private fun PayPalLogo() {
-    Image(
-        painter = painterResource(id = R.drawable.paypal_logo),
-        contentDescription = "PayPal",
-        modifier = Modifier.size(28.dp)
-    )
-}
-
-@Composable
-private fun AmazonPayLogo() {
-    // amazonpzy_logo viewport is 60x19 — keep that aspect ratio at ~18dp tall
-    Image(
-        painter = painterResource(id = R.drawable.amazonpzy_logo),
-        contentDescription = "Amazon Pay",
-        modifier = Modifier.height(18.dp).width(57.dp)
-    )
-}
-
-/** Text-drawn Afterpay logo — mint pill with the "afterpay" wordmark, avoids a bitmap asset. */
-@Composable
-private fun AfterpayLogo() {
-    Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = AfterpayMint
-    ) {
-        Text(
-            text = "afterpay",
-            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
-            color = AfterpayBlack,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
-    }
-}
-
-@Composable
-private fun GPayLogo() {
-    // gpay_logo viewport is 66x26 — keep that aspect ratio at ~22dp tall
-    Image(
-        painter = painterResource(id = R.drawable.gpay_logo),
-        contentDescription = "Google Pay",
-        modifier = Modifier.height(22.dp).width(56.dp)
-    )
-}
-
-@Composable
-private fun PaymentBadge(label: String) {
-    Surface(
-        shape = RoundedCornerShape(4.dp),
-        color = Color(0xFFF5F5F5)
-    ) {
-        Text(
-            text = label,
-            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-            fontSize = 11.sp,
-            color = Color(0xFF333333),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
-    }
-}
-
-@Composable
-private fun KlarnaLogo() {
-    Surface(
-        shape = RoundedCornerShape(6.dp),
-        color = Color(0xFFFFB3C7) // Klarna Pink
-    ) {
-        Text(
-            text = "Klarna.",
-            fontFamily = FontFamily(Font(R.font.gilroy_bold)),
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
-            color = Color.Black,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
     }
 }

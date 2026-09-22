@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,7 +46,7 @@ fun CartScreen(
     Scaffold(
         topBar = {
             CartTopBar(
-                cartCount = cartItems.sumOf { it.quantity },
+                cartCount = cartItems.size,
                 onBackClick = onBackClick,
                 onClearClick = { viewModel.clearCart() },
                 showClearAll = cartItems.isNotEmpty()

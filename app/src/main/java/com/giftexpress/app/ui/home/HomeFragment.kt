@@ -42,7 +42,10 @@ class HomeFragment : Fragment() {
     // iOS enum constants
     private val CATEGORY_WOMEN = 4
     private val CATEGORY_MEN = 3
+    private val CATEGORY_UNISEX = 16
     private val BRAND_AHUJA = 5049
+    private val BRAND_PARIS_CORNER = 5695
+    private val BRAND_AL_ABSAR = 5896
     private val FLAG_BEST_SELLING = 15
     private val FLAG_NEW_ARRIVAL = 17
     private val FLAG_FEATURED = 14
@@ -283,29 +286,78 @@ class HomeFragment : Fragment() {
                 } else title
                 navigateToCategory(categoryId, fallbackTitle)
             }
-            "brand" -> navigateToBrandProducts(resolvedUrlApi.toIntOrNull() ?: 0, title)
+            "brand" -> {
+                val brandId = resolvedUrlApi.toIntOrNull() ?: 0
+                val brandName = title.ifBlank {
+                    KNOWN_BRANDS[brandId]
+                        ?: extractBrandNameFromUrl(banner.mobImage ?: banner.url)
+                        ?: "Brand"
+                }
+                navigateToBrandProducts(brandId, brandName)
+            }
             else -> android.util.Log.i("HomeBanner", "Banner has no action, type='$resolvedType', url_api='$resolvedUrlApi', full_banner=$banner")
         }
     }
 
     /**
-     * iOS: if offer.type == "category" → categoryListing else → productDetails
+     * Handles offer taps based on type: "category", "brand", or "product" (default)
      */
     private fun handleOfferTap(offer: SliderOffer) {
-        val urlApi = offer.urlApi.trim().takeIf { it.isNotBlank() } ?: ""
-        if (urlApi.isBlank()) return
-        
-        val type = offer.type.trim().lowercase()
-        if (type == "category") {
-            val categoryId = urlApi.toIntOrNull() ?: return
-            val title = when (categoryId) {
-                CATEGORY_WOMEN -> "Women's Fragrances"
-                CATEGORY_MEN -> "Men's Fragrances"
-                else -> "" // Leave empty if unknown, though ideally backend provides it
+        val urlApi = offer.urlApi?.trim()?.takeIf { it.isNotBlank() } ?: return
+        val type = offer.type?.trim()?.lowercase() ?: ""
+        when (type) {
+            "category" -> {
+                val categoryId = urlApi.toIntOrNull() ?: return
+                val title = offer.title?.takeIf { it.isNotBlank() }
+                    ?: when (categoryId) {
+                        CATEGORY_WOMEN -> "Women's Fragrances"
+                        CATEGORY_MEN -> "Men's Fragrances"
+                        CATEGORY_UNISEX -> "Unisex Fragrances"
+                        else -> extractBrandNameFromUrl(offer.image) ?: "Fragrances"
+                    }
+                navigateToCategory(categoryId, title)
             }
-            navigateToCategory(categoryId, title)
-        } else {
-            navigateToProduct(urlApi)
+            "brand" -> {
+                val brandId = urlApi.toIntOrNull() ?: return
+                val brandName = offer.title?.takeIf { it.isNotBlank() }
+                    ?: KNOWN_BRANDS[brandId]
+                    ?: extractBrandNameFromUrl(offer.image)
+                    ?: "Brand"
+                navigateToBrandProducts(brandId, brandName)
+            }
+            else -> {
+                navigateToProduct(urlApi)
+            }
+        }
+    }
+
+    companion object {
+        val KNOWN_BRANDS = mapOf(
+            5695 to "Paris Corner",
+            5049 to "Ahuja",
+            5896 to "Al Absar",
+            188 to "Gucci",
+            201 to "Burberry",
+            202 to "Calvin Klein",
+            27 to "Bvlgari",
+            346 to "Dana"
+        )
+
+        fun extractBrandNameFromUrl(imageUrl: String?): String? {
+            if (imageUrl.isNullOrBlank()) return null
+            val fileName = imageUrl.substringAfterLast("/").substringBeforeLast(".")
+            val cleaned = fileName
+                .replace(Regex("[-_](mobile|banner|app).*", RegexOption.IGNORE_CASE), "")
+                .replace(Regex("[-_]\\d+.*"), "")
+                .replace("-", " ")
+                .replace("_", " ")
+                .trim()
+            if (cleaned.isBlank()) return null
+            return cleaned.split(" ")
+                .filter { it.isNotBlank() }
+                .joinToString(" ") { word ->
+                    word.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+                }
         }
     }
 }

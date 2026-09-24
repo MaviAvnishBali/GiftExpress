@@ -82,32 +82,6 @@ fun CategoryScreen(
         }
     }
 
-    if (showFilterSheet) {
-        val apiFilters by viewModel.apiFiltersState.collectAsState()
-        val currentSelectedFilters by viewModel.selectedFilters.collectAsState()
-
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { showFilterSheet = false },
-            properties = androidx.compose.ui.window.DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false
-            )
-        ) {
-            FilterFullScreen(
-                filters = apiFilters,
-                initialSelectedFilters = currentSelectedFilters,
-                onApply = { newFilters ->
-                    viewModel.applyFilters(categoryId, newFilters)
-                    showFilterSheet = false
-                },
-                onBackClick = { showFilterSheet = false },
-                onClearFilter = {
-                    viewModel.clearFilter(categoryId)
-                }
-            )
-        }
-    }
-
     val fallbackTitle = when (categoryId) {
         4 -> "Women's Fragrances"
         3 -> "Men's Fragrances"
@@ -120,16 +94,17 @@ fun CategoryScreen(
         bannerTitle?.takeIf { it.isNotBlank() } ?: fallbackTitle.ifBlank { "Category" }
     }
 
-    Scaffold(
-        topBar = {
-            CategoryTopBar(
-                title = resolvedCategoryTitle,
-                onBackClick = onBackClick,
-                onCartClick = onCartClick,
-                onSearchClick = onSearchClick,
-                cartCount = cartCount
-            )
-        },
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                CategoryTopBar(
+                    title = resolvedCategoryTitle,
+                    onBackClick = onBackClick,
+                    onCartClick = onCartClick,
+                    onSearchClick = onSearchClick,
+                    cartCount = cartCount
+                )
+            },
         bottomBar = {
             val currentSelectedFilters by viewModel.selectedFilters.collectAsState()
             CategoryBottomActions(
@@ -143,7 +118,7 @@ fun CategoryScreen(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
+                columns = GridCells.Fixed(3),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
@@ -315,6 +290,25 @@ fun CategoryScreen(
             }
         }
     }
+        
+    if (showFilterSheet) {
+            val apiFilters by viewModel.apiFiltersState.collectAsState()
+            val currentSelectedFilters by viewModel.selectedFilters.collectAsState()
+            
+            FilterFullScreen(
+                filters = apiFilters,
+                initialSelectedFilters = currentSelectedFilters,
+                onApply = { newFilters ->
+                    viewModel.applyFilters(categoryId, newFilters)
+                    showFilterSheet = false
+                },
+                onBackClick = { showFilterSheet = false },
+                onClearFilter = {
+                    viewModel.clearFilter(categoryId)
+                }
+            )
+        }
+    }
 }
 
 @Composable
@@ -466,16 +460,20 @@ fun FilterFullScreen(
     val filteredOptions = if (searchQuery.isBlank()) categoryOptions
     else categoryOptions.filter { it.label?.contains(searchQuery, ignoreCase = true) == true }
 
-    Surface(
+    Scaffold(
         modifier = Modifier.fillMaxSize(),
-        color = Color.White
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        containerColor = Color.White,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
             // Header
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding()
                     .padding(horizontal = 4.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -504,7 +502,7 @@ fun FilterFullScreen(
                     modifier = Modifier
                         .weight(0.4f)
                         .fillMaxHeight()
-                        .background(Color(0xFFF2F2F7)) // .systemGray6 equivalent
+                        .background(Color(0xFFF2F2F7))
                 ) {
                     androidx.compose.foundation.lazy.LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(filters?.size ?: 0) { index ->
@@ -513,10 +511,10 @@ fun FilterFullScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .background(if (isSelected) Color(0xFFE5E5EA) else Color.Transparent) // .systemGray5 equivalent
+                                    .background(if (isSelected) Color(0xFFE5E5EA) else Color.Transparent)
                                     .clickable { 
                                         selectedCategoryIndex = index
-                                        searchQuery = "" // Reset search when switching categories
+                                        searchQuery = "" 
                                     }
                                     .padding(16.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -535,7 +533,6 @@ fun FilterFullScreen(
 
                 // Right side: Values
                 Column(modifier = Modifier.weight(0.6f).fillMaxHeight()) {
-                    // Search bar
                     androidx.compose.foundation.text.BasicTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -624,8 +621,8 @@ fun FilterFullScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .imePadding()
                     .padding(16.dp)
-                    .navigationBarsPadding() // Safe area
             ) {
                 Button(
                     onClick = { onApply(selectedFilters) },

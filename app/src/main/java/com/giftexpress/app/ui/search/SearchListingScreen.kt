@@ -65,126 +65,130 @@ fun SearchListingScreen(
         if (shouldLoadMore) viewModel.loadNextPage()
     }
 
-    Scaffold(
-        topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
-                }
-                Column {
-                    Text(
-                        text = "Search Results",
-                        fontFamily = Gilroy,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = Color.Black
-                    )
-                    Text(
-                        text = "\"$searchString\"",
-                        fontFamily = Gilroy,
-                        fontSize = 13.sp,
-                        color = Color.Gray
-                    )
-                }
-            }
-        },
-        bottomBar = {
-            if (products.isNotEmpty()) {
-                com.giftexpress.app.ui.category.CategoryBottomActions(
-                    onFilterClick = { showFilter = true },
-                    onSortClick = { showSort = true },
-                    sortLabel = if (currentSort != null && currentSort != com.giftexpress.app.ui.category.CategoryViewModel.SortOption.IN_STOCK) currentSort?.label else null,
-                    filterLabel = if (selectedFilters.isNotEmpty()) "FILTERED" else null
-                )
-            }
-        },
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        containerColor = Color.White
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (products.isEmpty() && isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = Color.Red
-                )
-            } else if (products.isEmpty() && !isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(
-                        text = if (error != null) "Error: $error" else "No products found for \"$searchString\"",
-                        fontFamily = Gilroy,
-                        fontSize = 16.sp,
-                        color = Color.Gray
-                    )
-                }
-            } else {
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    state = gridState,
-                    contentPadding = PaddingValues(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize()
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    items(products) { product ->
-                        val sku = product.firstSku
-                        val isAdded = sku?.let { addedSkus.contains(it) } == true
-                        com.giftexpress.app.ui.home.ProductCard(
-                            product = product.toSliderProduct(),
-                            onProductClick = {
-                                if (!sku.isNullOrBlank()) onProductClick(sku, product.mainImage)
-                            },
-                            onAddToCart = { sku?.let(onAddToCart) },
-                            onGoToCart = onGoToCart,
-                            isAdded = isAdded,
-                            onAddToWishlist = { sku?.let(onAddToWishlist) },
-                            modifier = Modifier.fillMaxWidth()
+                    IconButton(onClick = onBackClick) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.Black
                         )
                     }
+                    Column {
+                        Text(
+                            text = "Search Results",
+                            fontFamily = Gilroy,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = "\"$searchString\"",
+                            fontFamily = Gilroy,
+                            fontSize = 13.sp,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            },
+            bottomBar = {
+                if (products.isNotEmpty()) {
+                    com.giftexpress.app.ui.category.CategoryBottomActions(
+                        onFilterClick = { showFilter = true },
+                        onSortClick = { showSort = true },
+                        sortLabel = if (currentSort != null && currentSort != com.giftexpress.app.ui.category.CategoryViewModel.SortOption.IN_STOCK) currentSort?.label else null,
+                        filterLabel = if (selectedFilters.isNotEmpty()) "FILTERED" else null
+                    )
+                }
+            },
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            containerColor = Color.White
+        ) { paddingValues ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                if (products.isEmpty() && isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.Red
+                    )
+                } else if (products.isEmpty() && !isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(
+                            text = if (error != null) "Error: $error" else "No products found for \"$searchString\"",
+                            fontFamily = Gilroy,
+                            fontSize = 16.sp,
+                            color = Color.Gray
+                        )
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(3),
+                        state = gridState,
+                        contentPadding = PaddingValues(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(products) { product ->
+                            val sku = product.firstSku
+                            val isAdded = sku?.let { addedSkus.contains(it) } == true
+                            com.giftexpress.app.ui.home.ProductCard(
+                                product = product.toSliderProduct(),
+                                onProductClick = {
+                                    if (!sku.isNullOrBlank()) onProductClick(sku, product.mainImage)
+                                },
+                                onAddToCart = { sku?.let(onAddToCart) },
+                                onGoToCart = onGoToCart,
+                                isAdded = isAdded,
+                                onAddToWishlist = { sku?.let(onAddToWishlist) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
 
-                    if (isLoading) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(color = Color.Red, modifier = Modifier.size(32.dp))
+                        if (isLoading) {
+                            item {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = Color.Red, modifier = Modifier.size(32.dp))
+                                }
                             }
                         }
                     }
                 }
             }
         }
-    }
-
-    if (showFilter) {
-        com.giftexpress.app.ui.category.FilterFullScreen(
-            filters = apiFilters,
-            initialSelectedFilters = selectedFilters,
-            onApply = { filters ->
-                showFilter = false
-                viewModel.applyFilters(filters)
-            },
-            onBackClick = { showFilter = false },
-            onClearFilter = {
-                showFilter = false
-                viewModel.clearFilter()
-            }
-        )
+        
+        if (showFilter) {
+            val apiFilters by viewModel.apiFiltersState.collectAsState()
+            val selectedFilters by viewModel.selectedFilters.collectAsState()
+            
+            com.giftexpress.app.ui.category.FilterFullScreen(
+                filters = apiFilters,
+                initialSelectedFilters = selectedFilters,
+                onApply = { filters ->
+                    showFilter = false
+                    viewModel.applyFilters(filters)
+                },
+                onBackClick = { showFilter = false },
+                onClearFilter = {
+                    showFilter = false
+                    viewModel.clearFilter()
+                }
+            )
+        }
     }
 
     if (showSort) {

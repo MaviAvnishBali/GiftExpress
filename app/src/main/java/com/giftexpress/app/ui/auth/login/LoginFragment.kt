@@ -94,6 +94,7 @@ class LoginFragment : Fragment() {
         // Initialize Google Sign-In Client
         // We only need email + user ID (socialId), matching iOS which uses user.userID
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .requestProfile()
             .build()

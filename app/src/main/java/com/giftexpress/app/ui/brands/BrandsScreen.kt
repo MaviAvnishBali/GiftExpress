@@ -150,31 +150,9 @@ private fun BrandProductsInline(
         }
     }
 
-    if (showFilterSheet) {
-        val apiFilters by viewModel.apiFiltersState.collectAsState()
-        val currentSelectedFilters by viewModel.selectedFilters.collectAsState()
 
-        androidx.compose.ui.window.Dialog(
-            onDismissRequest = { showFilterSheet = false },
-            properties = androidx.compose.ui.window.DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false
-            )
-        ) {
-            FilterFullScreen(
-                filters = apiFilters,
-                initialSelectedFilters = currentSelectedFilters,
-                onApply = { newFilters ->
-                    viewModel.applyFilters(newFilters)
-                    showFilterSheet = false
-                },
-                onBackClick = { showFilterSheet = false },
-                onClearFilter = { viewModel.clearFilter() }
-            )
-        }
-    }
-
-    Scaffold(
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
         topBar = {
             Surface(color = androidx.compose.ui.res.colorResource(id = R.color.primary), contentColor = Color.White) {
                 Row(
@@ -280,7 +258,24 @@ private fun BrandProductsInline(
 
             else -> {}
         }
-    }
+        }
+        }
+
+        if (showFilterSheet) {
+            val apiFilters by viewModel.apiFiltersState.collectAsState()
+            val currentSelectedFilters by viewModel.selectedFilters.collectAsState()
+            
+            FilterFullScreen(
+                filters = apiFilters,
+                initialSelectedFilters = currentSelectedFilters,
+                onApply = { newFilters ->
+                    viewModel.applyFilters(newFilters)
+                    showFilterSheet = false
+                },
+                onBackClick = { showFilterSheet = false },
+                onClearFilter = { viewModel.clearFilter() }
+            )
+        }
     }
 }
 

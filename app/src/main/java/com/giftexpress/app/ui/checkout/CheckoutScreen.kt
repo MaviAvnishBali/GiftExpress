@@ -667,12 +667,21 @@ private fun DiscountSection(
                 trailingIcon = {
                     TextButton(
                         onClick = onApply,
-                        enabled = couponCode.isNotBlank() && couponState !is UiState.Loading
+                        enabled = couponCode.isNotBlank() && couponState !is UiState.Loading,
+                        contentPadding = PaddingValues(horizontal = 8.dp)
                     ) {
                         if (couponState is UiState.Loading) {
                             CircularProgressIndicator(color = AccentOrange, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                         } else {
-                            Text("APPLY", fontFamily = GilroyBold, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AccentOrange)
+                            Text(
+                                text = "APPLY",
+                                fontFamily = GilroyBold,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = AccentOrange,
+                                maxLines = 1,
+                                softWrap = false
+                            )
                         }
                     }
                 }
@@ -726,12 +735,21 @@ private fun RewardsSection(
                 trailingIcon = {
                     TextButton(
                         onClick = onApply,
-                        enabled = rewardsInput.isNotBlank() && rewardsState !is UiState.Loading && rewardsState !is UiState.Error
+                        enabled = rewardsInput.isNotBlank() && rewardsState !is UiState.Loading && rewardsState !is UiState.Error,
+                        contentPadding = PaddingValues(horizontal = 8.dp)
                     ) {
                         if (rewardsState is UiState.Loading) {
                             CircularProgressIndicator(color = AccentOrange, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                         } else {
-                            Text("APPLY", fontFamily = GilroyBold, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = AccentOrange)
+                            Text(
+                                text = "APPLY",
+                                fontFamily = GilroyBold,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp,
+                                color = AccentOrange,
+                                maxLines = 1,
+                                softWrap = false
+                            )
                         }
                     }
                 }

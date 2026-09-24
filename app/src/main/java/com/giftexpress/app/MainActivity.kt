@@ -359,15 +359,15 @@ class MainActivity : AppCompatActivity() {
             )
 
             binding.statusBarSpacer.updateLayoutParams {
-                height = statusBars.top
+                height = maxOf(1, statusBars.top)
             }
             binding.navBarSpacer.updateLayoutParams {
-                height = navigationBars.bottom
+                height = maxOf(1, navigationBars.bottom)
             }
 
             // Drawer status bar spacer ensures status bar area remains black with white icons
             binding.drawerStatusBarSpacer.updateLayoutParams {
-                height = statusBars.top
+                height = maxOf(1, statusBars.top)
             }
             // Ensure drawer menu items don't overlap the bottom navigation bar
             binding.navView.setPadding(0, 0, 0, navigationBars.bottom)

@@ -131,7 +131,7 @@ fun CategoryScreen(
                                 "banner" -> {
                                     val validBanners = slider.banners?.filter { !it.mobImage.isNullOrBlank() }
                                     if (!validBanners.isNullOrEmpty()) {
-                                        item(span = { GridItemSpan(2) }) {
+                                        item(span = { GridItemSpan(maxLineSpan) }) {
                                             HeroBanner(
                                                 banners = validBanners,
                                                 cornerRadius = 20.dp,
@@ -143,7 +143,7 @@ fun CategoryScreen(
                                 // Some (sub)categories deliver their banner section as an "offer"
                                 // slider rather than "banner". Render it so the images aren't dropped.
                                 "offer" -> {
-                                    item(span = { GridItemSpan(2) }) {
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
                                         slider.offers?.let { offers ->
                                             OffersSection(
                                                 title = slider.title ?: "",
@@ -153,7 +153,7 @@ fun CategoryScreen(
                                     }
                                 }
                                 "category" -> {
-                                    item(span = { GridItemSpan(2) }) {
+                                    item(span = { GridItemSpan(maxLineSpan) }) {
                                         if (slider.title?.contains("Popular", ignoreCase = true) == true) {
                                             BrandSection(
                                                 title = slider.title,
@@ -196,7 +196,7 @@ fun CategoryScreen(
                                 else -> {
                                     val validBanners = slider.banners?.filter { !it.mobImage.isNullOrBlank() }
                                     if (!validBanners.isNullOrEmpty()) {
-                                        item(span = { GridItemSpan(2) }) {
+                                        item(span = { GridItemSpan(maxLineSpan) }) {
                                             HeroBanner(
                                                 banners = validBanners,
                                                 cornerRadius = 20.dp,
@@ -209,7 +209,7 @@ fun CategoryScreen(
                         }
                     }
                     is UiState.Loading -> {
-                        item(span = { GridItemSpan(2) }) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
                             Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator()
                             }
@@ -222,7 +222,7 @@ fun CategoryScreen(
                 when (val state = productsState) {
                     is UiState.Success -> {
                         if (state.data.isEmpty()) {
-                            item(span = { GridItemSpan(2) }) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -281,7 +281,7 @@ fun CategoryScreen(
                         }
                     }
                     is UiState.Error -> {
-                        item(span = { GridItemSpan(2) }) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
                             Text(text = state.message, modifier = Modifier.padding(16.dp))
                         }
                     }

@@ -20,9 +20,8 @@ class CategoryOfferAndBannerDeserializer : JsonDeserializer<CategoryOfferAndBann
             if (jsonArray.size() >= 3) {
                 // The actual data is at index 2
                 val dataElement = jsonArray.get(2)
-                val listType = object : TypeToken<List<SliderResponse>>() {}.type
-                val sliders: List<SliderResponse> = context.deserialize(dataElement, listType)
-                return CategoryOfferAndBannerResponse(sliders)
+                val slidersArray: Array<SliderResponse> = context.deserialize(dataElement, Array<SliderResponse>::class.java)
+                return CategoryOfferAndBannerResponse(slidersArray.toList())
             } else {
                 throw JsonParseException("Unexpected JSON array size for CategoryOfferAndBannerResponse")
             }

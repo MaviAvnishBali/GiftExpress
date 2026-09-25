@@ -156,7 +156,7 @@ fun SearchListingScreen(
                         }
 
                         if (isLoading) {
-                            item(span = { GridItemSpan(maxLineSpan) }) {
+                            item(span = { GridItemSpan(3) }) {
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()

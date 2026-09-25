@@ -152,7 +152,7 @@ fun SpecialProductsScreen(
                             contentPadding = PaddingValues(8.dp)
                         ) {
                             if (!bannerUrl.isNullOrBlank()) {
-                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                item(span = { GridItemSpan(3) }) {
                                     coil.compose.AsyncImage(
                                         model = bannerUrl,
                                         contentDescription = "Banner",
@@ -217,7 +217,7 @@ fun SpecialProductsScreen(
                             contentPadding = PaddingValues(8.dp)
                         ) {
                             if (!bannerUrl.isNullOrBlank()) {
-                                item(span = { GridItemSpan(maxLineSpan) }) {
+                                item(span = { GridItemSpan(3) }) {
                                     coil.compose.AsyncImage(
                                         model = bannerUrl,
                                         contentDescription = "Banner",

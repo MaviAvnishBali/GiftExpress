@@ -126,12 +126,13 @@ fun CategoryScreen(
                 when (val state = categoryDataState) {
                     is UiState.Success -> {
                         val sliders = state.data.sortedBy { it.sequence ?: Int.MAX_VALUE }
+                        item(span = { GridItemSpan(3) }) { androidx.compose.material3.Text("DEBUG: Sliders size ${sliders.size}", modifier = Modifier.fillMaxWidth().background(Color.Red).padding(16.dp)) }
                         sliders.forEach { slider ->
                             when (slider.type) {
                                 "banner" -> {
                                     val validBanners = slider.banners?.filter { !it.mobImage.isNullOrBlank() }
                                     if (!validBanners.isNullOrEmpty()) {
-                                        item(span = { GridItemSpan(maxLineSpan) }) {
+                                        item(span = { GridItemSpan(3) }) {
                                             HeroBanner(
                                                 banners = validBanners,
                                                 cornerRadius = 20.dp,
@@ -143,7 +144,7 @@ fun CategoryScreen(
                                 // Some (sub)categories deliver their banner section as an "offer"
                                 // slider rather than "banner". Render it so the images aren't dropped.
                                 "offer" -> {
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                    item(span = { GridItemSpan(3) }) {
                                         slider.offers?.let { offers ->
                                             OffersSection(
                                                 title = slider.title ?: "",
@@ -153,7 +154,7 @@ fun CategoryScreen(
                                     }
                                 }
                                 "category" -> {
-                                    item(span = { GridItemSpan(maxLineSpan) }) {
+                                    item(span = { GridItemSpan(3) }) {
                                         if (slider.title?.contains("Popular", ignoreCase = true) == true) {
                                             BrandSection(
                                                 title = slider.title,
@@ -196,7 +197,7 @@ fun CategoryScreen(
                                 else -> {
                                     val validBanners = slider.banners?.filter { !it.mobImage.isNullOrBlank() }
                                     if (!validBanners.isNullOrEmpty()) {
-                                        item(span = { GridItemSpan(maxLineSpan) }) {
+                                        item(span = { GridItemSpan(3) }) {
                                             HeroBanner(
                                                 banners = validBanners,
                                                 cornerRadius = 20.dp,
@@ -209,7 +210,7 @@ fun CategoryScreen(
                         }
                     }
                     is UiState.Loading -> {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
+                        item(span = { GridItemSpan(3) }) {
                             Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator()
                             }
@@ -222,7 +223,7 @@ fun CategoryScreen(
                 when (val state = productsState) {
                     is UiState.Success -> {
                         if (state.data.isEmpty()) {
-                            item(span = { GridItemSpan(maxLineSpan) }) {
+                            item(span = { GridItemSpan(3) }) {
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -281,7 +282,7 @@ fun CategoryScreen(
                         }
                     }
                     is UiState.Error -> {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
+                        item(span = { GridItemSpan(3) }) {
                             Text(text = state.message, modifier = Modifier.padding(16.dp))
                         }
                     }

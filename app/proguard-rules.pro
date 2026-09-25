@@ -197,3 +197,4 @@
 -keepclassmembers class * extends android.webkit.WebChromeClient {
     public void *(android.webkit.WebView, java.lang.String);
 }
+-keep class com.giftexpress.app.data.api.** { *; }

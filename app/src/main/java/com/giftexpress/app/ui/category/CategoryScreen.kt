@@ -216,6 +216,7 @@ fun CategoryScreen(
                             }
                         }
                     }
+                    is com.giftexpress.app.utils.UiState.Error -> { item(span = { GridItemSpan(1) }) { androidx.compose.material3.Text("DEBUG ERROR: ${state.message}", modifier = androidx.compose.ui.Modifier.fillMaxWidth().background(androidx.compose.ui.graphics.Color.Red).padding(16.dp)) } } 
                     else -> {}
                 }
 
@@ -286,6 +287,7 @@ fun CategoryScreen(
                             Text(text = state.message, modifier = Modifier.padding(16.dp))
                         }
                     }
+                    is com.giftexpress.app.utils.UiState.Error -> { item(span = { GridItemSpan(1) }) { androidx.compose.material3.Text("DEBUG ERROR: ${state.message}", modifier = androidx.compose.ui.Modifier.fillMaxWidth().background(androidx.compose.ui.graphics.Color.Red).padding(16.dp)) } } 
                     else -> {}
                 }
             }

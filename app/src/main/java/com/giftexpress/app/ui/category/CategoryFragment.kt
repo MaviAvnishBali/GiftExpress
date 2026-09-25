@@ -45,7 +45,6 @@ class CategoryFragment : Fragment() {
         viewModel.fetchCategoryData(categoryId)
         viewModel.fetchProducts(categoryId, reset = true)
 
-        android.widget.Toast.makeText(requireContext(), "DEBUG: Fetched Category $categoryId", android.widget.Toast.LENGTH_LONG).show()
 
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
@@ -57,7 +56,6 @@ class CategoryFragment : Fragment() {
                     cartViewModel.cartEvents.collect { event ->
                         when (event) {
                             is com.giftexpress.app.ui.cart.CartEvent.ItemAdded -> {
-                                android.widget.Toast.makeText(requireContext(), "Added to cart", android.widget.Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -66,7 +64,6 @@ class CategoryFragment : Fragment() {
                 val cartError by cartViewModel.error.collectAsState()
                 androidx.compose.runtime.LaunchedEffect(cartError) {
                     cartError?.let {
-                        android.widget.Toast.makeText(requireContext(), it, android.widget.Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -136,7 +133,6 @@ class CategoryFragment : Fragment() {
                             onAddToWishlist = { skuToAdd ->
                                 if (cartViewModel.isLoggedIn()) {
                                     wishlistViewModel.addToWishlist(skuToAdd)
-                                    android.widget.Toast.makeText(requireContext(), "Added to wishlist", android.widget.Toast.LENGTH_SHORT).show()
                                 } else {
                                     com.giftexpress.app.utils.showLoginRequiredDialog(requireContext(), "Please login to add items to your wishlist.") {
                                         cartViewModel.setPendingWishlistSku(skuToAdd)

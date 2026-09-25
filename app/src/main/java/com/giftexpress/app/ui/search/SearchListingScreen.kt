@@ -1,5 +1,6 @@
 package com.giftexpress.app.ui.search
 
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

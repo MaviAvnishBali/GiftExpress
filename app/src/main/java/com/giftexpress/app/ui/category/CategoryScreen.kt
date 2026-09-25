@@ -135,7 +135,7 @@ fun CategoryScreen(
                                             HeroBanner(
                                                 banners = validBanners,
                                                 cornerRadius = 20.dp,
-                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                                isTopBanner = true
                                             )
                                         }
                                     }
@@ -200,7 +200,7 @@ fun CategoryScreen(
                                             HeroBanner(
                                                 banners = validBanners,
                                                 cornerRadius = 20.dp,
-                                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                                                isTopBanner = true
                                             )
                                         }
                                     }

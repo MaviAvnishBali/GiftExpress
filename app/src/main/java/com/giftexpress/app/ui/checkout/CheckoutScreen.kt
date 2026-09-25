@@ -665,10 +665,11 @@ private fun DiscountSection(
                     unfocusedBorderColor = BorderGray
                 ),
                 trailingIcon = {
-                    TextButton(
-                        onClick = onApply,
-                        enabled = couponCode.isNotBlank() && couponState !is UiState.Loading,
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    Box(
+                        modifier = Modifier
+                            .clickable(enabled = couponCode.isNotBlank() && couponState !is UiState.Loading, onClick = onApply)
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         if (couponState is UiState.Loading) {
                             CircularProgressIndicator(color = AccentOrange, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -678,9 +679,7 @@ private fun DiscountSection(
                                 fontFamily = GilroyBold,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
-                                color = AccentOrange,
-                                maxLines = 1,
-                                softWrap = false
+                                color = AccentOrange
                             )
                         }
                     }
@@ -733,10 +732,11 @@ private fun RewardsSection(
                     unfocusedBorderColor = BorderGray
                 ),
                 trailingIcon = {
-                    TextButton(
-                        onClick = onApply,
-                        enabled = rewardsInput.isNotBlank() && rewardsState !is UiState.Loading && rewardsState !is UiState.Error,
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                    Box(
+                        modifier = Modifier
+                            .clickable(enabled = rewardsInput.isNotBlank() && rewardsState !is UiState.Loading && rewardsState !is UiState.Error, onClick = onApply)
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         if (rewardsState is UiState.Loading) {
                             CircularProgressIndicator(color = AccentOrange, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
@@ -746,9 +746,7 @@ private fun RewardsSection(
                                 fontFamily = GilroyBold,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
-                                color = AccentOrange,
-                                maxLines = 1,
-                                softWrap = false
+                                color = AccentOrange
                             )
                         }
                     }

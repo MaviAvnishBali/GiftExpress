@@ -174,7 +174,12 @@
 }
 
 # === Stripe Payment SDK ===
--dontwarn com.stripe.**
+-keep class com.stripe.android.** { *; }
+-keep interface com.stripe.android.** { *; }
+-keep class com.stripe.android.model.** { *; }
+-keep class com.stripe.android.pushProvisioning.** { *; }
+-dontwarn com.stripe.android.**
+-dontwarn com.stripe.android.pushProvisioning.**
 
 # === PayPal Web Payments SDK ===
 -dontwarn com.paypal.android.**

@@ -45,6 +45,8 @@ class CategoryFragment : Fragment() {
         viewModel.fetchCategoryData(categoryId)
         viewModel.fetchProducts(categoryId, reset = true)
 
+        android.widget.Toast.makeText(requireContext(), "DEBUG: Fetched Category $categoryId", android.widget.Toast.LENGTH_LONG).show()
+
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
